@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+    <bean id="payConstant" class="com.martin.constant.PayConstant">
+        <property name="BODY" value="${pay.body}"></property>
+
+        <property name="ALIPAY_URL" value="${alipay.url}"></property>
+        <property name="ALIPAY_VERIFY_URL" value="${alipay.verifyUrl}"></property>
+        <property name="ALIPAY_AUTH_CODE" value="${alipay.authCode}"></property>
+        <property name="ALIPAY_AUTH_URL" value="${alipay.authUrl}"></property>
+        <property name="ALIPAY_SERVICE" value="${alipay.service}"></property>
+        <property name="ALIPAY_APP_ID" value="${alipay.appId}"></property>
+        <property name="ALIPAY_PARTNER" value="${alipay.partner}"></property>
+        <property name="ALIPAY_SELLER_ID" value="${alipay.sellerId}"></property>
+        <property name="ALIPAY_PRIVATE_KEY" value="${alipay.privateKey}"></property>
+        <property name="ALIPAY_PUBLIC_KEY" value="${alipay.publicKey}"></property>
+        <property name="ALIPAY_SIGN_TYPE" value="${alipay.signType}"></property>
+        <property name="ALIPAY_MD5_KEY" value="${alipay.md5key}"></property>
+        <property name="ALIPAY_INPUT_CHARSET" value="${alipay.inputCharset}"></property>
+        <property name="ALIPAY_PAYMENT_TYPE" value="${alipay.paymentType}"></property>
+        <property name="ALIPAY_ANTI_PHISHING_KEY" value="${alipay.antiPhishingKey}"></property>
+        <property name="ALIPAY_EXTER_INVOKE_IP" value="${alipay.exterInvokeIp}"></property>
+        <property name="ALIPAY_IT_B_PAY" value="${alipay.itBPay}"></property>
+        <property name="ALIPAY_AUTH_RET_URL" value="${alipay.authRetUrl}"></property>
+        <property name="ALIPAY_NOTIFY_URL" value="${alipay.notifyUrl}"></property>
+        <property name="ALIPAY_RETURN_URL" value="${alipay.returnUrl}"></property>
+
+
+        <property name="TENPAY_URL" value="${tenpay.url}"></property>
+        <property name="TENPAY_QUERY_URL" value="${tenpay.queryUrl}"></property>
+        <property name="TENPAY_AUTH_CODE" value="${tenpay.authCode}"></property>
+        <property name="TENPAY_AUTH_URL" value="${tenpay.authUrl}"></property>
+        <property name="TENPAY_APP_ID" value="${tenpay.appid}"></property>
+        <property name="TENPAY_MCH_ID" value="${tenpay.mchId}"></property>
+        <property name="TENPAY_DEVICE_INFO" value="${tenpay.deviceInfo}"></property>
+        <property name="TENPAY_PRIVATE_KEY" value="${tenpay.privateKey}"></property>
+        <property name="TENPAY_APP_SECRET" value="${tenpay.appSecret}"></property>
+        <property name="TENPAY_SIGN_TYPE" value="${tenpay.signType}"></property>
+        <property name="TENPAY_LIMIT_PAY" value="${tenpay.limitPay}"></property>
+        <property name="TENPAY_TRADE_TYPE" value="${tenpay.tradeType}"></property>
+        <property name="TENPAY_AUTH_RET_URL" value="${tenpay.authRetUrl}"></property>
+        <property name="TENPAY_NOTIFY_URL" value="${tenpay.notifyUrl}"></property>
+        <property name="TENPAY_RETURN_URL" value="${tenpay.returnUrl}"></property>
+    </bean>
+</beans>

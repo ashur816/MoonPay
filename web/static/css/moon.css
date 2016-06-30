@@ -1,0 +1,31 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.moon-404 {
+    background: url(../img/404.png) center top no-repeat;
+    background-size: auto 12rem;
+    top: 6rem;
+    padding-top: 12rem;
+}
+
+.moon-500 {
+    background: url(../img/500.png) center top no-repeat;
+    background-size: auto 12rem;
+    top: 6rem;
+    padding-top: 12rem;
+}
+
+.moon-error {
+    background: url(../img/cuowu.png) center top no-repeat;
+    background-size: auto 12rem;
+    top: 6rem;
+    padding-top: 12rem;
+}
+
+p {
+    text-align: center;
+    font-size: 2em;
+    color: #12B7F5;
+}
