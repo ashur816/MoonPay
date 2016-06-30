@@ -57,7 +57,7 @@ public class PayController {
         ModelAndView modelAndView = new ModelAndView();
 
         if (StringUtils.isEmpty(bizId)) {
-            modelAndView.setViewName("pay/error");
+            modelAndView.setViewName("common/error");
             modelAndView.addObject("error", "订单号不能为空");
         } else {
             String ipAddress = IpUtils.getIpAddress(request);
@@ -70,7 +70,7 @@ public class PayController {
             } catch (Exception e) {
                 logger.error("doPayCenter异常-{}", e.getMessage());
                 modelAndView.addObject("error", e.getMessage());
-                modelAndView.setViewName("pay/error");
+                modelAndView.setViewName("common/error");
             }
         }
         return modelAndView;
@@ -87,7 +87,7 @@ public class PayController {
         ModelAndView modelAndView = new ModelAndView();
 
         if (StringUtils.isEmpty(bizId) || StringUtils.isEmpty(payType)) {
-            modelAndView.setViewName("pay/error");
+            modelAndView.setViewName("common/error");
             modelAndView.addObject("error", "订单号和支付方式不能为空");
         } else {
             String ipAddress = IpUtils.getIpAddress(request);
@@ -102,13 +102,13 @@ public class PayController {
                     modelAndView.setViewName("pay/cmb_pay");
                     doError(payInfo, modelAndView);
                 } else {
-                    modelAndView.setViewName("pay/error");
+                    modelAndView.setViewName("common/error");
                     modelAndView.addObject("error", "暂不支持当前选择的支付方式");
                 }
             } catch (Exception e) {
                 logger.error("doWebPay异常-{}", e.getMessage());
                 modelAndView.addObject("error", e.getMessage());
-                modelAndView.setViewName("pay/error");
+                modelAndView.setViewName("common/error");
             }
         }
         return modelAndView;
@@ -126,7 +126,7 @@ public class PayController {
         String userAgent = request.getHeader("User-Agent");
 
         if (StringUtils.isEmpty(bizId)) {
-            modelAndView.setViewName("pay/error");
+            modelAndView.setViewName("common/error");
             modelAndView.addObject("error", "业务订单号不能为空");
         } else {
             String payType;
@@ -138,7 +138,7 @@ public class PayController {
                     //查询授权地址
                     PayInfo retInfo = payCenter.doAuthorize(payType, bizId);
                     if (retInfo == null) {
-                        modelAndView.setViewName("pay/error");
+                        modelAndView.setViewName("common/error");
                         modelAndView.addObject("error", "未获取到授权信息");
                     } else {
                         String url = retInfo.getDestUrl();
@@ -151,13 +151,13 @@ public class PayController {
                     PayInfo payInfo = payCenter.doScanPay(payType, bizId, ipAddress, "");
                     doError(payInfo, modelAndView);
                 } else {//第三方扫码
-                    modelAndView.setViewName("pay/error");
+                    modelAndView.setViewName("common/error");
                     modelAndView.addObject("error", "请用微信或支付宝扫码");
                 }
             } catch (Exception e) {
                 logger.error("doPayCenter异常-{}", e.getMessage());
                 modelAndView.addObject("error", e.getMessage());
-                modelAndView.setViewName("pay/error");
+                modelAndView.setViewName("common/error");
             }
         }
         return modelAndView;
@@ -175,7 +175,7 @@ public class PayController {
         String ipAddress = IpUtils.getIpAddress(request);
         String error = "";
         if (StringUtils.isBlank(state)) {
-            modelAndView.setViewName("pay/error");
+            modelAndView.setViewName("common/error");
             error = "未获取到授权信息";
         } else {
             String payType = state.split("_")[0];
@@ -185,7 +185,7 @@ public class PayController {
             if (TEN_PAY.equals(payType)) {
                 modelAndView.setViewName("pay/ten_pay");
             } else {
-                modelAndView.setViewName("pay/error");
+                modelAndView.setViewName("common/error");
                 modelAndView.addObject("error", "暂不支持当前支付方式");
             }
 
@@ -195,7 +195,7 @@ public class PayController {
                 doError(payInfo, modelAndView);
             } catch (Exception e) {
                 logger.error("PayController.doPay 异常：{}", e.getMessage());
-                modelAndView.setViewName("pay/error");
+                modelAndView.setViewName("common/error");
                 error = e.getMessage();
             }
         }
@@ -275,7 +275,7 @@ public class PayController {
             logger.info("支付返回成功");
             modelAndView.addObject("payInfo", payInfo);
         } else {
-            modelAndView.setViewName("pay/error");
+            modelAndView.setViewName("common/error");
             modelAndView.addObject("error", "未获取到支付信息");
         }
     }

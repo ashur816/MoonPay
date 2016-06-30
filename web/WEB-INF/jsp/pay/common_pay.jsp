@@ -1,12 +1,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<jsp:include page="../common/base.jsp"></jsp:include>
 <%
     String path = request.getContextPath();
 %>
 <html>
 <head>
     <title>收银台</title>
-    <script type="text/javascript" src="<%=path%>/static/js/jquery-1.12.4.min.js"></script>
 </head>
 <body>
 <input type="text" value="订单号:"/><input id="bizId" value="${payInfo.bizId}"/><br/>

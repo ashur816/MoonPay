@@ -7,7 +7,7 @@ import com.martin.constant.PayChannelEnum;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayReturnCodeEnum;
 import com.martin.exception.BusinessException;
-import com.martin.service.PayService;
+import com.martin.service.IPayService;
 import com.martin.utils.HttpUtils;
 import com.martin.utils.JsonUtils;
 import com.martin.utils.RandomUtils;
@@ -25,7 +25,7 @@ import java.util.*;
  * @date 2016/5/24 10:31
  */
 @Service("tenPayService")
-public class TenPay implements PayService {
+public class TenPay implements IPayService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 

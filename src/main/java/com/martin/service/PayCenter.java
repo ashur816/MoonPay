@@ -43,8 +43,9 @@ public class PayCenter implements IPayCenter {
         orderPayInfo.setBizType(PayConstant.BIZ_TYPE_GRAB);
         orderPayInfo.setTotalAmount(1000);
         orderPayInfo.setPayAmount(1);
+        orderPayInfo.setGoodName("美团订单");
 
-        PayInfo payInfo = new PayInfo("中华烟", orderPayInfo.getPayAmount() / 100.0, "");
+        PayInfo payInfo = new PayInfo(orderPayInfo.getGoodName(), orderPayInfo.getPayAmount() / 100.0, "");
         payInfo.setBizId(bizId);
         return payInfo;
     }
@@ -72,6 +73,7 @@ public class PayCenter implements IPayCenter {
         orderPayInfo.setBizType(PayConstant.BIZ_TYPE_GRAB);
         orderPayInfo.setTotalAmount(1000);
         orderPayInfo.setPayAmount(1);
+        orderPayInfo.setGoodName("美团订单");
         //2、判断支付状态
 
         //3、生成支付流水
@@ -82,7 +84,7 @@ public class PayCenter implements IPayCenter {
         extMap.put("ipAddress", ipAddress);
 
         logger.info("开始发起第三方支付");
-        PayService payService = getPayInstance(payType);
+        IPayService payService = getPayInstance(payType);
         PayInfo payInfo = payService.buildPayInfo(flowBean, extMap);
         payInfo.setFlowId(flowBean.getFlowId());
         payInfo.setBizId(flowBean.getBizId());
@@ -102,7 +104,7 @@ public class PayCenter implements IPayCenter {
             throw new BusinessException("111");
         }
 
-        PayService payService = getPayInstance(payType);
+        IPayService payService = getPayInstance(payType);
         return payService.authorize(bizId);
     }
 
@@ -129,6 +131,7 @@ public class PayCenter implements IPayCenter {
         orderPayInfo.setBizType(PayConstant.BIZ_TYPE_GRAB);
         orderPayInfo.setTotalAmount(1000);
         orderPayInfo.setPayAmount(1);
+        orderPayInfo.setGoodName("美团订单");
         //2、判断支付状态
 
         //3、生成支付流水
@@ -139,7 +142,7 @@ public class PayCenter implements IPayCenter {
         extMap.put("ipAddress", ipAddress);
 
         logger.info("开始发起第三方支付");
-        PayService payService = getPayInstance(payType);
+        IPayService payService = getPayInstance(payType);
         PayInfo payInfo = payService.buildPayInfo(flowBean, extMap);
         payInfo.setFlowId(flowBean.getFlowId());
         payInfo.setBizId(flowBean.getBizId());
@@ -178,7 +181,7 @@ public class PayCenter implements IPayCenter {
      * @return
      * @throws
      */
-    private PayService getPayInstance(String payType) {
+    private IPayService getPayInstance(String payType) {
         //根据渠道不同，调用不同实现类
         PayChannelEnum payChannel = PayChannelEnum.getPayChannel(payType);
         String payService = payChannel.getPayService();
@@ -189,7 +192,7 @@ public class PayCenter implements IPayCenter {
 
         }
         //返回服务实例
-        return new ServiceContainer<PayService>().get(payService);
+        return new ServiceContainer<IPayService>().get(payService);
     }
 
     /**

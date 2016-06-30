@@ -6,7 +6,7 @@ import com.martin.bean.PayResult;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayReturnCodeEnum;
 import com.martin.exception.BusinessException;
-import com.martin.service.PayService;
+import com.martin.service.IPayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.Map;
  * @date 2016/5/24 10:22
  */
 @Service("aliPayService")
-public class AliPay implements PayService {
+public class AliPay implements IPayService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 

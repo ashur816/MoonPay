@@ -22,6 +22,11 @@ public class ToPayInfo implements Serializable {
     private Integer bizType;
 
     /**
+     * 商品名
+     */
+    public String goodName;
+
+    /**
      * 操作总额
      */
     private Integer totalAmount;
@@ -62,12 +67,12 @@ public class ToPayInfo implements Serializable {
         this.bizType = bizType;
     }
 
-    public Integer getPayAmount() {
-        return payAmount;
+    public String getGoodName() {
+        return goodName;
     }
 
-    public void setPayAmount(Integer payAmount) {
-        this.payAmount = payAmount;
+    public void setGoodName(String goodName) {
+        this.goodName = goodName;
     }
 
     public Integer getTotalAmount() {
@@ -76,6 +81,14 @@ public class ToPayInfo implements Serializable {
 
     public void setTotalAmount(Integer totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public Integer getPayAmount() {
+        return payAmount;
+    }
+
+    public void setPayAmount(Integer payAmount) {
+        this.payAmount = payAmount;
     }
 
     public String getNotifyUrl() {

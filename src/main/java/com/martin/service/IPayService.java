@@ -12,7 +12,7 @@ import java.util.Map;
  * @author ZXY
  * @date 2016/6/17 11:36
  */
-public interface PayService {
+public interface IPayService {
 
     /**
      * 生成支付信息
