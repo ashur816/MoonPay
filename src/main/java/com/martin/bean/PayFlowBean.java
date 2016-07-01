@@ -1,5 +1,8 @@
 package com.martin.bean;
 
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -10,13 +13,14 @@ import java.util.List;
  * @author ZXY
  * @date 2016-05-24 13:43:02
  */
-
+@Table(name = "pay_flow")
 public class PayFlowBean implements Serializable {
 
     private static final long serialVersionUID = 1627679510441577860L;
     /**
      * 收银台交易流水，根据 时间 + 随机数（4）
      **/
+    @Id
     private Long flowId;
     /**
      * 业务订单流水
@@ -77,6 +81,7 @@ public class PayFlowBean implements Serializable {
     /**
      * 明细
      */
+    @Transient
     private List<PayFlowDetailBean> detailList;
 
     public PayFlowBean() {

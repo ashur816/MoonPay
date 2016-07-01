@@ -2,7 +2,10 @@ package com.martin.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 /**
@@ -57,5 +60,23 @@ public class JsonUtils {
      */
     public static String translateToJson(Object obj) throws IOException {
         return objectMapper.writeValueAsString(obj);
+    }
+
+    /**
+     * @Description: 从文件读取json数据
+     * @param filePath 文件路径
+     * @return
+     * @throws
+     */
+    public static String readJsonByFile(String filePath) throws Exception {
+        File file = new File(filePath);
+        InputStreamReader reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
+        int length;
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[1024];
+        while ((length = reader.read(buffer, 0, 1024)) != -1) {
+            sb.append(buffer, 0, length);
+        }
+        return sb.toString();
     }
 }

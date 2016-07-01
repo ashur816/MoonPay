@@ -1,4 +1,4 @@
-package com.martin.service;
+package com.martin.service.impl;
 
 import com.martin.bean.PayFlowBean;
 import com.martin.bean.PayInfo;
@@ -7,7 +7,10 @@ import com.martin.bean.ToPayInfo;
 import com.martin.constant.PayChannelEnum;
 import com.martin.constant.PayConstant;
 import com.martin.exception.BusinessException;
-import com.martin.utils.RandomUtils;
+import com.martin.service.IPayCenter;
+import com.martin.service.IPayFlow;
+import com.martin.service.IPayService;
+import com.martin.utils.JsonUtils;
 import com.martin.utils.ServiceContainer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -15,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +33,9 @@ public class PayCenter implements IPayCenter {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Resource
+    private IPayFlow payFlow;
+
     /**
      * @Description: 获取基础订单信息
      * @param  bizId    业务id ： 订单id等
@@ -38,12 +45,7 @@ public class PayCenter implements IPayCenter {
     @Override
     public PayInfo getPayInfo(String bizId) throws Exception {
         //1、获取业务对象
-        ToPayInfo orderPayInfo = new ToPayInfo();//order service.getOrder
-        orderPayInfo.setBizId("1212");
-        orderPayInfo.setBizType(PayConstant.BIZ_TYPE_GRAB);
-        orderPayInfo.setTotalAmount(1000);
-        orderPayInfo.setPayAmount(1);
-        orderPayInfo.setGoodName("美团订单");
+        ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
 
         PayInfo payInfo = new PayInfo(orderPayInfo.getGoodName(), orderPayInfo.getPayAmount() / 100.0, "");
         payInfo.setBizId(bizId);
@@ -64,20 +66,13 @@ public class PayCenter implements IPayCenter {
         if (StringUtils.isBlank(bizId) || StringUtils.isBlank(payType) || StringUtils.isBlank(ipAddress)) {
             throw new BusinessException("111");
         }
-
-        //根据订单号查询支付流水信息 state=1 有效记录，支付失败的会变无效
-        logger.info("根据业务查询支付流水");
+        logger.info("扫码支付bizId-{}", bizId);
         //1、获取业务对象
-        ToPayInfo orderPayInfo = new ToPayInfo();//order service.getOrder
-        orderPayInfo.setBizId("1212");
-        orderPayInfo.setBizType(PayConstant.BIZ_TYPE_GRAB);
-        orderPayInfo.setTotalAmount(1000);
-        orderPayInfo.setPayAmount(1);
-        orderPayInfo.setGoodName("美团订单");
+        ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
         //2、判断支付状态
 
         //3、生成支付流水
-        PayFlowBean flowBean = createFlowInfo(orderPayInfo, PayConstant.PAY_NOT);
+        PayFlowBean flowBean = createFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
 
         Map<String, String> extMap = new HashMap<>();
         extMap.put("code", code);
@@ -123,19 +118,13 @@ public class PayCenter implements IPayCenter {
             throw new BusinessException("111");
         }
 
-        //根据订单号查询支付流水信息 state=1 有效记录，支付失败的会变无效
-        logger.info("根据业务查询支付流水");
+        logger.info("网页支付bizId-{}", bizId);
         //1、获取业务对象
-        ToPayInfo orderPayInfo = new ToPayInfo();//order service.getOrder
-        orderPayInfo.setBizId("1212");
-        orderPayInfo.setBizType(PayConstant.BIZ_TYPE_GRAB);
-        orderPayInfo.setTotalAmount(1000);
-        orderPayInfo.setPayAmount(1);
-        orderPayInfo.setGoodName("美团订单");
+        ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
         //2、判断支付状态
 
         //3、生成支付流水
-        PayFlowBean flowBean = createFlowInfo(orderPayInfo, PayConstant.PAY_NOT);
+        PayFlowBean flowBean = createFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
 
         Map<String, String> extMap = new HashMap<>();
         extMap.put("code", code);
@@ -201,15 +190,26 @@ public class PayCenter implements IPayCenter {
      * @return PayFlowInfo
      * @throws
      */
-    private PayFlowBean createFlowInfo(ToPayInfo payInfo, int payState) throws Exception {
-        PayFlowBean flowBean = new PayFlowBean();
-        BeanUtils.copyProperties(payInfo, flowBean);
-        //支付状态
-        flowBean.setPayState(payState);
-        //生成流水号
-        long flowId = Long.valueOf(RandomUtils.getPaymentNo());
-        flowBean.setFlowId(flowId);
+    private PayFlowBean createFlowInfo(String payType, ToPayInfo payInfo, int payState) throws Exception {
+        PayFlowBean payFlowBean = payFlow.getPayFlowByBiz(payInfo.getBizId());
+        if (payFlowBean == null) {
+            PayFlowBean tmpBean = new PayFlowBean();
+            BeanUtils.copyProperties(payInfo, tmpBean);
+            //支付状态
+            tmpBean.setPayState(payState);
+            tmpBean.setPayType(payType);
+            //新增
+            payFlowBean = payFlow.addPayFlow(tmpBean);
+        } else {
+            payFlowBean.setPayType(payType);
+            //更新
+            payFlowBean = payFlow.updPayFlow(payFlowBean);
+        }
+        return payFlowBean;
+    }
 
-        return flowBean;
+    private ToPayInfo getOrderInfo(String bizId) throws Exception {
+        String json = JsonUtils.readJsonByFile("D:\\space-private\\MoonPay\\src\\main\\resources\\OrderPayInfo.json");
+        return JsonUtils.readValue(json, ToPayInfo.class);
     }
 }
