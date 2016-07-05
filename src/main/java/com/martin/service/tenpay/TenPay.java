@@ -55,6 +55,7 @@ public class TenPay implements IPayService {
 
         //用户id
         String openId = getOpenId(extMap.get("code"));
+        logger.info("openId={}", openId);
         if (StringUtils.isBlank(openId)) {
             //用户必须关注指端微信号
             throw new BusinessException("09033");
@@ -73,7 +74,7 @@ public class TenPay implements IPayService {
         logger.info("统一下单xml为:\n" + xml);
 
         //发送给微信支付生成预订单
-        String returnXml = HttpUtils.sendPost(PayConstant.TENPAY_URL, xml, "utf-8");
+        String returnXml = HttpUtils.sendPost(PayConstant.TENPAY_ORDER_URL, xml, "utf-8");
         logger.info("返回结果:" + returnXml);
 
         //转换返回xml结果
@@ -179,28 +180,36 @@ public class TenPay implements IPayService {
      * @return
      */
     @Override
-    public void withdraw(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+    public PayResult withdraw(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         SortedMap<String, String> paraMap = new TreeMap<>();
         paraMap.put("mch_appid", PayConstant.TENPAY_APP_ID);
         paraMap.put("mchid", PayConstant.TENPAY_MCH_ID);
-        paraMap.put("device_info", PayConstant.TENPAY_DEVICE_INFO);
         paraMap.put("nonce_str", TenPayUtils.createNonceStr());
         paraMap.put("partner_trade_no", String.valueOf(flowBean.getFlowId()));
         paraMap.put("user_type", "OPEN_ID");
-        paraMap.put("openid", PayConstant.TENPAY_APP_ID);
 
         //NO_CHECK：不校验真实姓名
         //FORCE_CHECK：强校验真实姓名（未绑卡用户会校验失败，无法转账）
         //OPTION_CHECK：针对已绑卡的用户校验真实姓名（未绑卡用户不校验）
-        paraMap.put("check_name", "OPTION_CHECK");
-        paraMap.put("re_user_name", "");
+        paraMap.put("check_name", "NO_CHECK");
         paraMap.put("amount", String.valueOf(flowBean.getPayAmount()));
         paraMap.put("desc", "用户提现");
         paraMap.put("spbill_create_ip", extMap.get("ipAddress"));
-        paraMap.put("openId", extMap.get("openId"));
+        paraMap.put("openid", extMap.get("openId"));
 
-        String sign = TenPayUtils.createSign(PayConstant.TENPAY_PRIVATE_KEY, paraMap);
-        paraMap.put("sign", sign);
+        //生成信息
+        String xml = TenPayUtils.createRequestXml(PayConstant.TENPAY_PRIVATE_KEY, paraMap);
+        logger.info("发送xml为:\n" + xml);
+
+        //发送给微信支付
+        String returnXml = HttpUtils.sendPost(PayConstant.TENPAY_PAY_URL, xml, charset);
+        logger.info("返回结果:" + returnXml);
+
+        Map tmpMap = new HashMap();
+        tmpMap.put("content", returnXml);
+        PayResult payResult = returnValidate(tmpMap);
+
+        return payResult;
     }
 
     /**

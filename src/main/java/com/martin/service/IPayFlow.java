@@ -34,4 +34,12 @@ public interface IPayFlow {
      */
     PayFlowBean getPayFlowByBiz(String bizId);
 
+    /**
+     * @Description: 查询支付流水
+     * @param
+     * @return
+     * @throws
+     */
+    PayFlowBean getPayFlowById(Long flowId);
+
 }

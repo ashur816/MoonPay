@@ -24,6 +24,13 @@
     padding-top: 12rem;
 }
 
+.moon-success {
+    background: url(../img/cuowu.png) center top no-repeat;
+    background-size: auto 12rem;
+    top: 6rem;
+    padding-top: 12rem;
+}
+
 p {
     text-align: center;
     font-size: 2em;

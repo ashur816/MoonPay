@@ -2,9 +2,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <jsp:include page="../common/base.jsp"></jsp:include>
-<%
-    String path = request.getContextPath();
-%>
 <html>
 <head>
     <title>收银台</title>
@@ -14,15 +11,15 @@
     <table>
         <tr>
             <td align="right">订单号:</td>
-            <td><input type="text" size="30" name="merchantId" value="${payInfo.bizId}"/>
+            <td><input type="text" readonly size="30" id="bizId" value="${payInfo.bizId}"/>
         </tr>
         <tr>
             <td align="right">商品名:</td>
-            <td><input type="text" size="30" name="orderId" value="${payInfo.goodName}"/>
+            <td><input type="text" readonly size="30" id="orderId" value="${payInfo.goodName}"/>
         </tr>
         <tr>
             <td align="right">金额:</td>
-            <td><input type="text" size="30" name="payAmount" value="${payInfo.payAmount}"/>
+            <td><input type="text" readonly size="30" id="payAmount" value="${payInfo.payAmount}"/>
         </tr>
         <tr>
             <td align="right">代金券:</td>
@@ -39,11 +36,11 @@
         </tr>
         <tr>
             <td></td>
-            <td><input type="radio" id="payType2" name="payType" value="2" checked/><label for="payType2"> 支付宝</label></td>
+            <td><input type="radio" id="payType1" name="payType" value="1" checked/> <label for="payType1">微信</label></td>
         </tr>
         <tr>
             <td></td>
-            <td><input type="radio" id="payType3" name="payType" value="3"/> <label for="payType3"> 招商银行</label></td>
+            <td><input type="radio" id="payType2" name="payType" value="2"/><label for="payType2">支付宝</label></td>
         </tr>
         <tr>
             <td></td>
@@ -59,12 +56,18 @@
         $("#btnPay").click(function () {
             var voucherId = $("option:checked").val();
             var payType = $("input[name='payType']:checked").val();
-            location.href = "<%=path%>/payCenter/doWebPay.htm?payType=" + payType + "&bizId=" + $("#bizId").val() + "&voucherId=" + voucherId;
+            if (payType == 1) {
+                location.href = context + "/payCenter/doScanPay.htm?payType=" + payType + "&bizId=" + $("#bizId").val() + "&voucherId=" + voucherId;
+            }
+            else {
+                location.href = context + "/payCenter/doWebPay.htm?payType=" + payType + "&bizId=" + $("#bizId").val() + "&voucherId=" + voucherId;
+            }
+
         });
 
         $("#voucher").change(function () {
             var voucherValue = $("option:checked").attr("ext");
-            var oldAmount = $("input[name='payAmount']").val() * 100;
+            var oldAmount = $("#payAmount").val() * 100;
             var payAmount = 0;
             if (oldAmount >= voucherValue) {
                 payAmount = (oldAmount - voucherValue) / 100;

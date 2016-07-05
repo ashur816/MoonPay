@@ -7,6 +7,6 @@
     <select id="selectPayFlowByBiz" resultType="com.martin.bean.PayFlowBean">
         select
         <include refid="baseSql"/>
-        from pay_flow WHERE biz_id=#{bizId};
+        from pay_flow WHERE biz_id=#{bizId}
     </select>
 </mapper>

@@ -99,8 +99,9 @@ public class PayConstant {
     public static String ALIPAY_IT_B_PAY;
 
 
-    public static String TENPAY_URL;
+    public static String TENPAY_ORDER_URL;
     public static String TENPAY_QUERY_URL;
+    public static String TENPAY_PAY_URL;
     //授权模式
     public static String TENPAY_AUTH_CODE;
     //授权地址
@@ -206,12 +207,17 @@ public class PayConstant {
         ALIPAY_IT_B_PAY = alipayItBPay;
     }
 
-    public void setTENPAY_URL(String tenpayUrl) {
-        TENPAY_URL = tenpayUrl;
+
+    public void setTENPAY_ORDER_URL(String tenpayOrderUrl) {
+        TENPAY_ORDER_URL = tenpayOrderUrl;
     }
 
     public void setTENPAY_QUERY_URL(String tenpayQueryUrl) {
         TENPAY_QUERY_URL = tenpayQueryUrl;
+    }
+
+    public void setTENPAY_PAY_URL(String tenpayPayUrl) {
+        TENPAY_PAY_URL = tenpayPayUrl;
     }
 
     public void setTENPAY_AUTH_CODE(String tenpayAuthCode) {

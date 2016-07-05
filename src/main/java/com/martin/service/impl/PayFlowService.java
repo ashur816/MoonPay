@@ -58,5 +58,16 @@ public class PayFlowService implements IPayFlow {
         return payFlowMapper.selectPayFlowByBiz(bizId);
     }
 
+    /**
+     * @Description: 查询支付流水
+     * @param flowId
+     * @return
+     * @throws
+     */
+    @Override
+    public PayFlowBean getPayFlowById(Long flowId) {
+        return payFlowMapper.selectByPrimaryKey(flowId);
+    }
+
 
 }

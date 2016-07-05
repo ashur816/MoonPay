@@ -116,8 +116,8 @@ public class AliPay implements IPayService {
      * @return
      */
     @Override
-    public void withdraw(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
-
+    public PayResult withdraw(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+        return null;
     }
 
     /**

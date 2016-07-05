@@ -35,7 +35,7 @@ public interface IPayService {
      * @param flowBean
      * @return
      */
-    void withdraw(PayFlowBean flowBean, Map<String, String> extMap) throws Exception;
+    PayResult withdraw(PayFlowBean flowBean, Map<String, String> extMap) throws Exception;
 
     /**
      * 获取第三方支付信息

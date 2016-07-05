@@ -1,9 +1,11 @@
 package com.martin.controller;
 
 import com.martin.bean.PayInfo;
+import com.martin.bean.PayResult;
 import com.martin.constant.PayChannelEnum;
 import com.martin.service.IPayCenter;
 import com.martin.utils.IpUtils;
+import com.martin.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +75,19 @@ public class PayController {
                 modelAndView.setViewName("common/error");
             }
         }
+        return modelAndView;
+    }
+
+    /**
+     * @Description: 跳转提现
+     * @param request 包含 订单id
+     * @return
+     * @throws
+     */
+    @RequestMapping(value = "/toWithdraw")
+    public ModelAndView toWithdraw(HttpServletRequest request) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("pay/withdraw");
         return modelAndView;
     }
 
@@ -203,6 +218,12 @@ public class PayController {
         return modelAndView;
     }
 
+    /**
+     * @Description: 支付第三方异步回调
+     * @param
+     * @return
+     * @throws
+     */
     @ResponseBody
     @RequestMapping(value = "/{notifyType}/{payType}", method = RequestMethod.POST)
     public Object doNotify(HttpServletRequest request, @PathVariable String notifyType, @PathVariable String payType) {
@@ -224,7 +245,7 @@ public class PayController {
                 reqMap.put("content", content);
                 logger.info("微信回调参数：{}-{}", notifyType, content);
             } else if (ALI_PAY.equals(payType)) {//支付宝返回
-                //获取支付宝POST过来反馈信息，lockmap不能修改
+                //获取支付宝POST过来反馈信息，lockMap不能修改
                 Map<String, String[]> tmpMap = request.getParameterMap();
                 Iterator it = tmpMap.entrySet().iterator();
 
@@ -251,11 +272,7 @@ public class PayController {
                 returnCode = CALLBACK_FAIL;
                 return returnCode;
             }
-
-            reqMap.put("payType", payType);
-            reqMap.put("notifyType", notifyType);
-            reqMap.put("ipAddress", ipAddress);
-
+            payCenter.doNotify(notifyType, payType, ipAddress, reqMap);
         } catch (Exception e) {
             returnCode = CALLBACK_FAIL;
             logger.error("PaymentController.doNotify，异常-{}", e.getMessage());
@@ -265,11 +282,44 @@ public class PayController {
     }
 
     /**
+     * @Description: 提现入口、企业付款
+     * @param request
+     * @return
+     * @throws
+     */
+    @ResponseBody
+    @RequestMapping(value = "/doWithdraw")
+    public Object doWithdraw(HttpServletRequest request, String acctId, String payType, String drawAmount) {
+        String retMsg = "";
+        if (StringUtils.isEmpty(payType) || StringUtils.isEmpty(acctId) || StringUtils.isEmpty(drawAmount)) {
+            retMsg = "账号和支付方式不能为空";
+        } else {
+            String ipAddress = IpUtils.getIpAddress(request);
+            logger.info("开始提现,提现渠道-{},金额-{},ip-{}", payType, drawAmount, ipAddress);
+            try {
+                //生成订单支付信息
+                PayResult payResult = payCenter.doWithdraw(Long.parseLong(acctId), payType, Integer.parseInt(drawAmount), ipAddress);
+                if (payResult != null) {
+                    logger.info("提现成功");
+                    retMsg = JsonUtils.translateToJson(payResult);
+                } else {
+                    retMsg = "未获取到支付信息";
+                }
+            } catch (Exception e) {
+                logger.error("doWebPay异常-{}", e.getMessage());
+                retMsg = e.getMessage();
+            }
+        }
+        return retMsg;
+    }
+
+    /**
      * @Description: 公用错误处理
      * @param
      * @return
      * @throws
      */
+
     private void doError(PayInfo payInfo, ModelAndView modelAndView) {
         if (payInfo != null) {
             logger.info("支付返回成功");

@@ -163,7 +163,95 @@ public class PayCenter implements IPayCenter {
      */
     @Override
     public void doNotify(String notifyType, String payType, String ipAddress, Map<String, String> reqParam) throws Exception {
+        if (StringUtils.isEmpty(notifyType)) {
+            throw new BusinessException("通知类型不能为空");
+        }
 
+        if (StringUtils.isEmpty(payType)) {
+            throw new BusinessException("支付方式不能为空");
+        }
+
+        //校验返回参数
+        IPayService payService = getPayInstance(payType);
+        PayResult payResult = payService.returnValidate(reqParam);
+
+        //根据流水号查流水
+        PayFlowBean flowBean = payFlow.getPayFlowById(payResult.getFlowId());
+        if (flowBean != null) {
+            int payState = flowBean.getPayState();
+            long flowId = flowBean.getFlowId();
+            int callbackState = payResult.getPayState();
+            String tmpFlowId = payResult.getThdFlowId();
+            String thdFlowId = flowBean.getThdFlowId();
+
+            if (!tmpFlowId.equals(thdFlowId) && !StringUtils.isEmpty(thdFlowId) && thdFlowId.contains("wx")) {//存在重复支付但是第三方流水号不一样的
+                logger.error("存在重复支付-flowId={}", flowId);
+            }
+
+            logger.info("flowId={},payState={},callbackState={}", flowId, payState, callbackState);
+            if (PayConstant.PAY_UN_BACK == payState || PayConstant.PAY_NOT == payState) {//已发支付，待回调 或者 未支付
+                if (PayConstant.PAY_UN_BACK == callbackState) {//回调支付成功,等待业务处理
+                    //状态改成待业务处理
+                    flowBean.setPayState(PayConstant.PAY_UN_BIZ);
+                    flowBean.setThdFlowId(thdFlowId);
+                } else if (PayConstant.PAY_FAIL == callbackState) {//回调支付失败的
+                    logger.info("回调支付失败");
+                    flowBean.setFailCode(payResult.getFailCode());
+                    flowBean.setFailDesc(payResult.getFailDesc());
+                    flowBean.setPayState(PayConstant.PAY_FAIL);
+                    //支付失败，数据作废
+                    flowBean.setState(PayConstant.STATE_0);
+                } else if (PayConstant.PAY_SUCCESS == callbackState) {//订单已经被支付 其实在支付时，就已经被相应的渠道拦截了
+                    logger.info("订单已经被支付");
+                    //不处理
+                }
+                //更新交易流水
+                payFlow.updPayFlow(flowBean);
+            } else if (PayConstant.PAY_SUCCESS == payState) {//已经支付成功，防止重复回调
+                //不处理直接返回
+            } else if (PayConstant.PAY_FAIL == payState) {//已经支付失败，防止重复回调
+                //不处理直接返回
+
+            }
+        } else {//查不到记录
+            throw new BusinessException("未查询到支付流水信息");
+        }
+    }
+
+    /**
+     * @Description: 企业付款
+     * @return void
+     * @throws
+     * @param payType
+     * @param ipAddress
+     */
+    @Override
+    public PayResult doWithdraw(Long acctId, String payType, Integer drawAmount, String ipAddress) throws Exception {
+        if (0 >= acctId || StringUtils.isBlank(payType) || 0 >= drawAmount || StringUtils.isBlank(ipAddress)) {
+            throw new BusinessException("111");
+        }
+
+        logger.info("用户-{},支付类型-{},ip地址-{}", acctId, payType, ipAddress);
+        ToPayInfo toPayInfo = new ToPayInfo();
+        toPayInfo.setPayAmount(drawAmount);
+        toPayInfo.setTotalAmount(drawAmount);
+        toPayInfo.setBizType(PayConstant.BIZ_TYPE_WITHDRAW);
+
+        //生成支付流水
+        PayFlowBean flowBean = buildFlowInfo(payType, toPayInfo, PayConstant.PAY_NOT);
+
+        //根据acctId查绑定的openId
+        String openId = "o6U0tuJA8ewtDsfhmR2rh4-7yDco";
+
+        Map<String, String> extMap = new HashMap<>();
+        extMap.put("openId", openId);
+        extMap.put("ipAddress", ipAddress);
+
+        logger.info("开始发起企业付款");
+        IPayService payService = getPayInstance(payType);
+        PayResult payResult = payService.withdraw(flowBean, extMap);
+        payResult.setFlowId(flowBean.getFlowId());
+        return payResult;
     }
 
     /**
