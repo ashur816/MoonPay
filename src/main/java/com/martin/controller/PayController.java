@@ -62,8 +62,7 @@ public class PayController {
             modelAndView.setViewName("common/error");
             modelAndView.addObject("error", "订单号不能为空");
         } else {
-            String ipAddress = IpUtils.getIpAddress(request);
-            logger.info("网页支付接收参数：IP-{},bizId-{}", ipAddress, bizId);
+            logger.info("网页支付接收参数：bizId-{}", bizId);
             try {
                 //获取订单信息
                 PayInfo payInfo = payCenter.getPayInfo(bizId);
