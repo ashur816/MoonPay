@@ -114,7 +114,7 @@ public class TenPay implements IPayService {
             //订单已支付
             throw new BusinessException("09031");
         } else {
-            logger.info("微信预下单失败：{}", !StringUtils.isEmpty(returnMsg) ? returnMsg : errDes);
+            logger.info("微信预下单失败：{}", !StringUtils.isBlank(returnMsg) ? returnMsg : errDes);
             //微信支付预下单失败
             throw new BusinessException("09020");
         }
@@ -165,7 +165,7 @@ public class TenPay implements IPayService {
             //错误代码描述
             payResult.setFailDesc(paraMap.get("err_code_des"));
 
-            if (StringUtils.isEmpty(tradeState)) {//支付成功时，微信不回传 trade_state，查询订单时会回传 trade_state
+            if (StringUtils.isBlank(tradeState)) {//支付成功时，微信不回传 trade_state，查询订单时会回传 trade_state
                 tradeState = "SUCCESS";
             }
             int callbackState = transPayState(tradeState);
@@ -225,7 +225,7 @@ public class TenPay implements IPayService {
         paraMap.put("device_info", PayConstant.TENPAY_DEVICE_INFO);
         paraMap.put("mch_id", PayConstant.TENPAY_MCH_ID);
         String thdFlowId = flowBean.getThdFlowId();
-        if (StringUtils.isEmpty(thdFlowId) || thdFlowId.contains("wx")) {
+        if (StringUtils.isBlank(thdFlowId) || thdFlowId.contains("wx")) {
             paraMap.put("out_trade_no", String.valueOf(flowBean.getFlowId()));
         } else {
             paraMap.put("transaction_id", thdFlowId);

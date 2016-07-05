@@ -58,7 +58,7 @@ public class PayController {
     public ModelAndView toPay(HttpServletRequest request, String bizId) {
         ModelAndView modelAndView = new ModelAndView();
 
-        if (StringUtils.isEmpty(bizId)) {
+        if (StringUtils.isBlank(bizId)) {
             modelAndView.setViewName("common/error");
             modelAndView.addObject("error", "订单号不能为空");
         } else {
@@ -101,7 +101,7 @@ public class PayController {
     public ModelAndView doWebPay(HttpServletRequest request, String bizId, String payType, String voucherId) {
         ModelAndView modelAndView = new ModelAndView();
 
-        if (StringUtils.isEmpty(bizId) || StringUtils.isEmpty(payType)) {
+        if (StringUtils.isBlank(bizId) || StringUtils.isBlank(payType)) {
             modelAndView.setViewName("common/error");
             modelAndView.addObject("error", "订单号和支付方式不能为空");
         } else {
@@ -140,7 +140,7 @@ public class PayController {
         ModelAndView modelAndView = new ModelAndView();
         String userAgent = request.getHeader("User-Agent");
 
-        if (StringUtils.isEmpty(bizId)) {
+        if (StringUtils.isBlank(bizId)) {
             modelAndView.setViewName("common/error");
             modelAndView.addObject("error", "业务订单号不能为空");
         } else {
@@ -291,7 +291,7 @@ public class PayController {
     @RequestMapping(value = "/doWithdraw")
     public Object doWithdraw(HttpServletRequest request, String acctId, String payType, String drawAmount) {
         String retMsg = "";
-        if (StringUtils.isEmpty(payType) || StringUtils.isEmpty(acctId) || StringUtils.isEmpty(drawAmount)) {
+        if (StringUtils.isBlank(payType) || StringUtils.isBlank(acctId) || StringUtils.isBlank(drawAmount)) {
             retMsg = "账号和支付方式不能为空";
         } else {
             String ipAddress = IpUtils.getIpAddress(request);

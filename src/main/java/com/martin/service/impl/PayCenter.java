@@ -163,11 +163,11 @@ public class PayCenter implements IPayCenter {
      */
     @Override
     public void doNotify(String notifyType, String payType, String ipAddress, Map<String, String> reqParam) throws Exception {
-        if (StringUtils.isEmpty(notifyType)) {
+        if (StringUtils.isBlank(notifyType)) {
             throw new BusinessException("通知类型不能为空");
         }
 
-        if (StringUtils.isEmpty(payType)) {
+        if (StringUtils.isBlank(payType)) {
             throw new BusinessException("支付方式不能为空");
         }
 
@@ -184,7 +184,7 @@ public class PayCenter implements IPayCenter {
             String tmpFlowId = payResult.getThdFlowId();
             String thdFlowId = flowBean.getThdFlowId();
 
-            if (!tmpFlowId.equals(thdFlowId) && !StringUtils.isEmpty(thdFlowId) && thdFlowId.contains("wx")) {//存在重复支付但是第三方流水号不一样的
+            if (!tmpFlowId.equals(thdFlowId) && !StringUtils.isBlank(thdFlowId) && thdFlowId.contains("wx")) {//存在重复支付但是第三方流水号不一样的
                 logger.error("存在重复支付-flowId={}", flowId);
             }
 
@@ -276,7 +276,7 @@ public class PayCenter implements IPayCenter {
         PayChannelEnum payChannel = PayChannelEnum.getPayChannel(payType);
         String payService = payChannel.getPayService();
 
-        if (StringUtils.isEmpty(payService)) {
+        if (StringUtils.isBlank(payService)) {
             //暂不支持当前支付方式
             throw new BusinessException("09030");
 
