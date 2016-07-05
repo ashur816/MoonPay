@@ -1,15 +1,13 @@
 package com.martin.service.impl;
 
-import com.martin.bean.PayFlowBean;
-import com.martin.bean.PayInfo;
-import com.martin.bean.PayResult;
-import com.martin.bean.ToPayInfo;
+import com.martin.bean.*;
 import com.martin.constant.PayChannelEnum;
 import com.martin.constant.PayConstant;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayCenter;
 import com.martin.service.IPayFlow;
 import com.martin.service.IPayService;
+import com.martin.service.IVoucher;
 import com.martin.utils.JsonUtils;
 import com.martin.utils.ServiceContainer;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,6 +35,9 @@ public class PayCenter implements IPayCenter {
     @Resource
     private IPayFlow payFlow;
 
+    @Resource
+    private IVoucher voucher;
+
     /**
      * @Description: 获取基础订单信息
      * @param  bizId    业务id ： 订单id等
@@ -46,9 +48,12 @@ public class PayCenter implements IPayCenter {
     public PayInfo getPayInfo(String bizId) throws Exception {
         //1、获取业务对象
         ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
+        //2、获取代金券信息
+        List<VoucherBean> voucherList = voucher.getVoucherByUser(1001L, 1, 1);
 
         PayInfo payInfo = new PayInfo(orderPayInfo.getGoodName(), orderPayInfo.getPayAmount() / 100.0, "");
         payInfo.setBizId(bizId);
+        payInfo.setVoucherList(voucherList);
         return payInfo;
     }
 
@@ -72,7 +77,7 @@ public class PayCenter implements IPayCenter {
         //2、判断支付状态
 
         //3、生成支付流水
-        PayFlowBean flowBean = createFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
+        PayFlowBean flowBean = buildFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
 
         Map<String, String> extMap = new HashMap<>();
         extMap.put("code", code);
@@ -113,7 +118,7 @@ public class PayCenter implements IPayCenter {
      * @throws
      */
     @Override
-    public PayInfo doWebPay(String payType, String bizId, String ipAddress, String code) throws Exception {
+    public PayInfo doWebPay(String payType, String bizId, String ipAddress, String code, String voucherId) throws Exception {
         if (StringUtils.isBlank(bizId) || StringUtils.isBlank(payType) || StringUtils.isBlank(ipAddress)) {
             throw new BusinessException("111");
         }
@@ -123,8 +128,16 @@ public class PayCenter implements IPayCenter {
         ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
         //2、判断支付状态
 
-        //3、生成支付流水
-        PayFlowBean flowBean = createFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
+        if (!StringUtils.isBlank(voucherId)) {
+            //3、获取代金券
+            VoucherBean voucherBean = voucher.selectVoucherById(Long.parseLong(voucherId), 1);
+            if (voucherBean != null) {
+                orderPayInfo.setPayAmount(orderPayInfo.getPayAmount() - voucherBean.getVoucherValue());
+            }
+        }
+
+        //4、生成支付流水
+        PayFlowBean flowBean = buildFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
 
         Map<String, String> extMap = new HashMap<>();
         extMap.put("code", code);
@@ -190,7 +203,7 @@ public class PayCenter implements IPayCenter {
      * @return PayFlowInfo
      * @throws
      */
-    private PayFlowBean createFlowInfo(String payType, ToPayInfo payInfo, int payState) throws Exception {
+    private PayFlowBean buildFlowInfo(String payType, ToPayInfo payInfo, int payState) throws Exception {
         PayFlowBean payFlowBean = payFlow.getPayFlowByBiz(payInfo.getBizId());
         if (payFlowBean == null) {
             PayFlowBean tmpBean = new PayFlowBean();
@@ -202,6 +215,7 @@ public class PayCenter implements IPayCenter {
             payFlowBean = payFlow.addPayFlow(tmpBean);
         } else {
             payFlowBean.setPayType(payType);
+            payFlowBean.setPayAmount(payInfo.getPayAmount());
             //更新
             payFlowBean = payFlow.updPayFlow(payFlowBean);
         }

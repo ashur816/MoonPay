@@ -83,7 +83,7 @@ public class PayController {
      * @throws
      */
     @RequestMapping(value = "/doWebPay")
-    public ModelAndView doWebPay(HttpServletRequest request, String bizId, String payType) {
+    public ModelAndView doWebPay(HttpServletRequest request, String bizId, String payType, String voucherId) {
         ModelAndView modelAndView = new ModelAndView();
 
         if (StringUtils.isEmpty(bizId) || StringUtils.isEmpty(payType)) {
@@ -91,10 +91,10 @@ public class PayController {
             modelAndView.addObject("error", "订单号和支付方式不能为空");
         } else {
             String ipAddress = IpUtils.getIpAddress(request);
-            logger.info("开始网页支付,订单号-{},支付方式-{}", bizId, payType);
+            logger.info("开始网页支付,订单号-{},支付方式-{},代金券-{}", bizId, payType, voucherId);
             try {
                 //生成订单支付信息
-                PayInfo payInfo = payCenter.doWebPay(payType, bizId, ipAddress, "");
+                PayInfo payInfo = payCenter.doWebPay(payType, bizId, ipAddress, "", voucherId);
                 if (ALI_PAY.equals(payType)) {
                     modelAndView.setViewName("pay/ali_pay");
                     doError(payInfo, modelAndView);

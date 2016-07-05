@@ -1,6 +1,7 @@
 package com.martin.bean;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @ClassName: PayInfo
@@ -62,6 +63,12 @@ public class PayInfo implements Serializable {
      * 业务订单号
      */
     public String bizId;
+
+    /**
+     * 代金券信息
+     */
+    public List<VoucherBean> voucherList;
+
 
     public PayInfo() {
     }
@@ -150,5 +157,13 @@ public class PayInfo implements Serializable {
 
     public void setBizId(String bizId) {
         this.bizId = bizId;
+    }
+
+    public List<VoucherBean> getVoucherList() {
+        return voucherList;
+    }
+
+    public void setVoucherList(List<VoucherBean> voucherList) {
+        this.voucherList = voucherList;
     }
 }

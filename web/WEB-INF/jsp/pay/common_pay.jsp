@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <jsp:include page="../common/base.jsp"></jsp:include>
 <%
@@ -21,7 +22,20 @@
         </tr>
         <tr>
             <td align="right">金额:</td>
-            <td><input type="text" size="30" name="orderId" value="${payInfo.payAmount}"/>
+            <td><input type="text" size="30" name="payAmount" value="${payInfo.payAmount}"/>
+        </tr>
+        <tr>
+            <td align="right">代金券:</td>
+            <td>
+                <select id="voucher" style="width: 213px">
+                    <option value="">不使用代金券</option>
+                    <c:forEach var="item" items="${payInfo.voucherList}">
+                        <option value="${item.voucherId}" ext="${item.voucherValue}">
+                            <fmt:formatNumber value="${item.voucherValue/100}" pattern="0.00" currencyCode="USD"/>元
+                        </option>
+                    </c:forEach>
+                </select>
+            </td>
         </tr>
         <tr>
             <td></td>
@@ -33,7 +47,7 @@
         </tr>
         <tr>
             <td></td>
-            <td><input id="btnPay" type="button" style="width: 70%; height: 30px" value="支&nbsp;付"/></td>
+            <td><input id="btnPay" type="button" style="width: 70%; height: 30px" value="支付"/></td>
         </tr>
     </table>
 </div>
@@ -43,8 +57,22 @@
 
     $(function () {
         $("#btnPay").click(function () {
+            var voucherId = $("option:checked").val();
             var payType = $("input[name='payType']:checked").val();
-            location.href = "<%=path%>/payCenter/doWebPay.htm?payType=" + payType + "&bizId=" + $("#bizId").val();
+            location.href = "<%=path%>/payCenter/doWebPay.htm?payType=" + payType + "&bizId=" + $("#bizId").val() + "&voucherId=" + voucherId;
+        });
+
+        $("#voucher").change(function () {
+            var voucherValue = $("option:checked").attr("ext");
+            var oldAmount = $("input[name='payAmount']").val() * 100;
+            var payAmount = 0;
+            if (oldAmount >= voucherValue) {
+                payAmount = (oldAmount - voucherValue) / 100;
+            }
+            else {
+                payAmount = oldAmount / 100;
+            }
+            $("#btnPay").val("支付" + payAmount);
         });
     });
 

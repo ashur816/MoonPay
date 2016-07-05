@@ -8,12 +8,14 @@
 <head>
     <title>评价</title>
 </head>
-<input type="radio" id="praise1" name="praise" value="1"/><label for="praise1"> 1星</label>
-<input type="radio" id="praise2" name="praise" value="2"/> <label for="praise2"> 2星</label>
-<input type="radio" id="praise3" name="praise" value="3" checked/> <label for="praise3"> 3星</label>
-<input type="radio" id="praise4" name="praise" value="4"/> <label for="praise4"> 4星</label>
-<input type="radio" id="praise5" name="praise" value="5"/> <label for="praise5"> 5星</label>
-<input id="btnOK" type="button" value="提交评价"/>
+<div align="center" style="padding-top: 20em">
+    <input type="radio" id="praise1" name="praise" value="1"/><label for="praise1"> 1星</label>
+    <input type="radio" id="praise2" name="praise" value="2"/> <label for="praise2"> 2星</label>
+    <input type="radio" id="praise3" name="praise" value="3" checked/> <label for="praise3"> 3星</label>
+    <input type="radio" id="praise4" name="praise" value="4"/> <label for="praise4"> 4星</label>
+    <input type="radio" id="praise5" name="praise" value="5"/> <label for="praise5"> 5星</label>
+    <div style="padding-top: 10px;"><input id="btnOK" type="button" style="width: 200px;height: 30px;" value="提交评价"/></div>
+</div>
 </body>
 </html>
 <script type="text/javascript">

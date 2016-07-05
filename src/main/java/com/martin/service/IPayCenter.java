@@ -46,7 +46,7 @@ public interface IPayCenter {
      * @return String
      * @throws
      */
-    PayInfo doWebPay(String payType, String bizId, String ipAddress, String code) throws Exception;
+    PayInfo doWebPay(String payType, String bizId, String ipAddress, String code, String voucherId) throws Exception;
 
     /**
      * @Description: 第三方回调
