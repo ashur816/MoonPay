@@ -10,7 +10,8 @@
         <property name="ALIPAY_VERIFY_URL" value="${alipay.verifyUrl}"></property>
         <property name="ALIPAY_AUTH_CODE" value="${alipay.authCode}"></property>
         <property name="ALIPAY_AUTH_URL" value="${alipay.authUrl}"></property>
-        <property name="ALIPAY_SERVICE" value="${alipay.service}"></property>
+        <property name="ALIPAY_PAY_SERVICE" value="${alipay.payService}"></property>
+        <property name="ALIPAY_REFUND_SERVICE" value="${alipay.refundService}"></property>
         <property name="ALIPAY_APP_ID" value="${alipay.appId}"></property>
         <property name="ALIPAY_PARTNER" value="${alipay.partner}"></property>
         <property name="ALIPAY_SELLER_ID" value="${alipay.sellerId}"></property>
@@ -26,11 +27,13 @@
         <property name="ALIPAY_AUTH_RET_URL" value="${alipay.authRetUrl}"></property>
         <property name="ALIPAY_NOTIFY_URL" value="${alipay.notifyUrl}"></property>
         <property name="ALIPAY_RETURN_URL" value="${alipay.returnUrl}"></property>
+        <property name="ALIPAY_REFUND_URL" value="${alipay.refundUrl}"></property>
 
 
         <property name="TENPAY_ORDER_URL" value="${tenpay.orderUrl}"></property>
         <property name="TENPAY_QUERY_URL" value="${tenpay.queryUrl}"></property>
         <property name="TENPAY_PAY_URL" value="${tenpay.payUrl}"></property>
+        <property name="TENPAY_REFUND_URL" value="${tenpay.refundUrl}"></property>
         <property name="TENPAY_AUTH_CODE" value="${tenpay.authCode}"></property>
         <property name="TENPAY_AUTH_URL" value="${tenpay.authUrl}"></property>
         <property name="TENPAY_APP_ID" value="${tenpay.appid}"></property>

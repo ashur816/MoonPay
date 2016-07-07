@@ -67,7 +67,7 @@ public class PayFlowBean implements Serializable {
      **/
     private Integer state;
     /**
-     * 支付状态
+     * 支付状态 0-未支付 2-支付成功，业务待处理 3-支付成功，业务处理失败 1-支付成功且业务处理成功 4-已退款 8-支付失败
      **/
     private Integer payState;
     /**
@@ -78,6 +78,22 @@ public class PayFlowBean implements Serializable {
      *支付失败描述
      **/
     private String failDesc;
+    /**
+     *退款单号
+     **/
+    private Long refundId;
+    /**
+     *退款原因
+     **/
+    private String refundReason;
+    /**
+     *第三方退款单号
+     **/
+    private String thdRefundId;
+    /**
+     *退款时间
+     **/
+    private Date refundTime;
     /**
      * 明细
      */
@@ -206,6 +222,38 @@ public class PayFlowBean implements Serializable {
 
     public void setFailDesc(String failDesc) {
         this.failDesc = failDesc;
+    }
+
+    public Long getRefundId() {
+        return refundId;
+    }
+
+    public void setRefundId(Long refundId) {
+        this.refundId = refundId;
+    }
+
+    public String getRefundReason() {
+        return refundReason;
+    }
+
+    public void setRefundReason(String refundReason) {
+        this.refundReason = refundReason;
+    }
+
+    public String getThdRefundId() {
+        return thdRefundId;
+    }
+
+    public void setThdRefundId(String thdRefundId) {
+        this.thdRefundId = thdRefundId;
+    }
+
+    public Date getRefundTime() {
+        return refundTime;
+    }
+
+    public void setRefundTime(Date refundTime) {
+        this.refundTime = refundTime;
     }
 
     public List<PayFlowDetailBean> getDetailList() {

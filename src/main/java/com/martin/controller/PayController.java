@@ -281,6 +281,34 @@ public class PayController {
     }
 
     /**
+     * @Description: 订单退款
+     * @param request
+     * @return
+     * @throws
+     */
+    @ResponseBody
+    @RequestMapping(value = "/doRefund")
+    public Object doRefund(HttpServletRequest request, String flowId, String refundReason) {
+        String retMsg = "";
+        try {
+            String tmpStr = new String(refundReason.getBytes("ISO-8859-1"), "UTF-8");
+            logger.info("退款接收flowId-{},refundReason-{}", flowId, tmpStr);
+            //生成订单支付信息
+            PayResult payResult = payCenter.doRefund(Long.parseLong(flowId), tmpStr);
+            if (payResult != null) {
+                logger.info("退款返回信息成功");
+                retMsg = JsonUtils.translateToJson(payResult);
+            } else {
+                retMsg = "未获取到退款信息";
+            }
+        } catch (Exception e) {
+            logger.error("doRefund异常-{}", e.getMessage());
+            retMsg = e.getMessage();
+        }
+        return retMsg;
+    }
+
+    /**
      * @Description: 提现入口、企业付款
      * @param request
      * @return
@@ -318,7 +346,6 @@ public class PayController {
      * @return
      * @throws
      */
-
     private void doError(PayInfo payInfo, ModelAndView modelAndView) {
         if (payInfo != null) {
             logger.info("支付返回成功");

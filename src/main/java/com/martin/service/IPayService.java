@@ -28,7 +28,14 @@ public interface IPayService {
      * @return
      * @throws
      */
-    PayResult returnValidate(Map<String, String> paraMap) throws Exception;
+    PayResult returnValidate(String notifyType, Map<String, String> paraMap) throws Exception;
+
+    /**
+     * 退款
+     * @param flowBean
+     * @return
+     */
+    PayResult refund(PayFlowBean flowBean, Map<String, String> extMap) throws Exception;
 
     /**
      * 提现

@@ -2,11 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.martin.dao.PayFlowMapper">
     <sql id="baseSql">
-      flow_id,biz_id,biz_type,thd_flow_id,pay_type,notify_url,return_url,total_amount,pay_amount,create_time,pay_time,state,pay_state,fail_code,fail_desc
+      flow_id,biz_id,biz_type,thd_flow_id,pay_type,notify_url,return_url,total_amount,pay_amount,create_time,pay_time,state,pay_state,fail_code,fail_desc,refund_id,refund_reason,thd_refund_id,refund_time
     </sql>
-    <select id="selectPayFlowByBiz" resultType="com.martin.bean.PayFlowBean">
+    <select id="selectByBiz" resultType="com.martin.bean.PayFlowBean">
         select
         <include refid="baseSql"/>
         from pay_flow WHERE biz_id=#{bizId}
+    </select>
+    <select id="selectByPayState" resultType="com.martin.bean.PayFlowBean">
+        select
+        <include refid="baseSql"/>
+        from pay_flow WHERE flow_id=#{flowId}
+        <if test="payState!=-1">
+            and pay_state=#{payState}
+        </if>
     </select>
 </mapper>

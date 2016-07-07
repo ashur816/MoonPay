@@ -1,6 +1,7 @@
 package com.martin.dao;
 
 import com.martin.bean.PayFlowBean;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -13,5 +14,7 @@ import tk.mybatis.mapper.common.Mapper;
 @Repository
 public interface PayFlowMapper extends Mapper<PayFlowBean> {
 
-    PayFlowBean selectPayFlowByBiz(String bizId);
+    PayFlowBean selectByBiz(String bizId);
+
+    PayFlowBean selectByPayState(@Param("flowId") Long flowId, @Param("payState") Integer payState);
 }

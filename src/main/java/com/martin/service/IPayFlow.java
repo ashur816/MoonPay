@@ -40,6 +40,5 @@ public interface IPayFlow {
      * @return
      * @throws
      */
-    PayFlowBean getPayFlowById(Long flowId);
-
+    PayFlowBean getPayFlowById(Long flowId, Integer payState);
 }

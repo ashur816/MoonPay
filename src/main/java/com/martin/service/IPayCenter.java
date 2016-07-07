@@ -56,6 +56,13 @@ public interface IPayCenter {
     void doNotify(String notifyType, String payType, String ipAddress, Map<String, String> reqParam) throws Exception;
 
     /**
+     * @Description: 退款
+     * @return void
+     * @throws
+     */
+    PayResult doRefund(Long flowId, String refundReason) throws Exception;
+
+    /**
      * @Description: 企业付款
      * @return void
      * @throws

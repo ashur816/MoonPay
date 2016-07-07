@@ -9,6 +9,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLConnection;
+
 /**
  * @ClassName: HttpUtils
  * @Description: http工具类
@@ -24,13 +30,13 @@ public class HttpUtils {
     private static int connectTimeout = 30000;
 
     /**
-     * 通过Https往API post xml数据
+     * 通过Https往API post XML数据
      * @param url    API地址
-     * @param xmlObj 要提交的XML数据对象
+     * @param params 要提交数据对象
      * @return API回包的实际数据
      * @throws Exception
      */
-    public static String sendPost(String url, String xmlObj, String charset) throws Exception {
+    public static String sendPostXml(String url, String params, String charset) throws Exception {
 
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
@@ -38,7 +44,7 @@ public class HttpUtils {
         HttpPost httpPost = new HttpPost(url);
 
         //得指明使用UTF-8编码，否则到API服务器XML的中文不能被成功识别
-        StringEntity postEntity = new StringEntity(xmlObj, charset);
+        StringEntity postEntity = new StringEntity(params, charset);
         httpPost.addHeader("Content-Type", "text/xml");
         httpPost.setEntity(postEntity);
 
@@ -56,6 +62,58 @@ public class HttpUtils {
             httpPost.abort();
         }
 
+        return result;
+    }
+
+    /**
+     * @Description: 通过Https往API post &name=value数据
+     * @param
+     * @return
+     * @throws
+     */
+    public static String sendPost(String url, String params, String charset) throws Exception {
+        PrintWriter out = null;
+        BufferedReader in = null;
+        String result = "";
+        try {
+            URL realUrl = new URL(url);
+            // 打开和URL之间的连接
+            URLConnection conn = realUrl.openConnection();
+            // 设置通用的请求属性
+            conn.setRequestProperty("accept", "*/*");
+            conn.setRequestProperty("connection", "Keep-Alive");
+            // 发送POST请求必须设置如下两行
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            // 获取URLConnection对象对应的输出流
+            out = new PrintWriter(conn.getOutputStream());
+            // 发送请求参数
+            out.print(params);
+            // flush输出流的缓冲
+            out.flush();
+            // 定义BufferedReader输入流来读取URL的响应
+            in = new BufferedReader(new InputStreamReader(conn.getInputStream(), charset));
+            String line;
+            while ((line = in.readLine()) != null) {
+                result += line;
+            }
+        } catch (Exception e) {
+            System.out.println("发送 POST 请求出现异常！" + e);
+            e.printStackTrace();
+        }
+        //使用finally块来关闭输出流、输入流
+        finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+                if (in != null) {
+                    in.close();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
         return result;
     }
 }

@@ -35,6 +35,8 @@ public class PayConstant {
 
     public static String NOTICE_NOTIFY = "notify";//异步通知
 
+    public static String NOTICE_REFUND = "refund";//支付宝退款通知
+
     public static int STATE_0 = 0;//数据状态--删除
     public static int STATE_1 = 1;//数据状态--正常
 
@@ -54,8 +56,11 @@ public class PayConstant {
     //授权回调地址
     public static String ALIPAY_AUTH_RET_URL;
 
-    //调用的接口名，无需修改
-    public static String ALIPAY_SERVICE;
+    //调用的接口名，支付
+    public static String ALIPAY_PAY_SERVICE;
+
+    //调用的接口名，退款
+    public static String ALIPAY_REFUND_SERVICE;
 
     //调用应用id
     public static String ALIPAY_APP_ID;
@@ -80,6 +85,9 @@ public class PayConstant {
     // 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
     public static String ALIPAY_RETURN_URL;
 
+    // 退款服务器异步通知页面路径
+    public static String ALIPAY_REFUND_URL;
+
     // 签名方式
     public static String ALIPAY_SIGN_TYPE;
 
@@ -102,6 +110,7 @@ public class PayConstant {
     public static String TENPAY_ORDER_URL;
     public static String TENPAY_QUERY_URL;
     public static String TENPAY_PAY_URL;
+    public static String TENPAY_REFUND_URL;
     //授权模式
     public static String TENPAY_AUTH_CODE;
     //授权地址
@@ -147,8 +156,12 @@ public class PayConstant {
         ALIPAY_AUTH_RET_URL = alipayAuthRetUrl;
     }
 
-    public void setALIPAY_SERVICE(String alipayService) {
-        ALIPAY_SERVICE = alipayService;
+    public void setALIPAY_PAY_SERVICE(String alipayPayService) {
+        ALIPAY_PAY_SERVICE = alipayPayService;
+    }
+
+    public void setALIPAY_REFUND_SERVICE(String alipayRefundService) {
+        ALIPAY_REFUND_SERVICE = alipayRefundService;
     }
 
     public void setALIPAY_APP_ID(String alipayAppId) {
@@ -181,6 +194,10 @@ public class PayConstant {
 
     public void setALIPAY_RETURN_URL(String alipayReturnUrl) {
         ALIPAY_RETURN_URL = alipayReturnUrl;
+    }
+
+    public void setALIPAY_REFUND_URL(String alipayRefundUrl) {
+        ALIPAY_REFUND_URL = alipayRefundUrl;
     }
 
     public void setALIPAY_SIGN_TYPE(String alipaySignType) {
@@ -218,6 +235,10 @@ public class PayConstant {
 
     public void setTENPAY_PAY_URL(String tenpayPayUrl) {
         TENPAY_PAY_URL = tenpayPayUrl;
+    }
+
+    public void setTENPAY_REFUND_URL(String tenpayRefundUrl) {
+        TENPAY_REFUND_URL = tenpayRefundUrl;
     }
 
     public void setTENPAY_AUTH_CODE(String tenpayAuthCode) {

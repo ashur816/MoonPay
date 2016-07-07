@@ -7,10 +7,13 @@ import com.martin.constant.PayConstant;
 import com.martin.constant.PayReturnCodeEnum;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayService;
+import com.martin.utils.DateUtils;
+import com.martin.utils.HttpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +28,8 @@ public class AliPay implements IPayService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    private static final String charset = "UTF-8";
+
     /**
      * 生成支付信息
      * @param flowBean
@@ -35,7 +40,7 @@ public class AliPay implements IPayService {
         logger.info("开始支付宝支付");
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("service", PayConstant.ALIPAY_SERVICE);
+        paraMap.put("service", PayConstant.ALIPAY_PAY_SERVICE);
         paraMap.put("partner", PayConstant.ALIPAY_PARTNER);
         paraMap.put("seller_id", PayConstant.ALIPAY_SELLER_ID);
         paraMap.put("_input_charset", PayConstant.ALIPAY_INPUT_CHARSET);
@@ -67,7 +72,7 @@ public class AliPay implements IPayService {
      * @throws
      */
     @Override
-    public PayResult returnValidate(Map<String, String> paraMap) {
+    public PayResult returnValidate(String notifyType, Map<String, String> paraMap) throws Exception {
         PayResult payResult = new PayResult();
         if (paraMap == null || paraMap.size() < 1) {
             //参数不能为空
@@ -80,8 +85,8 @@ public class AliPay implements IPayService {
         String responseTxt = "false";
         if (paraMap.get("notify_id") != null) {
             String notify_id = paraMap.get("notify_id");
-            String verify_url = PayConstant.ALIPAY_VERIFY_URL + "&partner=" + PayConstant.ALIPAY_PARTNER + "&notify_id=" + notify_id;
-            responseTxt = AliPayUtils.checkUrl(verify_url);
+            String params = "&partner=" + PayConstant.ALIPAY_PARTNER + "&notify_id=" + notify_id;
+            responseTxt = HttpUtils.sendPost(PayConstant.ALIPAY_VERIFY_URL, params, charset);
         }
         if ("false".equalsIgnoreCase(responseTxt)) {
             //支付宝回调异常
@@ -107,6 +112,42 @@ public class AliPay implements IPayService {
         int callbackState = transPayState(tradeState);
         payResult.setPayState(callbackState);
 
+        return payResult;
+    }
+
+    /**
+     * 退款
+     * @param flowBean
+     * @param extMap
+     * @return
+     */
+    @Override
+    public PayResult refund(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+        logger.info("开始支付宝退款");
+        //组装参数返回给前台
+        Map<String, String> paraMap = new HashMap<>();
+        paraMap.put("service", PayConstant.ALIPAY_REFUND_SERVICE);
+        paraMap.put("partner", PayConstant.ALIPAY_PARTNER);
+        paraMap.put("seller_user_id", PayConstant.ALIPAY_SELLER_ID);
+        paraMap.put("_input_charset", PayConstant.ALIPAY_INPUT_CHARSET);
+        paraMap.put("sign_type", PayConstant.ALIPAY_SIGN_TYPE);
+        paraMap.put("notify_url", PayConstant.ALIPAY_REFUND_URL);
+        //退款时间 格式为：yyyy-MM-dd HH:mm:ss
+        paraMap.put("refund_date", DateUtils.formatDateTime(new Date()));
+        //退款批次号
+        paraMap.put("batch_no", extMap.get("refundId"));
+        //总笔数
+        paraMap.put("batch_num", "1");
+        //单笔数据集 原付款支付宝交易号^退款总金额^退款理由  第一笔交易退款数据集#第二笔交易退款数据集
+        StringBuilder sBuilder = new StringBuilder();
+        sBuilder.append(flowBean.getThdFlowId()).append("^").append(flowBean.getPayAmount()).append("^").append(extMap.get("refundReason"));
+        paraMap.put("detail_data", sBuilder.toString());
+
+        String sendString = AliPayUtils.buildRequestInfo(PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, paraMap);
+        logger.info("发送退款信息{}", sendString);
+        String reString = HttpUtils.sendPost(PayConstant.ALIPAY_URL, sendString, charset);
+        logger.info("返回结果:" + reString);
+        PayResult payResult = new PayResult();
         return payResult;
     }
 

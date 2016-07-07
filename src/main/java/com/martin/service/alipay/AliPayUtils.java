@@ -1,12 +1,7 @@
 package com.martin.service.alipay;
 
-import com.martin.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -122,44 +117,11 @@ public class AliPayUtils {
     }
 
     /**
-     * 获取远程服务器ATN结果
-     * @return 服务器ATN结果
-     * 验证结果集：
-     * invalid命令参数不对 出现这个错误，请检测返回处理中partner和key是否为空
-     * true 返回正确信息
-     * false 请检查防火墙或者是服务器阻止端口问题以及验证时间是否超过一分钟
+     * 生成请求信息
      */
-    public static String checkUrl(String urlValue) {
-        String inputLine = "";
-
-        try {
-            URL url = new URL(urlValue);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), charset));
-            inputLine = in.readLine();
-            in.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            inputLine = "";
-        }
-
-        return inputLine;
-    }
-
-    /**使用auth_code换取接口access_token及用户userId
-     * @return
-     */
-    public static String buildReqParam(String code, String signType, String privateKey, Map<String, String> sParaTemp) {
+    public static String buildRequestInfo(String privateKey, String signType, Map<String, String> sParaTemp) {
         //除去数组中的空值和签名参数
-        Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("app_id", sParaTemp.get("app_id"));
-        paraMap.put("method", "alipay.system.oauth.token");
-        paraMap.put("format", sParaTemp.get("format"));
-        paraMap.put("charset", sParaTemp.get("charset"));
-        paraMap.put("timestamp", DateUtils.getDate("yyyy-MM-dd HH:mm:ss"));
-        paraMap.put("version", sParaTemp.get("version"));
-        paraMap.put("grant_type", "authorization_code");
-        paraMap.put("code", code);
+        Map<String, String> paraMap = paraFilter(sParaTemp);
 
         //生成签名结果
         String mySign = buildRequestMySign(privateKey, signType, paraMap);

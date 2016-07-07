@@ -55,19 +55,18 @@ public class PayFlowService implements IPayFlow {
      */
     @Override
     public PayFlowBean getPayFlowByBiz(String bizId) {
-        return payFlowMapper.selectPayFlowByBiz(bizId);
+        return payFlowMapper.selectByBiz(bizId);
     }
 
     /**
-     * @Description: 查询支付流水
+     * @Description: 根据支付状态查询流水
      * @param flowId
-     * @return
+
+     *@param payState @return
      * @throws
      */
     @Override
-    public PayFlowBean getPayFlowById(Long flowId) {
-        return payFlowMapper.selectByPrimaryKey(flowId);
+    public PayFlowBean getPayFlowById(Long flowId, Integer payState) {
+        return payFlowMapper.selectByPayState(flowId, payState);
     }
-
-
 }
