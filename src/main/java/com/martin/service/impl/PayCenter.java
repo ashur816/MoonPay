@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,15 +48,52 @@ public class PayCenter implements IPayCenter {
      */
     @Override
     public PayInfo getPayInfo(String bizId) throws Exception {
-        //1、获取业务对象
+        //根据bizId查流水
+        PayFlowBean flowBean = payFlow.getPayFlowByBiz(bizId);
+        if (flowBean != null) {
+            //判断支付状态
+            int payState = flowBean.getPayState();
+            if (PayConstant.PAY_SUCCESS == payState) {//除了未支付，其他都是已支付
+                throw new BusinessException(null, "该订单已经支付");
+            }
+        }
         ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
-        //2、获取代金券信息
+        //获取代金券信息
         List<VoucherBean> voucherList = voucher.getVoucherByUser(1001L, 1, 1);
 
         PayInfo payInfo = new PayInfo(orderPayInfo.getGoodName(), orderPayInfo.getPayAmount() / 100.0, "");
         payInfo.setBizId(bizId);
         payInfo.setVoucherList(voucherList);
         return payInfo;
+    }
+
+    /**
+     * @Description: 获取退款信息
+     * @param  flowIdList   收银台流水号
+     * @return PayInfo
+     * @throws
+     */
+    @Override
+    public List<PayInfo> getRefundInfo(List<String> flowIdList) throws Exception {
+        //根据flowId查流水
+        List<PayFlowBean> flowBeanList = payFlow.getPayFlowByIdList(flowIdList, PayConstant.PAY_SUCCESS);
+        if (flowBeanList == null || flowBeanList.size() <= 0) {
+            throw new BusinessException(null, "未查询到支付成功的订单");
+        }
+        PayInfo payInfo = null;
+        List<PayInfo> infoList = new ArrayList<>();
+        PayFlowBean flowBean = null;
+        for (int i = 0; i < flowBeanList.size(); i++) {
+            flowBean = flowBeanList.get(i);
+            payInfo = new PayInfo();
+            payInfo.setFlowId(flowBean.getFlowId());
+            payInfo.setBizId(flowBean.getBizId());
+            payInfo.setPayType(flowBean.getPayType());
+            payInfo.setGoodName("XXXX");
+            payInfo.setPayAmount(flowBean.getPayAmount() / 100.0);
+            infoList.add(payInfo);
+        }
+        return infoList;
     }
 
     /**
@@ -68,17 +106,23 @@ public class PayCenter implements IPayCenter {
      * @throws
      */
     @Override
-    public PayInfo doScanPay(String payType, String bizId, String ipAddress, String code) throws Exception {
+    public PayInfo doPay(String payType, String bizId, String ipAddress, String code, String voucherId) throws Exception {
         if (StringUtils.isBlank(bizId) || StringUtils.isBlank(payType) || StringUtils.isBlank(ipAddress)) {
-            throw new BusinessException("111");
+            throw new BusinessException(null, "参数不能为空");
         }
         logger.info("扫码支付bizId-{}", bizId);
-        //1、获取业务对象
-        ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
-        //2、判断支付状态
-
-        //3、生成支付流水
-        PayFlowBean flowBean = buildFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
+        //根据bizId查流水
+        PayFlowBean flowBean = payFlow.getPayFlowByBiz(bizId);
+        if (flowBean == null) {//未查到流水，说明还未支付
+            ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
+            flowBean = buildFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
+        } else {
+            //判断支付状态
+            int payState = flowBean.getPayState();
+            if (PayConstant.PAY_SUCCESS == payState) {//已支付
+                throw new BusinessException(null, "该订单已经支付");
+            }
+        }
 
         Map<String, String> extMap = new HashMap<>();
         extMap.put("code", code);
@@ -102,56 +146,12 @@ public class PayCenter implements IPayCenter {
     @Override
     public PayInfo doAuthorize(String payType, String bizId) throws Exception {
         if (StringUtils.isBlank(bizId) || StringUtils.isBlank(payType)) {
-            throw new BusinessException("111");
+            throw new BusinessException(null, "参数不能为空");
         }
 
         IPayService payService = getPayInstance(payType);
         return payService.authorize(bizId);
     }
-
-    /**
-     * @Description: web支付入口
-     * @param  payType  支付渠道 支付宝/微信等
-     * @param  bizId    业务id ： 订单id等
-     * @param ipAddress
-
-     *@param code @return String
-     * @throws
-     */
-    @Override
-    public PayInfo doWebPay(String payType, String bizId, String ipAddress, String code, String voucherId) throws Exception {
-        if (StringUtils.isBlank(bizId) || StringUtils.isBlank(payType) || StringUtils.isBlank(ipAddress)) {
-            throw new BusinessException("111");
-        }
-
-        logger.info("网页支付bizId-{}", bizId);
-        //1、获取业务对象
-        ToPayInfo orderPayInfo = getOrderInfo(bizId);//order service.getOrder
-        //2、判断支付状态
-
-        if (!StringUtils.isBlank(voucherId)) {
-            //3、获取代金券
-            VoucherBean voucherBean = voucher.selectVoucherById(Long.parseLong(voucherId), 1);
-            if (voucherBean != null) {
-                orderPayInfo.setPayAmount(orderPayInfo.getPayAmount() - voucherBean.getVoucherValue());
-            }
-        }
-
-        //4、生成支付流水
-        PayFlowBean flowBean = buildFlowInfo(payType, orderPayInfo, PayConstant.PAY_NOT);
-
-        Map<String, String> extMap = new HashMap<>();
-        extMap.put("code", code);
-        extMap.put("ipAddress", ipAddress);
-
-        logger.info("开始发起第三方支付");
-        IPayService payService = getPayInstance(payType);
-        PayInfo payInfo = payService.buildPayInfo(flowBean, extMap);
-        payInfo.setFlowId(flowBean.getFlowId());
-        payInfo.setBizId(flowBean.getBizId());
-        return payInfo;
-    }
-
 
     /**
      * @Description: 第三方回调
@@ -165,11 +165,11 @@ public class PayCenter implements IPayCenter {
     @Override
     public void doNotify(String notifyType, String payType, String ipAddress, Map<String, String> reqParam) throws Exception {
         if (StringUtils.isBlank(notifyType)) {
-            throw new BusinessException("通知类型不能为空");
+            throw new BusinessException(null, "通知类型不能为空");
         }
 
         if (StringUtils.isBlank(payType)) {
-            throw new BusinessException("支付方式不能为空");
+            throw new BusinessException(null, "支付方式不能为空");
         }
 
         //校验返回参数
@@ -219,36 +219,44 @@ public class PayCenter implements IPayCenter {
 
             }
         } else {//查不到记录
-            throw new BusinessException("未查询到支付流水信息");
+            throw new BusinessException(null, "未查询到支付流水信息");
         }
     }
 
     /**
-     * @Description: 退款
+     * @Description: 退款/批量退款的payType一定要一样
      * @return void
      * @throws
-     * @param flowId
+     * @param flowIdList
      * @param refundReason
      */
     @Override
-    public PayResult doRefund(Long flowId, String refundReason) throws Exception {
-        if (0 >= flowId || StringUtils.isBlank(refundReason)) {
-            throw new BusinessException("收银台流水和退款原因不能为空");
+    public Object doRefund(List<String> flowIdList, String refundReason) throws Exception {
+        if (flowIdList == null || 0 >= flowIdList.size() || StringUtils.isBlank(refundReason)) {
+            throw new BusinessException(null, "收银台流水和退款原因不能为空");
         }
         //根据流水号查流水
-        PayFlowBean flowBean = payFlow.getPayFlowById(flowId, PayConstant.PAY_SUCCESS);
-        if (flowBean == null) {
-            throw new BusinessException("未查询到支付信息");
+        List<PayFlowBean> flowBeanList = payFlow.getPayFlowByIdList(flowIdList, PayConstant.PAY_SUCCESS);
+        if (flowBeanList == null) {
+            throw new BusinessException(null, "未查询到支付信息");
         }
 
-        String refundId = String.valueOf(RandomUtils.getPaymentNo());
+        String refundId = RandomUtils.getPaymentNo();
         Map<String, String> extMap = new HashMap<>();
         extMap.put("refundId", refundId);
         extMap.put("refundReason", refundReason);
 
-        IPayService payService = getPayInstance(flowBean.getPayType());
-        PayResult payResult = payService.refund(flowBean, extMap);
-        return payResult;
+        IPayService payService = getPayInstance(flowBeanList.get(0).getPayType());
+        Object retObj = payService.refund(flowBeanList, extMap);
+
+        //更新退款流水
+        PayFlowBean flowBean = null;
+        for (int i = 0; i < flowBeanList.size(); i++) {
+            flowBean = flowBeanList.get(i);
+            flowBean.setRefundId(Long.parseLong(refundId));
+            payFlow.updPayFlow(flowBean);
+        }
+        return retObj;
     }
 
     /**
@@ -261,7 +269,7 @@ public class PayCenter implements IPayCenter {
     @Override
     public PayResult doWithdraw(Long acctId, String payType, Integer drawAmount, String ipAddress) throws Exception {
         if (0 >= acctId || StringUtils.isBlank(payType) || 0 >= drawAmount || StringUtils.isBlank(ipAddress)) {
-            throw new BusinessException("111");
+            throw new BusinessException(null, "参数不能为空");
         }
 
         logger.info("用户-{},支付类型-{},ip地址-{}", acctId, payType, ipAddress);
@@ -311,7 +319,7 @@ public class PayCenter implements IPayCenter {
 
         if (StringUtils.isBlank(payService)) {
             //暂不支持当前支付方式
-            throw new BusinessException("09030");
+            throw new BusinessException(null, "暂不支持当前支付方式");
 
         }
         //返回服务实例

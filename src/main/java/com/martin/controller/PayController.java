@@ -20,9 +20,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @ClassName: PayController
@@ -39,9 +37,6 @@ public class PayController {
     private final String TEN_PAY = PayChannelEnum.TEN_PAY.getPayType();
     //支付宝
     private final String ALI_PAY = PayChannelEnum.ALI_PAY.getPayType();
-    //支付通用页
-    private final String CMB_PAY = PayChannelEnum.CMB_PAY.getPayType();
-
     private final static String CALLBACK_SUCCESS = "success";
     private final static String CALLBACK_FAIL = "fail";
 
@@ -91,6 +86,44 @@ public class PayController {
     }
 
     /**
+     * @Description: 跳转退款
+     * @param request 包含 订单id
+     * @return
+     * @throws
+     */
+    @RequestMapping(value = "/toRefund")
+    public ModelAndView toRefund(HttpServletRequest request, String flowIds) {
+        ModelAndView modelAndView = new ModelAndView();
+
+        if (StringUtils.isBlank(flowIds)) {
+            modelAndView.setViewName("common/error");
+            modelAndView.addObject("error", "支付流水不能为空");
+        } else {
+            logger.info("退款接收参数：flowIds-{}", flowIds);
+            try {
+                String[] str = flowIds.split(",");
+                List<String> flowList = Arrays.asList(str);
+                //获取支付信息
+                List<PayInfo> payInfoList = payCenter.getRefundInfo(flowList);
+                if (payInfoList != null) {
+                    logger.info("支付返回成功");
+                    modelAndView.setViewName("pay/refund");
+                    modelAndView.addObject("payInfoList", payInfoList);
+                    modelAndView.addObject("flowIds", flowIds);
+                } else {
+                    modelAndView.setViewName("common/error");
+                    modelAndView.addObject("error", "未获取到支付信息");
+                }
+            } catch (Exception e) {
+                logger.error("toRefund异常-{}", e.getMessage());
+                modelAndView.addObject("error", e.getMessage());
+                modelAndView.setViewName("common/error");
+            }
+        }
+        return modelAndView;
+    }
+
+    /**
      * @Description: 网页支付入口 用除微信/支付宝扫码的，直接跳到网页，网页选择支付方式，回传到此接口，再发起支付
      * @param request 包含 订单id
      * @return
@@ -108,12 +141,9 @@ public class PayController {
             logger.info("开始网页支付,订单号-{},支付方式-{},代金券-{}", bizId, payType, voucherId);
             try {
                 //生成订单支付信息
-                PayInfo payInfo = payCenter.doWebPay(payType, bizId, ipAddress, "", voucherId);
+                PayInfo payInfo = payCenter.doPay(payType, bizId, ipAddress, "", voucherId);
                 if (ALI_PAY.equals(payType)) {
                     modelAndView.setViewName("pay/ali_pay");
-                    doError(payInfo, modelAndView);
-                } else if (CMB_PAY.equals(payType)) {
-                    modelAndView.setViewName("pay/cmb_pay");
                     doError(payInfo, modelAndView);
                 } else {
                     modelAndView.setViewName("common/error");
@@ -135,7 +165,7 @@ public class PayController {
      * @throws
      */
     @RequestMapping(value = "/doScanPay")
-    public ModelAndView doScanPay(HttpServletRequest request, String bizId) {
+    public ModelAndView doScanPay(HttpServletRequest request, String bizId, String voucherId) {
         ModelAndView modelAndView = new ModelAndView();
         String userAgent = request.getHeader("User-Agent");
 
@@ -162,7 +192,7 @@ public class PayController {
                 } else if (userAgent.matches("(.*)AlipayClient(.*)")) {//支付宝扫码
 
                     payType = ALI_PAY;
-                    PayInfo payInfo = payCenter.doScanPay(payType, bizId, ipAddress, "");
+                    PayInfo payInfo = payCenter.doPay(payType, bizId, ipAddress, "", voucherId);
                     doError(payInfo, modelAndView);
                 } else {//第三方扫码
                     modelAndView.setViewName("common/error");
@@ -205,7 +235,7 @@ public class PayController {
 
             try {
                 //生成订单信息
-                PayInfo payInfo = payCenter.doScanPay(payType, bizId, ipAddress, code);
+                PayInfo payInfo = payCenter.doPay(payType, bizId, ipAddress, code, "");
                 doError(payInfo, modelAndView);
             } catch (Exception e) {
                 logger.error("PayController.doPay 异常：{}", e.getMessage());
@@ -281,31 +311,73 @@ public class PayController {
     }
 
     /**
-     * @Description: 订单退款
+     * @Description: 订单后台无密退款 微信
      * @param request
      * @return
      * @throws
      */
     @ResponseBody
     @RequestMapping(value = "/doRefund")
-    public Object doRefund(HttpServletRequest request, String flowId, String refundReason) {
+    public Object doRefund(HttpServletRequest request, String flowIds, String refundReason) {
         String retMsg = "";
-        try {
-            String tmpStr = new String(refundReason.getBytes("ISO-8859-1"), "UTF-8");
-            logger.info("退款接收flowId-{},refundReason-{}", flowId, tmpStr);
-            //生成订单支付信息
-            PayResult payResult = payCenter.doRefund(Long.parseLong(flowId), tmpStr);
-            if (payResult != null) {
-                logger.info("退款返回信息成功");
-                retMsg = JsonUtils.translateToJson(payResult);
-            } else {
-                retMsg = "未获取到退款信息";
+        if (StringUtils.isBlank(flowIds)) {
+            retMsg = "传入信息不能为空";
+        } else {
+            try {
+                String tmpStr = new String(refundReason.getBytes("ISO-8859-1"), "UTF-8");
+                logger.info("无密退款接收flowIds-{},refundReason-{}", flowIds, tmpStr);
+
+                String[] str = flowIds.split(",");
+                List<String> flowIdList = Arrays.asList(str);
+                PayResult payResult = (PayResult) payCenter.doRefund(flowIdList, tmpStr);
+                if (payResult != null) {
+                    logger.info("退款返回信息成功");
+                    retMsg = JsonUtils.translateToJson(payResult);
+                } else {
+                    retMsg = "未获取到退款信息";
+                }
+            } catch (Exception e) {
+                logger.error("doRefund异常-{}", e.getMessage());
+                retMsg = e.getMessage();
             }
-        } catch (Exception e) {
-            logger.error("doRefund异常-{}", e.getMessage());
-            retMsg = e.getMessage();
         }
         return retMsg;
+    }
+
+    /**
+     * @Description: 订单有密退款，支付宝
+     * @param request
+     * @return
+     * @throws
+     */
+    @RequestMapping(value = "/doRefundPwd")
+    public ModelAndView doRefundPwd(HttpServletRequest request, String flowIds, String refundReason) {
+        ModelAndView modelAndView = new ModelAndView();
+        if (StringUtils.isBlank(flowIds)) {
+            modelAndView.setViewName("common/error");
+            modelAndView.addObject("error", "传入信息不能为空");
+        } else {
+            try {
+                String tmpStr = new String(refundReason.getBytes("ISO-8859-1"), "UTF-8");
+                logger.info("有密退款接收flowIds-{},refundReason-{}", flowIds, tmpStr);
+
+                String[] str = flowIds.split(",");
+                List<String> flowIdList = Arrays.asList(str);
+                PayInfo payInfo = (PayInfo) payCenter.doRefund(flowIdList, tmpStr);
+
+                String payType = payInfo.getPayType().toString();
+                if (ALI_PAY.equals(payType)) {
+                    modelAndView.setViewName("pay/ali_pay");
+                    doError(payInfo, modelAndView);
+                } else {
+                    modelAndView.setViewName("common/error");
+                    modelAndView.addObject("error", "暂不支持当前退款方式");
+                }
+            } catch (Exception e) {
+                logger.error("doRefundPwd异常-{}", e);
+            }
+        }
+        return modelAndView;
     }
 
     /**
@@ -346,6 +418,7 @@ public class PayController {
      * @return
      * @throws
      */
+
     private void doError(PayInfo payInfo, ModelAndView modelAndView) {
         if (payInfo != null) {
             logger.info("支付返回成功");

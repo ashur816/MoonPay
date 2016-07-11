@@ -9,8 +9,7 @@ package com.martin.constant;
 public enum PayChannelEnum {
 
     TEN_PAY("1", "tenPayService", "微信支付", "pay/ten_pay"),
-    ALI_PAY("2", "aliPayService", "支付宝", "pay/ali_pay"),
-    CMB_PAY("3", "cmbPayService", "招行支付", "pay/cmb_pay");
+    ALI_PAY("2", "aliPayService", "支付宝", "pay/ali_pay");
 
     private String payType;
     private String payService;

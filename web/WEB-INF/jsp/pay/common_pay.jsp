@@ -5,6 +5,7 @@
 <html>
 <head>
     <title>收银台</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
 </head>
 <body>
 <div align="center">
@@ -25,7 +26,7 @@
             <td align="right">代金券:</td>
             <td>
                 <select id="voucher" style="width: 213px">
-                    <option value="">不使用代金券</option>
+                    <option ext="0">不使用代金券</option>
                     <c:forEach var="item" items="${payInfo.voucherList}">
                         <option value="${item.voucherId}" ext="${item.voucherValue}">
                             <fmt:formatNumber value="${item.voucherValue/100}" pattern="0.00" currencyCode="USD"/>元
@@ -53,6 +54,10 @@
 <script type="text/javascript">
 
     $(function () {
+        var tmp1 = $("#payAmount").val() * 100;
+        var tmp2 = tmp1 / 100;
+        $("#btnPay").val("支付" + tmp2.toFixed(2) + "元");
+
         $("#btnPay").click(function () {
             var voucherId = $("option:checked").val();
             var payType = $("input[name='payType']:checked").val();
@@ -73,9 +78,9 @@
                 payAmount = (oldAmount - voucherValue) / 100;
             }
             else {
-                payAmount = oldAmount / 100;
+                payAmount = 0;
             }
-            $("#btnPay").val("支付" + payAmount);
+            $("#btnPay").val("支付" + payAmount.toFixed(2) + "元");
         });
     });
 

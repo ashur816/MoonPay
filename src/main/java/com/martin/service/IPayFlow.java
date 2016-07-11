@@ -2,6 +2,8 @@ package com.martin.service;
 
 import com.martin.bean.PayFlowBean;
 
+import java.util.List;
+
 /**
  * @ClassName: PayFlowService
  * @Description: 支付流水服务
@@ -41,4 +43,12 @@ public interface IPayFlow {
      * @throws
      */
     PayFlowBean getPayFlowById(Long flowId, Integer payState);
+
+    /**
+     * @Description: 批量查询支付流水
+     * @param
+     * @return
+     * @throws
+     */
+    List<PayFlowBean> getPayFlowByIdList(List<String> flowIdList, Integer payState);
 }

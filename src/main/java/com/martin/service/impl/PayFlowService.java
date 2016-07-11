@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @ClassName: PayFlowService
@@ -61,12 +62,24 @@ public class PayFlowService implements IPayFlow {
     /**
      * @Description: 根据支付状态查询流水
      * @param flowId
-
-     *@param payState @return
+     * @param payState
+     * @return
      * @throws
      */
     @Override
     public PayFlowBean getPayFlowById(Long flowId, Integer payState) {
-        return payFlowMapper.selectByPayState(flowId, payState);
+        return payFlowMapper.selectById(flowId, payState);
+    }
+
+    /**
+     * @Description: 批量查询支付流水
+     * @param flowIdList
+     * @param payState
+     * @return
+     * @throws
+     */
+    @Override
+    public List<PayFlowBean> getPayFlowByIdList(List<String> flowIdList, Integer payState) {
+        return payFlowMapper.selectListById(flowIdList, payState);
     }
 }

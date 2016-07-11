@@ -7,14 +7,22 @@
     <select id="selectByBiz" resultType="com.martin.bean.PayFlowBean">
         select
         <include refid="baseSql"/>
-        from pay_flow WHERE biz_id=#{bizId}
+        from pay_flow WHERE state=1 and biz_id=#{bizId}
     </select>
-    <select id="selectByPayState" resultType="com.martin.bean.PayFlowBean">
+    <select id="selectById" resultType="com.martin.bean.PayFlowBean">
         select
         <include refid="baseSql"/>
         from pay_flow WHERE flow_id=#{flowId}
         <if test="payState!=-1">
             and pay_state=#{payState}
         </if>
+    </select>
+    <select id="selectListById" resultType="com.martin.bean.PayFlowBean">
+        select
+        <include refid="baseSql"/>
+        from pay_flow WHERE flow_id IN
+        <foreach collection="flowIdList" item="idItem" open="(" separator="," close=")">
+            #{idItem}
+        </foreach>
     </select>
 </mapper>

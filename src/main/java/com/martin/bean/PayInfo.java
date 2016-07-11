@@ -19,6 +19,11 @@ public class PayInfo implements Serializable {
     public Long flowId;
 
     /**
+     * 支付渠道
+     */
+    public String payType;
+
+    /**
      * 商品名
      */
     public String goodName;
@@ -85,6 +90,14 @@ public class PayInfo implements Serializable {
 
     public void setFlowId(Long flowId) {
         this.flowId = flowId;
+    }
+
+    public String getPayType() {
+        return payType;
+    }
+
+    public void setPayType(String payType) {
+        this.payType = payType;
     }
 
     public String getGoodName() {

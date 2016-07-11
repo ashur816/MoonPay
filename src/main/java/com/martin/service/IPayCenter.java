@@ -3,6 +3,7 @@ package com.martin.service;
 import com.martin.bean.PayInfo;
 import com.martin.bean.PayResult;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,13 +23,21 @@ public interface IPayCenter {
     PayInfo getPayInfo(String bizId) throws Exception;
 
     /**
-     * @Description: scan支付入口
+     * @Description: 获取退款信息
+     * @param  flowIdList   收银台流水号
+     * @return PayInfo
+     * @throws
+     */
+    List<PayInfo> getRefundInfo(List<String> flowIdList) throws Exception;
+
+    /**
+     * @Description: 支付入口
      * @param  payType  支付渠道 支付宝/微信等
      * @param  bizId    业务id ： 订单id等
      * @return String
      * @throws
      */
-    PayInfo doScanPay(String payType, String bizId, String ipAddress, String code) throws Exception;
+    PayInfo doPay(String payType, String bizId, String ipAddress, String code, String voucherId) throws Exception;
 
     /**
      * @Description: 授权信息
@@ -38,15 +47,6 @@ public interface IPayCenter {
      * @throws
      */
     PayInfo doAuthorize(String payType, String bizId) throws Exception;
-
-    /**
-     * @Description: web支付入口
-     * @param  payType  支付渠道 支付宝/微信等
-     * @param  bizId    业务id ： 订单id等
-     * @return String
-     * @throws
-     */
-    PayInfo doWebPay(String payType, String bizId, String ipAddress, String code, String voucherId) throws Exception;
 
     /**
      * @Description: 第三方回调
@@ -60,7 +60,7 @@ public interface IPayCenter {
      * @return void
      * @throws
      */
-    PayResult doRefund(Long flowId, String refundReason) throws Exception;
+    Object doRefund(List<String> flowIdList, String refundReason) throws Exception;
 
     /**
      * @Description: 企业付款

@@ -3,6 +3,7 @@ package com.martin.service.alipay;
 import com.martin.bean.PayFlowBean;
 import com.martin.bean.PayInfo;
 import com.martin.bean.PayResult;
+import com.martin.constant.PayChannelEnum;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayReturnCodeEnum;
 import com.martin.exception.BusinessException;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,9 +28,8 @@ import java.util.Map;
 @Service("aliPayService")
 public class AliPay implements IPayService {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
-
     private static final String charset = "UTF-8";
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * 生成支付信息
@@ -76,7 +77,7 @@ public class AliPay implements IPayService {
         PayResult payResult = new PayResult();
         if (paraMap == null || paraMap.size() < 1) {
             //参数不能为空
-            throw new BusinessException("111");
+            throw new BusinessException(null, "参数不能为空");
         }
 
         //判断responseTxt是否为true，isSign是否为true
@@ -90,7 +91,7 @@ public class AliPay implements IPayService {
         }
         if ("false".equalsIgnoreCase(responseTxt)) {
             //支付宝回调异常
-            throw new BusinessException("09023");
+            throw new BusinessException(null, "支付宝回调异常");
         }
 
         String returnSign = paraMap.get("sign");
@@ -98,7 +99,7 @@ public class AliPay implements IPayService {
         String mySign = AliPayUtils.buildRequestMySign(PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, tmpMap);
         if (!returnSign.equals(mySign)) {
             //支付宝回调签名不匹配
-            throw new BusinessException("09024");
+            throw new BusinessException(null, "支付宝回调签名不匹配");
         }
 
         // 支付流水ID
@@ -116,13 +117,13 @@ public class AliPay implements IPayService {
     }
 
     /**
-     * 退款
-     * @param flowBean
+     * 单笔/批量退款
+     * @param flowBeanList
      * @param extMap
      * @return
      */
     @Override
-    public PayResult refund(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+    public PayInfo refund(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
         logger.info("开始支付宝退款");
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
@@ -136,19 +137,26 @@ public class AliPay implements IPayService {
         paraMap.put("refund_date", DateUtils.formatDateTime(new Date()));
         //退款批次号
         paraMap.put("batch_no", extMap.get("refundId"));
+
+        int refundNum = flowBeanList.size();
         //总笔数
-        paraMap.put("batch_num", "1");
+        paraMap.put("batch_num", String.valueOf(refundNum));
         //单笔数据集 原付款支付宝交易号^退款总金额^退款理由  第一笔交易退款数据集#第二笔交易退款数据集
         StringBuilder sBuilder = new StringBuilder();
-        sBuilder.append(flowBean.getThdFlowId()).append("^").append(flowBean.getPayAmount()).append("^").append(extMap.get("refundReason"));
-        paraMap.put("detail_data", sBuilder.toString());
+        PayFlowBean flowBean = null;
+        for (int i = 0; i < refundNum; i++) {
+            flowBean = flowBeanList.get(i);
+            sBuilder.append(flowBean.getThdFlowId()).append("^").append(flowBean.getPayAmount()).append("^").append(extMap.get("refundReason")).append("#");
+        }
+        paraMap.put("detail_data", sBuilder.deleteCharAt(sBuilder.length() - 1).toString());
 
-        String sendString = AliPayUtils.buildRequestInfo(PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, paraMap);
+        String sendString = AliPayUtils.buildReqForm(PayConstant.ALIPAY_URL, PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, paraMap);
         logger.info("发送退款信息{}", sendString);
-        String reString = HttpUtils.sendPost(PayConstant.ALIPAY_URL, sendString, charset);
-        logger.info("返回结果:" + reString);
-        PayResult payResult = new PayResult();
-        return payResult;
+
+        PayInfo payInfo = new PayInfo();
+        payInfo.setPayType(PayChannelEnum.ALI_PAY.getPayType());
+        payInfo.setRetHtml(sendString);
+        return payInfo;
     }
 
     /**
