@@ -4,8 +4,8 @@
 <jsp:include page="base.jsp"></jsp:include>
 <html>
 <head>
-    <meta charset="UTF-8">
     <title>错误</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
 </head>
 <body>
 <div class="moon-error">
