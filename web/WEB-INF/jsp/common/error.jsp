@@ -5,7 +5,6 @@
 <html>
 <head>
     <title>错误</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
 </head>
 <body>
 <div class="moon-error">

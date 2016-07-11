@@ -5,7 +5,6 @@
 <html>
 <head>
     <title>退款</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
 </head>
 <body>
 <div align="center">
