@@ -25,15 +25,15 @@
                 <td align="right">支付渠道:</td>
                 <c:choose>
                 <c:when test="${payInfo.payType eq 1}">
-                <td><input type="text" readonly size="30" value="微信"/>
-                    </c:when>
-                    <c:when test="${payInfo.payType eq 2}">
-                <td><input type="text" readonly size="30" value="支付宝"/>
-                    </c:when>
-                    <c:otherwise>
-                <td><input type="text" readonly size="30" value="不详"/>
-                    </c:otherwise>
-                    </c:choose>
+                    <td><input type="text" readonly size="30" value="微信"/>
+                </c:when>
+                <c:when test="${payInfo.payType eq 2}">
+                    <td><input type="text" readonly size="30" value="支付宝"/>
+                </c:when>
+                <c:otherwise>
+                    <td><input type="text" readonly size="30" value="不详"/>
+                </c:otherwise>
+                </c:choose>
             </tr>
             <tr>
                 <td align="right">退款金额:</td>
@@ -66,7 +66,6 @@
             else {
                 location.href = context + "/payCenter/doRefund.htm?flowIds=" + $("#flowIds").val() + "&refundReason=" + $("#refundReason").val();
             }
-
         });
     });
 
