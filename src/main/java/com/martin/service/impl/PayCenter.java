@@ -315,7 +315,8 @@ public class PayCenter implements IPayCenter {
     /**
      * @Description: 查询第三方支付结果
      * @param payType
-     *@param bizId @return
+     * @param bizId
+     * @return
      * @throws
      */
     @Override

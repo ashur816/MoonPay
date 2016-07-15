@@ -33,7 +33,6 @@
 
 
     <root level="${level}">
-        ${log.file}
         ${log.console}
     </root>
 
