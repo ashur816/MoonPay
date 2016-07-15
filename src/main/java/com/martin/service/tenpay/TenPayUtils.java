@@ -40,10 +40,10 @@ class TenPayUtils {
             Map.Entry entry = (Map.Entry) e;
             String k = (String) entry.getKey();
             String v = (String) entry.getValue();
-//            if ("total_fee".equalsIgnoreCase(k)) {
-            sb.append("<").append(k).append(">").append(v).append("</").append(k).append(">");
+//            if ("attach".equalsIgnoreCase(k) || "body".equalsIgnoreCase(k) || "sign".equalsIgnoreCase(k)) {
+//                sb.append("<").append(k).append(">").append("<![CDATA[").append(v).append("]]></").append(k).append(">");
 //            } else {
-//            sb.append("<").append(k).append(">").append("<![CDATA[").append(v).append("]]></").append(k).append(">");
+            sb.append("<").append(k).append(">").append(v).append("</").append(k).append(">");
 //            }
         }
         sb.append("</xml>");

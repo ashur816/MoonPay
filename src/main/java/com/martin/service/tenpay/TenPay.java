@@ -74,7 +74,7 @@ public class TenPay implements IPayService {
 
         //发送给微信支付生成预订单
         String returnXml = HttpUtils.sendPostXml(PayConstant.TENPAY_ORDER_URL, xml, charset);
-        logger.info("返回结果:" + returnXml);
+        logger.info("统一下单返回结果:" + returnXml);
 
         //转换返回xml结果
         SortedMap<String, String> returnMap = TenPayUtils.getMapFromXML(returnXml);
@@ -157,8 +157,15 @@ public class TenPay implements IPayService {
             // 支付流水ID
             String tradeNo = paraMap.get("out_trade_no");
             payResult.setFlowId(Long.valueOf(tradeNo.substring(0, tradeNo.length() - 6)));
-            // 微信交易流水号
-            payResult.setThdFlowId(paraMap.get("transaction_id"));
+
+            if(PayConstant.NOTICE_REFUND.equals(notifyType)){
+                // 微信退款流水号
+                payResult.setThdFlowId(paraMap.get("refund_id"));
+            }
+            else {
+                // 微信交易流水号
+                payResult.setThdFlowId(paraMap.get("transaction_id"));
+            }
             //错误代码
             payResult.setFailCode(paraMap.get("err_code"));
             //错误代码描述
@@ -184,26 +191,24 @@ public class TenPay implements IPayService {
         PayFlowBean flowBean = flowBeanList.get(0);
         SortedMap<String, String> paraMap = new TreeMap<>();
         paraMap.put("appid", PayConstant.TENPAY_APP_ID);
-        paraMap.put("mchid", PayConstant.TENPAY_MCH_ID);
+        paraMap.put("mch_id", PayConstant.TENPAY_MCH_ID);
         paraMap.put("op_user_id", PayConstant.TENPAY_MCH_ID);
-        paraMap.put("nonce_str", TenPayUtils.createNonceStr());
         //微信订单号
         paraMap.put("transaction_id", flowBean.getThdFlowId());
-        paraMap.put("out_trade_no", "");
         //商户退款单号
         paraMap.put("out_refund_no", extMap.get("refundId"));
 
         String payAmount = String.valueOf(flowBean.getPayAmount());
         paraMap.put("total_fee", payAmount);
-        paraMap.put("refund_fee ", payAmount);
+        paraMap.put("refund_fee", payAmount);
 
         //生成信息
         String xml = TenPayUtils.createRequestXml(PayConstant.TENPAY_PRIVATE_KEY, paraMap);
-        logger.info("发送xml为:\n" + xml);
+        logger.info("退款发送xml为:\n" + xml);
 
         //发送给微信支付
-        String returnXml = HttpUtils.sendPostXml(PayConstant.TENPAY_REFUND_URL, xml, charset);
-        logger.info("返回结果:" + returnXml);
+        String returnXml = HttpUtils.sendPostWithCert(PayConstant.TENPAY_REFUND_URL, xml, charset);
+        logger.info("退款返回结果:" + returnXml);
 
         Map tmpMap = new HashMap();
         tmpMap.put("content", returnXml);

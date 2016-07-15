@@ -116,6 +116,12 @@
             <artifactId>spring-security-core</artifactId>
             <version>4.0.0.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version> 3.2.4.RELEASE  </version>
+            <scope>provided</scope>
+        </dependency>
         <!-- SPRING end -->
 
         <!-- WEB begin -->
@@ -187,6 +193,12 @@
         </dependency>
         <!-- MYBATIS end-->
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.9</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>

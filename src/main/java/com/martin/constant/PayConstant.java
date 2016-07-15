@@ -20,7 +20,13 @@ public class PayConstant {
 
     public static int PAY_SUCCESS = 1;//支付成功，且业务处理成功
 
-    public static int PAY_FAIL = 8;//支付失败
+    public static int REFUND_ING = 6;//退款中
+
+    public static int REFUND_SUCCESS = 8;//退款成功
+
+    public static int REFUND_FAIL = 7;//退款失败
+
+    public static int PAY_FAIL = 4;//支付失败
 
     /* 业务类型 */
     public static int BIZ_TYPE_GRAB = 1;

@@ -13,6 +13,14 @@ import java.util.List;
 public interface IVoucher {
 
     /**
+     * @Description: 生成代金券
+     * @param voucherBean
+     * @return
+     * @throws
+     */
+    void createVoucher(VoucherBean voucherBean) throws Exception;
+
+    /**
      * @Description: 获取代金券
      * @param voucherId
      * @param state 1-可用 0-失效

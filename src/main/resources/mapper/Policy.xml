@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.martin.dao.VoucherMapper">
+<mapper namespace="com.martin.dao.PolicyMapper">
     <sql id="baseSql">
         voucher_id,user_id,voucher_type,voucher_value,source,use_range,state,create_time,update_time
     </sql>

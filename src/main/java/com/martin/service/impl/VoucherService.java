@@ -21,6 +21,17 @@ public class VoucherService implements IVoucher {
     private VoucherMapper voucherMapper;
 
     /**
+     * @Description: 生成代金券
+     * @param voucherBean
+     * @return
+     * @throws
+     */
+    @Override
+    public void createVoucher(VoucherBean voucherBean) throws Exception {
+        voucherMapper.insertSelective(voucherBean);
+    }
+
+    /**
      * @Description: 获取代金券
      * @param voucherId
      * @param state 1-可用 0-失效

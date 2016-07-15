@@ -13,7 +13,7 @@ import java.util.List;
  * @author ZXY
  * @date 2016-05-24 13:43:02
  */
-@Table(name = "pay_flow")
+@Table(name = "m_pay_flow")
 public class PayFlowBean implements Serializable {
 
     private static final long serialVersionUID = 1627679510441577860L;

@@ -1,40 +1,69 @@
 package com.martin.bean;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @ClassName: VoucherBean
- * @Description: 代金券实体
- * @author ZXY
- * @date 2016/7/4 9:26
- */
-@Table(name = "voucher")
+* @ClassName: VoucherBean
+* @Description: 代金券
+* @author ZXY
+* @date 2016-07-14 17:01:03
+*/
+
 public class VoucherBean implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    /**
+    * 券id
+    **/
     private Long voucherId;
-
+    /**
+    * 策略id
+    **/
+    private Integer policyId;
+    /**
+    * 用户id
+    **/
     private Long userId;
+    /**
+    * 面额
+    **/
+    private Integer faceValue;
+    /**
+    * 生效时间
+    **/
+    private Date effectTime;
+    /**
+    * 失效时间
+    **/
+    private Date expireTime;
+    /**
+    * 领取时间
+    **/
+    private Date receiveTime;
+    /**
+    * 使用时间
+    **/
+    private Date useTime;
+    /**
+    * 状态 0-已失效 1-已领取 2-已使用 3-已生成
+    **/
+    private Byte state;
 
-    private Integer voucherType;
+    public VoucherBean() {
+        super();
+    }
 
-    private Integer voucherValue;
-
-    private String source;
-
-    private Integer useRange;
-
-    private Integer state;
-
-    private Date createTime;
-
-    private Date updateTime;
+    public VoucherBean(Long voucherId, Integer policyId, Long userId, Integer faceValue, Date effectTime, Date expireTime, Date receiveTime, Date useTime, Byte state) {
+        this.voucherId = voucherId;
+        this.policyId = policyId;
+        this.userId = userId;
+        this.faceValue = faceValue;
+        this.effectTime = effectTime;
+        this.expireTime = expireTime;
+        this.receiveTime = receiveTime;
+        this.useTime = useTime;
+        this.state = state;
+    }
 
     public Long getVoucherId() {
         return voucherId;
@@ -42,6 +71,14 @@ public class VoucherBean implements Serializable {
 
     public void setVoucherId(Long voucherId) {
         this.voucherId = voucherId;
+    }
+
+    public Integer getPolicyId() {
+        return policyId;
+    }
+
+    public void setPolicyId(Integer policyId) {
+        this.policyId = policyId;
     }
 
     public Long getUserId() {
@@ -52,55 +89,52 @@ public class VoucherBean implements Serializable {
         this.userId = userId;
     }
 
-    public Integer getVoucherType() {
-        return voucherType;
+    public Integer getFaceValue() {
+        return faceValue;
     }
 
-    public void setVoucherType(Integer voucherType) {
-        this.voucherType = voucherType;
+    public void setFaceValue(Integer faceValue) {
+        this.faceValue = faceValue;
     }
 
-    public Integer getVoucherValue() {
-        return voucherValue;
+    public Date getEffectTime() {
+        return effectTime;
     }
 
-    public void setVoucherValue(Integer voucherValue) {
-        this.voucherValue = voucherValue;
+    public void setEffectTime(Date effectTime) {
+        this.effectTime = effectTime;
     }
 
-    public String getSource() {
-        return source;
+    public Date getExpireTime() {
+        return expireTime;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setExpireTime(Date expireTime) {
+        this.expireTime = expireTime;
     }
 
-    public void setUseRange(Integer useRange) {
-        this.useRange = useRange;
+    public Date getReceiveTime() {
+        return receiveTime;
     }
 
-    public Integer getState() {
+    public void setReceiveTime(Date receiveTime) {
+        this.receiveTime = receiveTime;
+    }
+
+    public Date getUseTime() {
+        return useTime;
+    }
+
+    public void setUseTime(Date useTime) {
+        this.useTime = useTime;
+    }
+
+    public Byte getState() {
         return state;
     }
 
-    public void setState(Integer state) {
+    public void setState(Byte state) {
         this.state = state;
     }
 
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
 }

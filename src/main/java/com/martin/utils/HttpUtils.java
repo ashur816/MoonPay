@@ -1,19 +1,22 @@
 package com.martin.utils;
 
+import com.martin.constant.PayConstant;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import javax.net.ssl.SSLContext;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.KeyStore;
 
 /**
  * @ClassName: HttpUtils
@@ -114,6 +117,50 @@ public class HttpUtils {
                 ex.printStackTrace();
             }
         }
+        return result;
+    }
+
+    /**
+     * @Description: 使用安全证书，发送请求
+     * @param
+     * @return
+     * @throws
+     */
+    public static String sendPostWithCert(String url, String params, String charset) throws Exception {
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        FileInputStream inStream = new FileInputStream(new File("D:/ZD_cert.p12"));
+        try {
+            keyStore.load(inStream, PayConstant.TENPAY_MCH_ID.toCharArray());
+        } finally {
+            inStream.close();
+        }
+
+        SSLContext sslcontext = SSLContexts.custom().loadKeyMaterial(keyStore, PayConstant.TENPAY_MCH_ID.toCharArray()).build();
+        // Allow TLSv1 protocol only
+        SSLConnectionSocketFactory sslSf = new SSLConnectionSocketFactory(sslcontext, new String[]{"TLSv1"}, null, SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSf).build();
+        HttpPost httpPost = new HttpPost(url);
+
+        String result = null;
+        //得指明使用UTF-8编码，否则到API服务器XML的中文不能被成功识别
+        StringEntity postEntity = new StringEntity(params, charset);
+        httpPost.addHeader("Content-Type", "application/xml");
+        httpPost.setEntity(postEntity);
+
+        //设置请求器的配置
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout).build();
+        httpPost.setConfig(requestConfig);
+
+        try {
+            HttpResponse response = httpClient.execute(httpPost);
+
+            HttpEntity entity = response.getEntity();
+
+            result = EntityUtils.toString(entity, charset);
+        } finally {
+            httpPost.abort();
+        }
+
         return result;
     }
 }
