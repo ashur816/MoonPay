@@ -19,7 +19,7 @@ public class RefundResult implements Serializable {
     /**
      * 退款批次号
      */
-    private Long thdRefundId;
+    private String thdRefundId;
 
     /**
      * 原第三方支付流水id
@@ -56,12 +56,20 @@ public class RefundResult implements Serializable {
         this.flowId = flowId;
     }
 
-    public Long getThdRefundId() {
+    public String getThdRefundId() {
         return thdRefundId;
     }
 
-    public void setThdRefundId(Long thdRefundId) {
+    public void setThdRefundId(String thdRefundId) {
         this.thdRefundId = thdRefundId;
+    }
+
+    public Date getRefundTime() {
+        return refundTime;
+    }
+
+    public void setRefundTime(Date refundTime) {
+        this.refundTime = refundTime;
     }
 
     public String getThdFlowId() {

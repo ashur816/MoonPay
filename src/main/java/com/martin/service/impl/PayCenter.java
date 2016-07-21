@@ -403,7 +403,7 @@ public class PayCenter implements IPayCenter {
                     flowBean.setPayState(callbackState);
                     if (PayConstant.REFUND_SUCCESS == callbackState) {
                         //退款单号
-                        flowBean.setThdRefundId(refundResult.getThdFlowId());
+                        flowBean.setThdRefundId(refundResult.getThdRefundId());
                         //退款时间
                         flowBean.setRefundTime(new Date());
                     } else {
