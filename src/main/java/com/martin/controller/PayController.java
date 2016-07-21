@@ -329,10 +329,10 @@ public class PayController {
 
                 String[] str = flowIds.split(",");
                 List<String> flowIdList = Arrays.asList(str);
-                PayResult payResult = (PayResult) payCenter.doRefund(flowIdList, tmpStr);
-                if (payResult != null) {
+                Object refundResult = payCenter.doRefund(flowIdList, tmpStr);
+                if (refundResult != null) {
                     logger.info("退款返回信息成功");
-                    retMsg = JsonUtils.translateToJson(payResult);
+                    retMsg = JsonUtils.translateToJson(refundResult);
                 } else {
                     retMsg = "未获取到退款信息";
                 }

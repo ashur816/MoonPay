@@ -25,20 +25,20 @@ public interface IPayService {
     PayInfo buildPayInfo(PayFlowBean flowBean, Map<String, String> extMap) throws Exception;
 
     /**
-     * @Description: 支付回调参数校验
-     * @param
-     * @return
-     * @throws
-     */
-    PayResult payReturn(Map<String, String> paraMap) throws Exception;
-
-    /**
      * 批量退款，兼容单个
      * @param flowBeanList
      * @param extMap
      * @return
      */
     Object refund(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception;
+
+    /**
+     * @Description: 支付回调参数校验
+     * @param
+     * @return
+     * @throws
+     */
+    PayResult payReturn(Map<String, String> paraMap) throws Exception;
 
     /**
      * @Description: 退款回调参数校验

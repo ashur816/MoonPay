@@ -208,7 +208,7 @@ public class TenPay implements IPayService {
         tmpMap.put("content", returnXml);
         List<RefundResult> refundResults = refundReturn(tmpMap);
 
-        return refundResults.get(0);
+        return refundResults.size() > 0 ? refundResults.get(0) : null;
     }
 
     /**
@@ -247,8 +247,10 @@ public class TenPay implements IPayService {
             String tradeNo = sortedMap.get("out_trade_no");
             refundResult.setFlowId(Long.valueOf(tradeNo.substring(0, tradeNo.length() - 6)));
 
+            // 原第三方支付流水
+            refundResult.setThdFlowId(sortedMap.get("transaction_id"));
             // 微信退款流水号
-            refundResult.setThdFlowId(sortedMap.get("refund_id"));
+            refundResult.setThdRefundId(sortedMap.get("refund_id"));
             //错误代码
             refundResult.setFailCode(sortedMap.get("err_code"));
             //错误代码描述

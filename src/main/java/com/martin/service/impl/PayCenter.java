@@ -210,21 +210,22 @@ public class PayCenter implements IPayCenter {
         //微信是同步返回  支付宝是异步返回
         if (PayChannelEnum.TEN_PAY.getPayType().equals(payType)) {
             //更新退款流水
-            PayResult payResult;
+            RefundResult refundResult;
             PayFlowBean flowBean;
             String refundId;
             for (int i = 0; i < flowBeanList.size(); i++) {
                 refundId = RandomUtils.getPaymentNo();
                 extMap.put("refundId", refundId);
-                payResult = (PayResult) payService.refund(flowBeanList, extMap);
-
-                flowBean = flowBeanList.get(i);
-                flowBean.setRefundId(Long.parseLong(refundId));
-                flowBean.setRefundReason(refundReason);
-                flowBean.setPayState(PayConstant.REFUND_SUCCESS);
-                flowBean.setThdRefundId(payResult.getThdFlowId());
-                flowBean.setRefundTime(new Date());
-                payFlow.updPayFlow(flowBean);
+                refundResult = (RefundResult) payService.refund(flowBeanList, extMap);
+                if(refundResult != null){
+                    flowBean = flowBeanList.get(i);
+                    flowBean.setRefundId(Long.parseLong(refundId));
+                    flowBean.setRefundReason(refundReason);
+                    flowBean.setPayState(PayConstant.REFUND_SUCCESS);
+                    flowBean.setThdRefundId(refundResult.getThdFlowId());
+                    flowBean.setRefundTime(new Date());
+                    payFlow.updPayFlow(flowBean);
+                }
             }
             retObj = "退款成功";
         } else {
@@ -336,7 +337,7 @@ public class PayCenter implements IPayCenter {
         //解析返回
         PayResult payResult = payService.payReturn(reqParam);
         //根据流水号查流水
-        PayFlowBean flowBean = payFlow.getPayFlowById(payResult.getFlowId(), -1);
+        PayFlowBean flowBean = payFlow.getPayFlowById(payResult.getFlowId(), PayConstant.ALL_PAY_STATE);
         if (flowBean == null) {
             throw new BusinessException("", "未查询到支付流水");
         }
@@ -359,6 +360,7 @@ public class PayCenter implements IPayCenter {
                 //支付时间
                 flowBean.setPayTime(new Date());
                 flowBean.setThdFlowId(retThdFlowId);
+                flowBean.setRandomCode(payResult.getRandomCode());
             } else if (PayConstant.PAY_FAIL == callbackState) {//回调支付失败的
                 logger.info("回调支付失败");
                 flowBean.setFailCode(payResult.getFailCode());
@@ -394,7 +396,7 @@ public class PayCenter implements IPayCenter {
         for (int i = 0; i < refundResults.size(); i++) {
             refundResult = refundResults.get(i);
 
-            PayFlowBean flowBean = payFlow.getPayFlowByThdId(refundResult.getThdFlowId(), -1);
+            PayFlowBean flowBean = payFlow.getPayFlowByThdId(refundResult.getThdFlowId(), PayConstant.ALL_PAY_STATE);
             if (flowBean != null) {
                 payState = flowBean.getPayState();
                 callbackState = refundResult.getPayState();

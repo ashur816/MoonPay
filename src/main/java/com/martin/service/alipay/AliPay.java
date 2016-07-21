@@ -147,7 +147,7 @@ public class AliPay implements IPayService {
         //验签
         returnValidate(paraMap);
 
-        Long batchNo = Long.parseLong(paraMap.get("batch_no"));
+        String batchNo = paraMap.get("batch_no");
         //返回格式 2016072021001004610238752098^0.00^REFUND_TRADE_FEE_ERROR#2016072021001004610238752098^0.00^REFUND_TRADE_FEE_ERROR
         String resultDetails = paraMap.get("result_details");
         List<String> detailList = Arrays.asList(resultDetails.split("#"));
