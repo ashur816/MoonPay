@@ -3,6 +3,7 @@ package com.martin.service.tenpay;
 import com.martin.bean.PayFlowBean;
 import com.martin.bean.PayInfo;
 import com.martin.bean.PayResult;
+import com.martin.bean.RefundResult;
 import com.martin.constant.PayChannelEnum;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayReturnCodeEnum;
@@ -124,52 +125,45 @@ public class TenPay implements IPayService {
     }
 
     /**
-     * @Description: 回调参数校验
-     * @param tmpMap
+     * @Description: 支付回调参数校验
+     * @param paraMap
      * @return
      * @throws
      */
     @Override
-    public PayResult returnValidate(String notifyType, Map<String, String> tmpMap) throws Exception {
-
-        String tmpXml = tmpMap.get("content");
-        SortedMap<String, String> paraMap = TenPayUtils.getMapFromXML(tmpXml);
+    public PayResult payReturn(Map<String, String> paraMap) throws Exception {
+        String tmpXml = paraMap.get("content");
+        SortedMap<String, String> sortedMap = TenPayUtils.getMapFromXML(tmpXml);
 
         PayResult payResult = new PayResult();
-        if (paraMap == null || paraMap.size() < 1) {
+        if (sortedMap == null || sortedMap.size() < 1) {
             //参数不能为空
             throw new BusinessException(null, "参数不能为空");
         }
 
-        String returnSign = paraMap.get("sign");
-        String mySign = TenPayUtils.createSign(PayConstant.TENPAY_PRIVATE_KEY, paraMap);
+        String returnSign = sortedMap.get("sign");
+        String mySign = TenPayUtils.createSign(PayConstant.TENPAY_PRIVATE_KEY, sortedMap);
         if (!returnSign.equals(mySign)) {
             //回调签名不匹配
             throw new BusinessException(null, "回调签名不匹配");
         }
-        String resultCode = paraMap.get("result_code");
-        String returnCode = paraMap.get("return_code");
-        String tradeState = paraMap.get("trade_state");
+        String resultCode = sortedMap.get("result_code");
+        String returnCode = sortedMap.get("return_code");
+        String tradeState = sortedMap.get("trade_state");
 
         if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
             //支付结果
             payResult.setTradeState(tradeState);
             // 支付流水ID
-            String tradeNo = paraMap.get("out_trade_no");
+            String tradeNo = sortedMap.get("out_trade_no");
             payResult.setFlowId(Long.valueOf(tradeNo.substring(0, tradeNo.length() - 6)));
-
-            if(PayConstant.NOTICE_REFUND.equals(notifyType)){
-                // 微信退款流水号
-                payResult.setThdFlowId(paraMap.get("refund_id"));
-            }
-            else {
-                // 微信交易流水号
-                payResult.setThdFlowId(paraMap.get("transaction_id"));
-            }
+            payResult.setRandomCode(Integer.parseInt(tradeNo.substring(tradeNo.length() - 6)));
+            // 微信交易流水号
+            payResult.setThdFlowId(sortedMap.get("transaction_id"));
             //错误代码
-            payResult.setFailCode(paraMap.get("err_code"));
+            payResult.setFailCode(sortedMap.get("err_code"));
             //错误代码描述
-            payResult.setFailDesc(paraMap.get("err_code_des"));
+            payResult.setFailDesc(sortedMap.get("err_code_des"));
 
             if (StringUtils.isBlank(tradeState)) {//支付成功时，微信不回传 trade_state，查询订单时会回传 trade_state
                 tradeState = "SUCCESS";
@@ -187,7 +181,7 @@ public class TenPay implements IPayService {
      * @return
      */
     @Override
-    public PayResult refund(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
+    public RefundResult refund(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
         PayFlowBean flowBean = flowBeanList.get(0);
         SortedMap<String, String> paraMap = new TreeMap<>();
         paraMap.put("appid", PayConstant.TENPAY_APP_ID);
@@ -212,9 +206,62 @@ public class TenPay implements IPayService {
 
         Map tmpMap = new HashMap();
         tmpMap.put("content", returnXml);
-        PayResult payResult = returnValidate("", tmpMap);
+        List<RefundResult> refundResults = refundReturn(tmpMap);
 
-        return payResult;
+        return refundResults.get(0);
+    }
+
+    /**
+     * @Description: 退款回调参数校验
+     * @param paraMap
+     * @return
+     * @throws
+     */
+    @Override
+    public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
+        logger.info("微信退款回调处理");
+        String tmpXml = paraMap.get("content");
+        SortedMap<String, String> sortedMap = TenPayUtils.getMapFromXML(tmpXml);
+
+        RefundResult refundResult = new RefundResult();
+        if (sortedMap == null || sortedMap.size() < 1) {
+            //参数不能为空
+            throw new BusinessException(null, "参数不能为空");
+        }
+
+        String returnSign = sortedMap.get("sign");
+        String mySign = TenPayUtils.createSign(PayConstant.TENPAY_PRIVATE_KEY, sortedMap);
+        if (!returnSign.equals(mySign)) {
+            //回调签名不匹配
+            throw new BusinessException(null, "回调签名不匹配");
+        }
+        String resultCode = sortedMap.get("result_code");
+        String returnCode = sortedMap.get("return_code");
+        String tradeState = sortedMap.get("trade_state");
+
+        List<RefundResult> refundResults = new ArrayList<>();
+        if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
+            //支付结果
+            refundResult.setTradeState(tradeState);
+            // 支付流水ID
+            String tradeNo = sortedMap.get("out_trade_no");
+            refundResult.setFlowId(Long.valueOf(tradeNo.substring(0, tradeNo.length() - 6)));
+
+            // 微信退款流水号
+            refundResult.setThdFlowId(sortedMap.get("refund_id"));
+            //错误代码
+            refundResult.setFailCode(sortedMap.get("err_code"));
+            //错误代码描述
+            refundResult.setFailDesc(sortedMap.get("err_code_des"));
+
+            if (StringUtils.isBlank(tradeState)) {//支付成功时，微信不回传 trade_state，查询订单时会回传 trade_state
+                tradeState = "SUCCESS";
+            }
+            int callbackState = transPayState(tradeState);
+            refundResult.setPayState(callbackState);
+            refundResults.add(refundResult);
+        }
+        return refundResults;
     }
 
     /**
@@ -250,7 +297,7 @@ public class TenPay implements IPayService {
 
         Map tmpMap = new HashMap();
         tmpMap.put("content", returnXml);
-        PayResult payResult = returnValidate("", tmpMap);
+        PayResult payResult = payReturn(tmpMap);
 
         return payResult;
     }
@@ -284,7 +331,7 @@ public class TenPay implements IPayService {
 
         Map tmpMap = new HashMap();
         tmpMap.put("content", returnXml);
-        PayResult payResult = returnValidate("", tmpMap);
+        PayResult payResult = payReturn(tmpMap);
         return payResult;
     }
 

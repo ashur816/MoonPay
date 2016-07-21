@@ -3,6 +3,7 @@ package com.martin.service;
 import com.martin.bean.PayFlowBean;
 import com.martin.bean.PayInfo;
 import com.martin.bean.PayResult;
+import com.martin.bean.RefundResult;
 
 import java.util.List;
 import java.util.Map;
@@ -24,12 +25,12 @@ public interface IPayService {
     PayInfo buildPayInfo(PayFlowBean flowBean, Map<String, String> extMap) throws Exception;
 
     /**
-     * @Description: 回调参数校验
+     * @Description: 支付回调参数校验
      * @param
      * @return
      * @throws
      */
-    PayResult returnValidate(String notifyType, Map<String, String> paraMap) throws Exception;
+    PayResult payReturn(Map<String, String> paraMap) throws Exception;
 
     /**
      * 批量退款，兼容单个
@@ -38,6 +39,14 @@ public interface IPayService {
      * @return
      */
     Object refund(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception;
+
+    /**
+     * @Description: 退款回调参数校验
+     * @param
+     * @return
+     * @throws
+     */
+    List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception;
 
     /**
      * 提现

@@ -64,7 +64,7 @@ public class PayController {
                 modelAndView.setViewName("pay/common_pay");
                 doError(payInfo, modelAndView);
             } catch (Exception e) {
-                logger.error("doPayCenter异常-{}", e.getMessage());
+                logger.error("doPayCenter异常-{}", e);
                 modelAndView.addObject("error", e.getMessage());
                 modelAndView.setViewName("common/error");
             }
@@ -115,7 +115,7 @@ public class PayController {
                     modelAndView.addObject("error", "未获取到支付信息");
                 }
             } catch (Exception e) {
-                logger.error("toRefund异常-{}", e.getMessage());
+                logger.error("toRefund异常-{}", e);
                 modelAndView.addObject("error", e.getMessage());
                 modelAndView.setViewName("common/error");
             }
@@ -150,7 +150,7 @@ public class PayController {
                     modelAndView.addObject("error", "暂不支持当前选择的支付方式");
                 }
             } catch (Exception e) {
-                logger.error("doWebPay异常-{}", e.getMessage());
+                logger.error("doWebPay异常-{}", e);
                 modelAndView.addObject("error", e.getMessage());
                 modelAndView.setViewName("common/error");
             }
@@ -199,7 +199,7 @@ public class PayController {
                     modelAndView.addObject("error", "请用微信或支付宝扫码");
                 }
             } catch (Exception e) {
-                logger.error("doPayCenter异常-{}", e.getMessage());
+                logger.error("doPayCenter异常-{}", e);
                 modelAndView.addObject("error", e.getMessage());
                 modelAndView.setViewName("common/error");
             }
@@ -238,7 +238,7 @@ public class PayController {
                 PayInfo payInfo = payCenter.doPay(payType, bizId, ipAddress, code, "");
                 doError(payInfo, modelAndView);
             } catch (Exception e) {
-                logger.error("PayController.doPay 异常：{}", e.getMessage());
+                logger.error("PayController.doPay 异常：{}", e);
                 modelAndView.setViewName("common/error");
                 error = e.getMessage();
             }
@@ -304,7 +304,7 @@ public class PayController {
             payCenter.doNotify(notifyType, payType, ipAddress, reqMap);
         } catch (Exception e) {
             returnCode = CALLBACK_FAIL;
-            logger.error("PaymentController.doNotify，异常-{}", e.getMessage());
+            logger.error("PaymentController.doNotify，异常-{}", e);
         }
         logger.info("第三方回调结束，返回状态：{}", returnCode);
         return returnCode;
@@ -337,7 +337,7 @@ public class PayController {
                     retMsg = "未获取到退款信息";
                 }
             } catch (Exception e) {
-                logger.error("doRefund异常-{}", e.getMessage());
+                logger.error("doRefund异常-{}", e);
                 retMsg = e.getMessage();
             }
         }
@@ -405,7 +405,7 @@ public class PayController {
                     retMsg = "未获取到支付信息";
                 }
             } catch (Exception e) {
-                logger.error("doWebPay异常-{}", e.getMessage());
+                logger.error("doWebPay异常-{}", e);
                 retMsg = e.getMessage();
             }
         }

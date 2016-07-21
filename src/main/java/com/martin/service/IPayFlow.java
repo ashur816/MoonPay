@@ -45,6 +45,14 @@ public interface IPayFlow {
     PayFlowBean getPayFlowById(Long flowId, Integer payState);
 
     /**
+     * @Description: 根据第三方支付流水查询支付流水
+     * @param
+     * @return
+     * @throws
+     */
+    PayFlowBean getPayFlowByThdId(String thdFlowId, Integer payState);
+
+    /**
      * @Description: 批量查询支付流水
      * @param
      * @return

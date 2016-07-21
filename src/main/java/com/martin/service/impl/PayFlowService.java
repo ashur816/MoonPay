@@ -72,6 +72,18 @@ public class PayFlowService implements IPayFlow {
     }
 
     /**
+     * @Description: 根据第三方支付流水查询支付流水
+     * @param thdFlowId
+     * @param payState
+     * @return
+     * @throws
+     */
+    @Override
+    public PayFlowBean getPayFlowByThdId(String thdFlowId, Integer payState) {
+        return payFlowMapper.selectByThdId(thdFlowId, payState);
+    }
+
+    /**
      * @Description: 批量查询支付流水
      * @param flowIdList
      * @param payState

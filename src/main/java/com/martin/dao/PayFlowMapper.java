@@ -21,4 +21,6 @@ public interface PayFlowMapper extends Mapper<PayFlowBean> {
     PayFlowBean selectById(@Param("flowId") Long flowId, @Param("payState") Integer payState);
 
     List<PayFlowBean> selectListById(@Param("flowIdList") List<String> flowIdList, @Param("payState") Integer payState);
+
+    PayFlowBean selectByThdId(@Param("thdFlowId") String thdFlowId, @Param("payState") Integer payState);
 }

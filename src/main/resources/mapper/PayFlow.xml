@@ -25,4 +25,12 @@
             #{idItem}
         </foreach>
     </select>
+    <select id="selectByThdId" resultType="com.martin.bean.PayFlowBean">
+        select
+        <include refid="baseSql"/>
+        from m_pay_flow WHERE thd_flow_id=#{thdFlowId}
+        <if test="payState!=-1">
+            and pay_state=#{payState}
+        </if>
+    </select>
 </mapper>

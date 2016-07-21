@@ -3,6 +3,7 @@ package com.martin.service.alipay;
 import com.martin.bean.PayFlowBean;
 import com.martin.bean.PayInfo;
 import com.martin.bean.PayResult;
+import com.martin.bean.RefundResult;
 import com.martin.constant.PayChannelEnum;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayReturnCodeEnum;
@@ -14,10 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @ClassName: AliPay
@@ -67,41 +65,18 @@ public class AliPay implements IPayService {
     }
 
     /**
-     * @Description: 回调参数校验 支付宝 TRADE_FINISHED 和 TRADE_SUCCESS 才会回调通知
+     * @Description: 支付回调参数校验
      * @param paraMap
      * @return
      * @throws
      */
     @Override
-    public PayResult returnValidate(String notifyType, Map<String, String> paraMap) throws Exception {
+    public PayResult payReturn(Map<String, String> paraMap) throws Exception {
+        logger.info("支付回调处理");
+        //验签
+        returnValidate(paraMap);
+
         PayResult payResult = new PayResult();
-        if (paraMap == null || paraMap.size() < 1) {
-            //参数不能为空
-            throw new BusinessException(null, "参数不能为空");
-        }
-
-        //判断responseTxt是否为true，isSign是否为true
-        //responseTxt的结果不是true，与服务器设置问题、合作身份者ID、notify_id一分钟失效有关
-        //isSign不是true，与安全校验码、请求时的参数格式（如：带自定义参数等）、编码格式有关
-        String responseTxt = "false";
-        if (paraMap.get("notify_id") != null) {
-            String notify_id = paraMap.get("notify_id");
-            String params = "&partner=" + PayConstant.ALIPAY_PARTNER + "&notify_id=" + notify_id;
-            responseTxt = HttpUtils.sendPost(PayConstant.ALIPAY_VERIFY_URL, params, charset);
-        }
-        if ("false".equalsIgnoreCase(responseTxt)) {
-            //支付宝回调异常
-            throw new BusinessException(null, "支付宝回调异常");
-        }
-
-        String returnSign = paraMap.get("sign");
-        Map<String, String> tmpMap = AliPayUtils.paraFilter(paraMap);
-        String mySign = AliPayUtils.buildRequestMySign(PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, tmpMap);
-        if (!returnSign.equals(mySign)) {
-            //支付宝回调签名不匹配
-            throw new BusinessException(null, "支付宝回调签名不匹配");
-        }
-
         // 支付流水ID
         payResult.setFlowId(Long.valueOf(paraMap.get("out_trade_no")));
         // 支付宝交易流水号
@@ -112,7 +87,6 @@ public class AliPay implements IPayService {
 
         int callbackState = transPayState(tradeState);
         payResult.setPayState(callbackState);
-
         return payResult;
     }
 
@@ -143,10 +117,12 @@ public class AliPay implements IPayService {
         paraMap.put("batch_num", String.valueOf(refundNum));
         //单笔数据集 原付款支付宝交易号^退款总金额^退款理由  第一笔交易退款数据集#第二笔交易退款数据集
         StringBuilder sBuilder = new StringBuilder();
-        PayFlowBean flowBean = null;
+        PayFlowBean flowBean;
+        double payAmount;
         for (int i = 0; i < refundNum; i++) {
             flowBean = flowBeanList.get(i);
-            sBuilder.append(flowBean.getThdFlowId()).append("^").append(flowBean.getPayAmount()).append("^").append(extMap.get("refundReason")).append("#");
+            payAmount = flowBean.getPayAmount() / 100.0;
+            sBuilder.append(flowBean.getThdFlowId()).append("^").append(payAmount).append("^").append(extMap.get("refundReason")).append("#");
         }
         paraMap.put("detail_data", sBuilder.deleteCharAt(sBuilder.length() - 1).toString());
 
@@ -157,6 +133,45 @@ public class AliPay implements IPayService {
         payInfo.setPayType(PayChannelEnum.ALI_PAY.getPayType());
         payInfo.setRetHtml(sendString);
         return payInfo;
+    }
+
+    /**
+     * @Description: 退款回调参数校验
+     * @param paraMap
+     * @return
+     * @throws
+     */
+    @Override
+    public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
+        logger.info("支付宝退款回调处理");
+        //验签
+        returnValidate(paraMap);
+
+        Long batchNo = Long.parseLong(paraMap.get("batch_no"));
+        //返回格式 2016072021001004610238752098^0.00^REFUND_TRADE_FEE_ERROR#2016072021001004610238752098^0.00^REFUND_TRADE_FEE_ERROR
+        String resultDetails = paraMap.get("result_details");
+        List<String> detailList = Arrays.asList(resultDetails.split("#"));
+        List<String> resultList;
+        String resultMsg;
+        RefundResult refundResult = new RefundResult();
+        List<RefundResult> refundList = new ArrayList<>();
+        for (int i = 0; i < detailList.size(); i++) {
+            resultList = Arrays.asList(detailList.get(i).split("\\^"));
+            refundResult.setThdFlowId(resultList.get(0));
+            refundResult.setThdRefundId(batchNo);
+            resultMsg = resultList.get(2);
+            if ("SUCCESS".equals(resultMsg)) {
+                //退款成功
+                refundResult.setPayState(PayConstant.REFUND_SUCCESS);
+            } else {
+                //退款失败
+                refundResult.setPayState(PayConstant.REFUND_FAIL);
+                refundResult.setFailCode(resultList.get(2));
+                refundResult.setFailDesc("退款失败");
+            }
+            refundList.add(refundResult);
+        }
+        return refundList;
     }
 
     /**
@@ -215,5 +230,37 @@ public class AliPay implements IPayService {
             }
         }
         return callbackState;
+    }
+
+    /**
+     * 回调校验
+     */
+    private void returnValidate(Map<String, String> paraMap) throws Exception {
+        if (paraMap == null || paraMap.size() < 1) {
+            //参数不能为空
+            throw new BusinessException(null, "参数不能为空");
+        }
+
+        //判断responseTxt是否为true，isSign是否为true
+        //responseTxt的结果不是true，与服务器设置问题、合作身份者ID、notify_id一分钟失效有关
+        //isSign不是true，与安全校验码、请求时的参数格式（如：带自定义参数等）、编码格式有关
+        String responseTxt = "false";
+        if (paraMap.get("notify_id") != null) {
+            String notify_id = paraMap.get("notify_id");
+            String params = "&partner=" + PayConstant.ALIPAY_PARTNER + "&notify_id=" + notify_id;
+            responseTxt = HttpUtils.sendPost(PayConstant.ALIPAY_VERIFY_URL, params, charset);
+        }
+        if ("false".equalsIgnoreCase(responseTxt)) {
+            //支付宝回调异常
+            throw new BusinessException(null, "支付宝回调异常");
+        }
+
+        String returnSign = paraMap.get("sign");
+        Map<String, String> tmpMap = AliPayUtils.paraFilter(paraMap);
+        String mySign = AliPayUtils.buildRequestMySign(PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, tmpMap);
+        if (!returnSign.equals(mySign)) {
+            //支付宝回调签名不匹配
+            throw new BusinessException(null, "支付宝回调签名不匹配");
+        }
     }
 }

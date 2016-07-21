@@ -95,6 +95,10 @@ public class PayFlowBean implements Serializable {
      **/
     private Date refundTime;
     /**
+     * 微信支付随机码
+     **/
+    private Integer randomCode;
+    /**
      * 明细
      */
     @Transient
@@ -254,6 +258,14 @@ public class PayFlowBean implements Serializable {
 
     public void setRefundTime(Date refundTime) {
         this.refundTime = refundTime;
+    }
+
+    public Integer getRandomCode() {
+        return randomCode;
+    }
+
+    public void setRandomCode(Integer randomCode) {
+        this.randomCode = randomCode;
     }
 
     public List<PayFlowDetailBean> getDetailList() {

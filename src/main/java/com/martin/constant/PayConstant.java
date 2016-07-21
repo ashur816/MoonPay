@@ -41,7 +41,7 @@ public class PayConstant {
 
     public static String NOTICE_NOTIFY = "notify";//异步通知
 
-    public static String NOTICE_REFUND = "refund";//支付宝退款通知
+    public static String NOTICE_REFUND = "refund";//退款通知
 
     public static int STATE_0 = 0;//数据状态--删除
     public static int STATE_1 = 1;//数据状态--正常

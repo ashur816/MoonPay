@@ -40,6 +40,11 @@ public class PayResult implements Serializable {
      */
     private String failDesc;
 
+    /**
+     * 微信支付随机码
+     */
+    private Integer randomCode;
+
     public Long getFlowId() {
         return flowId;
     }
@@ -86,5 +91,13 @@ public class PayResult implements Serializable {
 
     public void setPayState(Integer payState) {
         this.payState = payState;
+    }
+
+    public Integer getRandomCode() {
+        return randomCode;
+    }
+
+    public void setRandomCode(Integer randomCode) {
+        this.randomCode = randomCode;
     }
 }
