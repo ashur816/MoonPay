@@ -1,5 +1,6 @@
 package com.martin.bean;
 
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -9,7 +10,7 @@ import java.util.Date;
 * @author ZXY
 * @date 2016-07-14 16:27:18
 */
-
+@Table(name = "m_activity")
 public class ActivityBean implements Serializable {
 
     /**

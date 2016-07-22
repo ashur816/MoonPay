@@ -1,7 +1,7 @@
 package com.martin.bean;
 
+import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.Date;
 
 /**
 * @ClassName: ReceiveRuleBean
@@ -9,7 +9,7 @@ import java.util.Date;
 * @author ZXY
 * @date 2016-07-14 16:29:23
 */
-
+@Table(name = "m_receive_rule")
 public class ReceiveRuleBean implements Serializable {
 
     /**

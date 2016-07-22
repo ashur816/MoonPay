@@ -1,5 +1,6 @@
 package com.martin.bean;
 
+import javax.persistence.Table;
 import java.io.Serializable;
 
 /**
@@ -8,7 +9,7 @@ import java.io.Serializable;
 * @author ZXY
 * @date 2016-07-14 16:26:06
 */
-
+@Table(name = "m_quota")
 public class QuotaBean implements Serializable {
 
     /**

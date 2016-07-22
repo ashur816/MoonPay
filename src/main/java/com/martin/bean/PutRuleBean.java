@@ -1,7 +1,7 @@
 package com.martin.bean;
 
+import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.Date;
 
 /**
 * @ClassName: PutRuleBean
@@ -9,7 +9,7 @@ import java.util.Date;
 * @author ZXY
 * @date 2016-07-14 16:29:03
 */
-
+@Table(name = "m_put_rule")
 public class PutRuleBean implements Serializable {
 
     /**
