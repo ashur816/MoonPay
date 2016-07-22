@@ -297,7 +297,7 @@ public class PayController {
                 }
             } else {
                 //非法通知类型
-                logger.error("PaymentController.doNotify：非法通知类型");
+                logger.error("PaymentController.doNotify：非法支付类型");
                 returnCode = CALLBACK_FAIL;
                 return returnCode;
             }

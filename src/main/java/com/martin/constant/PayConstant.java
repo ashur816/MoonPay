@@ -39,7 +39,7 @@ public class PayConstant {
     /* 通知类型 */
     public static String NOTICE_RETURN = "return";//同步通知
 
-    public static String NOTICE_NOTIFY = "notify";//异步通知
+    public static String NOTICE_NOTIFY = "pay";//异步通知
 
     public static String NOTICE_REFUND = "refund";//退款通知
 
