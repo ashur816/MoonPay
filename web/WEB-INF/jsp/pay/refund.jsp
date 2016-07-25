@@ -61,10 +61,21 @@
             var voucherId = $("option:checked").val();
             var payType = $("#payType").val();
             if (payType == 2) {
-                location.href = context + "/payCenter/doRefundPwd.htm?flowIds=" + $("#flowIds").val() + "&refundReason=" + $("#refundReason").val();
+                window.open(context + "/payCenter/doRefundPwd.htm?flowIds=" + $("#flowIds").val() + "&refundReason=" + $("#refundReason").val());
             }
             else {
-                location.href = context + "/payCenter/doRefund.htm?flowIds=" + $("#flowIds").val() + "&refundReason=" + $("#refundReason").val();
+                $.ajax({
+                    type: "post",
+                    url: context + "/payCenter/doRefund.htm",
+                    dataType: "json",
+                    data: {payType: payType, flowIds: $("#flowIds").val(), refundReason: $("#refundReason").val()},
+                    success: function (data) {
+                        alert(data);
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
             }
         });
     });

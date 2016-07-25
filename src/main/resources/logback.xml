@@ -2,7 +2,8 @@
 
 <configuration scan="true">
 
-    <substitutionProperty name="logbase" value="${catalina.base}/logs"/>
+    <!--<substitutionProperty name="logbase" value="${catalina.base}/logs"/>-->
+    <substitutionProperty name="logbase" value="/logs"/>
     <substitutionProperty name="logfilename" value="pay"/>
 
     <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -33,6 +34,7 @@
 
 
     <root level="${level}">
+        ${log.file}
         ${log.console}
     </root>
 

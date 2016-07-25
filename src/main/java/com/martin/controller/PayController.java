@@ -332,7 +332,7 @@ public class PayController {
                 Object refundResult = payCenter.doRefund(flowIdList, tmpStr);
                 if (refundResult != null) {
                     logger.info("退款返回信息成功");
-                    retMsg = JsonUtils.translateToJson(refundResult);
+                    retMsg = refundResult.toString();
                 } else {
                     retMsg = "未获取到退款信息";
                 }
