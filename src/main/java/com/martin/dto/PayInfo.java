@@ -1,4 +1,6 @@
-package com.martin.bean;
+package com.martin.dto;
+
+import com.martin.bean.VoucherBean;
 
 import java.io.Serializable;
 import java.util.List;

@@ -1,9 +1,9 @@
 package com.martin.service.tenpay;
 
 import com.martin.bean.PayFlowBean;
-import com.martin.bean.PayInfo;
-import com.martin.bean.PayResult;
-import com.martin.bean.RefundResult;
+import com.martin.dto.PayInfo;
+import com.martin.dto.PayResult;
+import com.martin.dto.RefundResult;
 import com.martin.constant.PayChannelEnum;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayReturnCodeEnum;

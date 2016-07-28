@@ -1,4 +1,4 @@
-package com.martin.bean;
+package com.martin.dto;
 
 import java.io.Serializable;
 

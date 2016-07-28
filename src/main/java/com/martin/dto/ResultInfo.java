@@ -1,4 +1,4 @@
-package com.martin.bean;
+package com.martin.dto;
 
 /**
  * @ClassName: ResultInfo

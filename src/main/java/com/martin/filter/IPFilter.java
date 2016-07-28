@@ -1,6 +1,6 @@
 package com.martin.filter;
 
-import com.martin.bean.ResultInfo;
+import com.martin.dto.ResultInfo;
 import com.martin.utils.IpUtils;
 import com.martin.utils.JsonUtils;
 import org.slf4j.Logger;

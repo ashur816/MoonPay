@@ -29,7 +29,6 @@
         <property name="ALIPAY_RETURN_URL" value="${alipay.returnUrl}"></property>
         <property name="ALIPAY_REFUND_URL" value="${alipay.refundUrl}"></property>
 
-
         <property name="TENPAY_ORDER_URL" value="${tenpay.orderUrl}"></property>
         <property name="TENPAY_QUERY_URL" value="${tenpay.queryUrl}"></property>
         <property name="TENPAY_PAY_URL" value="${tenpay.payUrl}"></property>
@@ -47,5 +46,12 @@
         <property name="TENPAY_AUTH_RET_URL" value="${tenpay.authRetUrl}"></property>
         <property name="TENPAY_NOTIFY_URL" value="${tenpay.notifyUrl}"></property>
         <property name="TENPAY_RETURN_URL" value="${tenpay.returnUrl}"></property>
+    </bean>
+
+    <bean id="pushConstant" class="com.martin.constant.PushConstant">
+        <property name="url" value="${push.url}"></property>
+        <property name="appId" value="${push.appId}"></property>
+        <property name="appKey" value="${push.appKey}"></property>
+        <property name="masterSecret" value="${push.masterSecret}"></property>
     </bean>
 </beans>

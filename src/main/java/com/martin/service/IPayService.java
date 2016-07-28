@@ -1,9 +1,9 @@
 package com.martin.service;
 
 import com.martin.bean.PayFlowBean;
-import com.martin.bean.PayInfo;
-import com.martin.bean.PayResult;
-import com.martin.bean.RefundResult;
+import com.martin.dto.PayInfo;
+import com.martin.dto.PayResult;
+import com.martin.dto.RefundResult;
 
 import java.util.List;
 import java.util.Map;

@@ -1,7 +1,7 @@
 package com.martin.service;
 
-import com.martin.bean.PayInfo;
-import com.martin.bean.PayResult;
+import com.martin.dto.PayInfo;
+import com.martin.dto.PayResult;
 
 import java.util.List;
 import java.util.Map;

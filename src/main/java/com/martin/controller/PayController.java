@@ -1,7 +1,7 @@
 package com.martin.controller;
 
-import com.martin.bean.PayInfo;
-import com.martin.bean.PayResult;
+import com.martin.dto.PayInfo;
+import com.martin.dto.PayResult;
 import com.martin.constant.PayChannelEnum;
 import com.martin.service.IPayCenter;
 import com.martin.utils.IpUtils;
