@@ -18,14 +18,14 @@
 }
 
 .moon-error {
-    background: url(../img/cuowu.png) center top no-repeat;
+    background: url(../img/error.jpg) center top no-repeat;
     background-size: auto 12rem;
     top: 6rem;
     padding-top: 12rem;
 }
 
 .moon-success {
-    background: url(../img/cuowu.png) center top no-repeat;
+    background: url(../img/success.png) center top no-repeat;
     background-size: auto 12rem;
     top: 6rem;
     padding-top: 12rem;
@@ -47,6 +47,15 @@ body, html {
     height: 100%;
     -webkit-touch-callout: none;
     -ms-touch-callout: none;
+}
+
+p {
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+    font-family: Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;
+    font-weight: 300;
 }
 
 .moon-content {
