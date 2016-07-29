@@ -1,12 +1,13 @@
 package com.martin.service.alipay;
 
 import com.martin.bean.PayFlowBean;
+import com.martin.constant.PayChannelEnum;
+import com.martin.constant.PayConstant;
+import com.martin.constant.PayParam;
+import com.martin.constant.PayReturnCodeEnum;
 import com.martin.dto.PayInfo;
 import com.martin.dto.PayResult;
 import com.martin.dto.RefundResult;
-import com.martin.constant.PayChannelEnum;
-import com.martin.constant.PayConstant;
-import com.martin.constant.PayReturnCodeEnum;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayService;
 import com.martin.utils.DateUtils;
@@ -39,28 +40,28 @@ public class AliPay implements IPayService {
         logger.info("开始支付宝支付");
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("service", PayConstant.ALIPAY_PAY_SERVICE);
-        paraMap.put("partner", PayConstant.ALIPAY_PARTNER);
-        paraMap.put("seller_id", PayConstant.ALIPAY_SELLER_ID);
-        paraMap.put("_input_charset", PayConstant.ALIPAY_INPUT_CHARSET);
-        paraMap.put("payment_type", PayConstant.ALIPAY_PAYMENT_TYPE);
-        paraMap.put("notify_url", PayConstant.ALIPAY_NOTIFY_URL);
-        paraMap.put("return_url", PayConstant.ALIPAY_RETURN_URL);
-        paraMap.put("anti_phishing_key", PayConstant.ALIPAY_ANTI_PHISHING_KEY);
-        paraMap.put("exter_invoke_ip", PayConstant.ALIPAY_EXTER_INVOKE_IP);
+        paraMap.put("service", PayParam.aliPayService);
+        paraMap.put("partner", PayParam.aliPartner);
+        paraMap.put("seller_id", PayParam.aliSellerId);
+        paraMap.put("_input_charset", PayParam.aliInputCharset);
+        paraMap.put("payment_type", PayParam.aliPaymentType);
+        paraMap.put("notify_url", PayParam.aliNotifyUrl);
+        paraMap.put("return_url", PayParam.aliReturnUrl);
+        paraMap.put("anti_phishing_key", PayParam.aliAntiPhishingKey);
+        paraMap.put("exter_invoke_ip", PayParam.aliExterInvokeIp);
         //超时时间 支付宝默认1H
-        paraMap.put("it_b_pay", PayConstant.ALIPAY_IT_B_PAY);
+        paraMap.put("it_b_pay", PayParam.aliItBPay);
         // ZD流水号
         paraMap.put("out_trade_no", String.valueOf(flowBean.getFlowId()));
         //商品名称
-        paraMap.put("subject", PayConstant.BODY);
+        paraMap.put("subject", PayParam.body);
         //支付总金额
         double payAmount = flowBean.getPayAmount() / 100.0;
         paraMap.put("total_fee", String.valueOf(payAmount));
-        paraMap.put("body", PayConstant.BODY);
+        paraMap.put("body", PayParam.body);
 
-        String html = AliPayUtils.buildReqForm(PayConstant.ALIPAY_URL, PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, paraMap);
-        PayInfo payInfo = new PayInfo(PayConstant.BODY, payAmount, html);
+        String html = AliPayUtils.buildReqForm(PayParam.aliUrl, PayParam.aliMd5Key, PayParam.aliSignType, paraMap);
+        PayInfo payInfo = new PayInfo(PayParam.body, payAmount, html);
         return payInfo;
     }
 
@@ -101,12 +102,12 @@ public class AliPay implements IPayService {
         logger.info("开始支付宝退款");
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("service", PayConstant.ALIPAY_REFUND_SERVICE);
-        paraMap.put("partner", PayConstant.ALIPAY_PARTNER);
-        paraMap.put("seller_user_id", PayConstant.ALIPAY_SELLER_ID);
-        paraMap.put("_input_charset", PayConstant.ALIPAY_INPUT_CHARSET);
-        paraMap.put("sign_type", PayConstant.ALIPAY_SIGN_TYPE);
-        paraMap.put("notify_url", PayConstant.ALIPAY_REFUND_URL);
+        paraMap.put("service", PayParam.aliRefundService);
+        paraMap.put("partner", PayParam.aliPartner);
+        paraMap.put("seller_user_id", PayParam.aliSellerId);
+        paraMap.put("_input_charset", PayParam.aliInputCharset);
+        paraMap.put("sign_type", PayParam.aliSignType);
+        paraMap.put("notify_url", PayParam.aliNotifyUrl);
         //退款时间 格式为：yyyy-MM-dd HH:mm:ss
         paraMap.put("refund_date", DateUtils.formatDateTime(new Date()));
         //退款批次号
@@ -126,7 +127,7 @@ public class AliPay implements IPayService {
         }
         paraMap.put("detail_data", sBuilder.deleteCharAt(sBuilder.length() - 1).toString());
 
-        String sendString = AliPayUtils.buildReqForm(PayConstant.ALIPAY_URL, PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, paraMap);
+        String sendString = AliPayUtils.buildReqForm(PayParam.aliUrl, PayParam.aliMd5Key, PayParam.aliSignType, paraMap);
         logger.info("发送退款信息{}", sendString);
 
         PayInfo payInfo = new PayInfo();
@@ -203,15 +204,15 @@ public class AliPay implements IPayService {
     public PayInfo authorize(String bizId) throws Exception {
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("app_id", PayConstant.ALIPAY_APP_ID);
-        paraMap.put("scope", PayConstant.ALIPAY_AUTH_CODE);
-        paraMap.put("redirect_uri", PayConstant.ALIPAY_AUTH_RET_URL);
+        paraMap.put("app_id", PayParam.aliAppId);
+        paraMap.put("scope", PayParam.aliAuthCode);
+        paraMap.put("redirect_uri", PayParam.aliAuthRetUrl);
         paraMap.put("state", bizId);
 
         String param = AliPayUtils.createLinkString(paraMap);
 
         PayInfo payInfo = new PayInfo();
-        payInfo.setDestUrl(PayConstant.ALIPAY_AUTH_URL);
+        payInfo.setDestUrl(PayParam.aliAuthUrl);
         payInfo.setDestParam(param);
 
         return payInfo;
@@ -247,8 +248,8 @@ public class AliPay implements IPayService {
         String responseTxt = "false";
         if (paraMap.get("notify_id") != null) {
             String notify_id = paraMap.get("notify_id");
-            String params = "&partner=" + PayConstant.ALIPAY_PARTNER + "&notify_id=" + notify_id;
-            responseTxt = HttpUtils.sendPost(PayConstant.ALIPAY_VERIFY_URL, params, charset);
+            String params = "&partner=" + PayParam.aliPartner + "&notify_id=" + notify_id;
+            responseTxt = HttpUtils.sendPost(PayParam.aliVerifyUrl, params, charset);
         }
         if ("false".equalsIgnoreCase(responseTxt)) {
             //支付宝回调异常
@@ -257,7 +258,7 @@ public class AliPay implements IPayService {
 
         String returnSign = paraMap.get("sign");
         Map<String, String> tmpMap = AliPayUtils.paraFilter(paraMap);
-        String mySign = AliPayUtils.buildRequestMySign(PayConstant.ALIPAY_MD5_KEY, PayConstant.ALIPAY_SIGN_TYPE, tmpMap);
+        String mySign = AliPayUtils.buildRequestMySign(PayParam.aliMd5Key, PayParam.aliSignType, tmpMap);
         if (!returnSign.equals(mySign)) {
             //支付宝回调签名不匹配
             throw new BusinessException(null, "支付宝回调签名不匹配");

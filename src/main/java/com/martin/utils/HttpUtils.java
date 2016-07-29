@@ -1,6 +1,6 @@
 package com.martin.utils;
 
-import com.martin.constant.PayConstant;
+import com.martin.constant.PayParam;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -130,12 +130,12 @@ public class HttpUtils {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
         FileInputStream inStream = new FileInputStream(new File("D:/ZD_cert.p12"));
         try {
-            keyStore.load(inStream, PayConstant.TENPAY_MCH_ID.toCharArray());
+            keyStore.load(inStream, PayParam.tenMchId.toCharArray());
         } finally {
             inStream.close();
         }
 
-        SSLContext sslcontext = SSLContexts.custom().loadKeyMaterial(keyStore, PayConstant.TENPAY_MCH_ID.toCharArray()).build();
+        SSLContext sslcontext = SSLContexts.custom().loadKeyMaterial(keyStore, PayParam.tenMchId.toCharArray()).build();
         // Allow TLSv1 protocol only
         SSLConnectionSocketFactory sslSf = new SSLConnectionSocketFactory(sslcontext, new String[]{"TLSv1"}, null, SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
         CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSf).build();
