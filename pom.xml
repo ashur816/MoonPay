@@ -193,14 +193,6 @@
         </dependency>
         <!-- MYBATIS end-->
 
-        <!-- 个推 start-->
-        <dependency>
-            <groupId>com.gexin.platform</groupId>
-            <artifactId>gexin-rp-sdk-http</artifactId>
-            <version>4.0.1.2</version>
-        </dependency>
-        <!-- 个推 end-->
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -243,13 +235,6 @@
             <version>2.9.4</version>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>getui-nexus</id>
-            <url>http://mvn.gt.igexin.com/nexus/content/repositories/releases/</url>
-        </repository>
-    </repositories>
 
     <profiles>
         <profile>

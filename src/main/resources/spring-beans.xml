@@ -48,11 +48,4 @@
         <property name="tenNotifyUrl" value="${tenpay.notifyUrl}"></property>
         <property name="tenReturnUrl" value="${tenpay.returnUrl}"></property>
     </bean>
-
-    <bean id="pushConstant" class="com.martin.constant.PushConstant">
-        <property name="url" value="${push.url}"></property>
-        <property name="appId" value="${push.appId}"></property>
-        <property name="appKey" value="${push.appKey}"></property>
-        <property name="masterSecret" value="${push.masterSecret}"></property>
-    </bean>
 </beans>

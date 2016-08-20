@@ -44,16 +44,22 @@
 <script type="text/javascript" src="<%=request.getContextPath()%>/static/js/cashier.js"></script>
 <script type="text/javascript">
 
-    $(function () {
-        $("input[name='payType']").change(function () {
-            var payType = $("input[name='payType']:checked").val();
-            if (payType == 1) {
-                $("#payForm").attr("action", context + "/payCenter/doScanPay.htm");
-            }
-            else {
-                $("#payForm").attr("action", context + "/payCenter/doWebPay.htm");
-            }
-        });
+//    $(function () {
+//        $("input[name='payType']").change(function () {
+//            $("#payForm").attr("action", context + "/payCenter/doWebPay.htm");
+//        });
+//    });
+
+$(function () {
+    $("input[name='payType']").change(function () {
+        var payType = $("input[name='payType']:checked").val();
+        if (payType == 1) {
+            $("#payForm").attr("action", context + "/axp/cashier/doScanPay.htm");
+        }
+        else {
+            $("#payForm").attr("action", context + "/axp/cashier/doWebPay.htm");
+        }
     });
+});
 
 </script>

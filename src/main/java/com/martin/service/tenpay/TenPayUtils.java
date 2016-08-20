@@ -20,12 +20,12 @@ import java.util.*;
  * @author ZXY
  * @date 2016/5/27 16:54
  */
-class TenPayUtils {
+public class TenPayUtils {
 
     //编码格式
     private static String charset = "UTF-8";
 
-    static String createRequestXml(String privateKey, SortedMap<String, String> parameters) {
+    public static String createRequestXml(String privateKey, SortedMap<String, String> parameters) {
         //随机码
         parameters.put("nonce_str", createNonceStr());
 

@@ -22,13 +22,6 @@ public interface IPayCenter {
      */
     PayInfo getPayInfo(String bizId) throws Exception;
 
-    /**
-     * @Description: 获取退款信息
-     * @param  flowIdList   收银台流水号
-     * @return PayInfo
-     * @throws
-     */
-    List<PayInfo> getRefundInfo(List<String> flowIdList) throws Exception;
 
     /**
      * @Description: 支付入口
@@ -54,6 +47,15 @@ public interface IPayCenter {
      * @throws
      */
     void doNotify(String notifyType, String payType, String ipAddress, Map<String, String> reqParam) throws Exception;
+
+
+    /**
+     * @Description: 获取退款信息
+     * @param  flowIdList   收银台流水号
+     * @return PayInfo
+     * @throws
+     */
+    List<PayInfo> getRefundInfo(List<String> flowIdList) throws Exception;
 
     /**
      * @Description: 退款

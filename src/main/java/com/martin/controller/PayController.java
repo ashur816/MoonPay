@@ -1,9 +1,10 @@
 package com.martin.controller;
 
+import com.martin.constant.PayChannelEnum;
 import com.martin.dto.PayInfo;
 import com.martin.dto.PayResult;
-import com.martin.constant.PayChannelEnum;
 import com.martin.service.IPayCenter;
+import com.martin.service.ITBService;
 import com.martin.utils.IpUtils;
 import com.martin.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +30,7 @@ import java.util.*;
  * @date 2016/6/16 14:10
  */
 @Controller
-@RequestMapping("/payCenter")
+@RequestMapping("/axp/cashier")
 public class PayController {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -42,6 +43,9 @@ public class PayController {
 
     @Resource
     private IPayCenter payCenter;
+
+    @Resource
+    private ITBService tBPayService;
 
     /**
      * @Description: 跳转网页支付
@@ -86,44 +90,6 @@ public class PayController {
     }
 
     /**
-     * @Description: 跳转退款
-     * @param request 包含 订单id
-     * @return
-     * @throws
-     */
-    @RequestMapping(value = "/toRefund")
-    public ModelAndView toRefund(HttpServletRequest request, String flowIds) {
-        ModelAndView modelAndView = new ModelAndView();
-
-        if (StringUtils.isBlank(flowIds)) {
-            modelAndView.setViewName("common/error");
-            modelAndView.addObject("error", "支付流水不能为空");
-        } else {
-            logger.info("退款接收参数：flowIds-{}", flowIds);
-            try {
-                String[] str = flowIds.split(",");
-                List<String> flowList = Arrays.asList(str);
-                //获取支付信息
-                List<PayInfo> payInfoList = payCenter.getRefundInfo(flowList);
-                if (payInfoList != null) {
-                    logger.info("支付返回成功");
-                    modelAndView.setViewName("pay/refund");
-                    modelAndView.addObject("payInfoList", payInfoList);
-                    modelAndView.addObject("flowIds", flowIds);
-                } else {
-                    modelAndView.setViewName("common/error");
-                    modelAndView.addObject("error", "未获取到支付信息");
-                }
-            } catch (Exception e) {
-                logger.error("toRefund异常-{}", e);
-                modelAndView.addObject("error", e.getMessage());
-                modelAndView.setViewName("common/error");
-            }
-        }
-        return modelAndView;
-    }
-
-    /**
      * @Description: 网页支付入口 用除微信/支付宝扫码的，直接跳到网页，网页选择支付方式，回传到此接口，再发起支付
      * @param request 包含 订单id
      * @return
@@ -140,12 +106,18 @@ public class PayController {
             String ipAddress = IpUtils.getIpAddress(request);
             logger.info("开始网页支付,订单号-{},支付方式-{},代金券-{}", bizId, payType, voucherId);
             try {
-                //生成订单支付信息
                 PayInfo payInfo = payCenter.doPay(payType, bizId, ipAddress, "", voucherId);
                 if (ALI_PAY.equals(payType)) {
+                    //生成订单支付信息
                     modelAndView.setViewName("pay/ali_pay");
                     doError(payInfo, modelAndView);
-                } else {
+                }
+                else if (TEN_PAY.equals(payType)) {
+                    //生成订单支付信息
+                    modelAndView.setViewName("pay/tenH5_pay");
+                    doError(payInfo, modelAndView);
+                }
+                else {
                     modelAndView.setViewName("common/error");
                     modelAndView.addObject("error", "暂不支持当前选择的支付方式");
                 }
@@ -217,6 +189,7 @@ public class PayController {
     public ModelAndView doAuthPay(HttpServletRequest request, String code, String state) {
         ModelAndView modelAndView = new ModelAndView();
         String ipAddress = IpUtils.getIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
         String error = "";
         if (StringUtils.isBlank(state)) {
             modelAndView.setViewName("common/error");
@@ -227,7 +200,12 @@ public class PayController {
 
             logger.info("doAuthPay接收参数bizId={},payType={}", bizId, payType);
             if (TEN_PAY.equals(payType)) {
-                modelAndView.setViewName("pay/ten_pay");
+                if (userAgent.matches("(.*)MicroMessenger(.*)")) {//微信扫码
+                    modelAndView.setViewName("pay/ten_pay");
+                }
+                else {
+                    modelAndView.setViewName("pay/tenH5_pay");
+                }
             } else {
                 modelAndView.setViewName("common/error");
                 modelAndView.addObject("error", "暂不支持当前支付方式");
@@ -308,6 +286,76 @@ public class PayController {
         }
         logger.info("第三方回调结束，返回状态：{}", returnCode);
         return returnCode;
+    }
+
+    /**
+     * @Description: 跳转退款
+     * @param request 包含 订单id
+     * @return
+     * @throws
+     */
+    @RequestMapping(value = "/toRefund")
+    public ModelAndView toRefund(HttpServletRequest request, String flowIds) {
+        ModelAndView modelAndView = new ModelAndView();
+
+        if (StringUtils.isBlank(flowIds)) {
+            modelAndView.setViewName("pay/refund");
+        } else {
+            logger.info("退款接收参数：flowIds-{}", flowIds);
+            try {
+                String[] str = flowIds.split(",");
+                List<String> flowList = Arrays.asList(str);
+                //获取支付信息
+//                List<PayInfo> payInfoList = payCenter.getRefundInfo(flowList);
+                List<PayInfo> payInfoList = tBPayService.getRefundInfo(flowList);
+                if (payInfoList != null) {
+                    logger.info("支付返回成功");
+                    modelAndView.setViewName("pay/refund");
+                    modelAndView.addObject("payInfoList", payInfoList);
+                    modelAndView.addObject("flowIds", flowIds);
+                } else {
+                    modelAndView.setViewName("common/error");
+                    modelAndView.addObject("error", "未获取到支付信息");
+                }
+            } catch (Exception e) {
+                logger.error("toRefund异常-{}", e);
+                modelAndView.addObject("error", e.getMessage());
+                modelAndView.setViewName("common/error");
+            }
+        }
+        return modelAndView;
+    }
+
+    /**
+     * @Description: 查询订单
+     * @param request
+     * @return
+     * @throws
+     */
+    @ResponseBody
+    @RequestMapping(value = "/getRefund")
+    public Object getRefundInfo(HttpServletRequest request, String flowIds) {
+        String retMsg = "";
+        if (StringUtils.isBlank(flowIds)) {
+            retMsg = "传入信息不能为空";
+        } else {
+            try {
+                String[] str = flowIds.split(",");
+                List<String> flowIdList = Arrays.asList(str);
+//                List<PayInfo>  payInfoList = payCenter.getRefundInfo(flowIdList);
+                List<PayInfo>  payInfoList = tBPayService.getRefundInfo(flowIdList);
+                if (payInfoList != null) {
+                    logger.info("退款返回信息成功");
+                    retMsg = JsonUtils.translateToJson(payInfoList);
+                } else {
+                    retMsg = "未获取到付款信息";
+                }
+            } catch (Exception e) {
+                logger.error("getRefundInfo异常-{}", e);
+                retMsg = e.getMessage();
+            }
+        }
+        return retMsg;
     }
 
     /**

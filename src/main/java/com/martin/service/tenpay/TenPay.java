@@ -50,17 +50,25 @@ public class TenPay implements IPayService {
         paraMap.put("mch_id", PayParam.tenMchId);
         paraMap.put("notify_url", PayParam.tenNotifyUrl);
         paraMap.put("return_url", PayParam.tenReturnUrl);
-        paraMap.put("trade_type", PayParam.tenTradeType);
         paraMap.put("spbill_create_ip", extMap.get("ipAddress"));
 
-        //用户id
-        String openId = getOpenId(extMap.get("code"));
-        logger.info("openId={}", openId);
-        if (StringUtils.isBlank(openId)) {
-            //用户必须关注指端微信号
-            throw new BusinessException(null, "用户必须关注指端微信号");
+        String code = extMap.get("code");
+        if(StringUtils.isBlank(code)){
+            paraMap.put("trade_type", "MWEB");
+//            paraMap.put("mweb_url", PayParam.tenReturnUrl);
         }
-        paraMap.put("openid", openId);
+        else {
+            //用户id
+            String openId = getOpenId(code);
+            logger.info("openId={}", openId);
+            if (StringUtils.isBlank(openId)) {
+                //用户必须关注指端微信号
+                throw new BusinessException(null, "用户必须关注指端微信号");
+            }
+            paraMap.put("openid", openId);
+            paraMap.put("trade_type", PayParam.tenTradeType);
+        }
+
         // ZD流水号 + 随机数，防止流水号重复
         Long flowId = flowBean.getFlowId();
         StringBuilder sb = new StringBuilder();

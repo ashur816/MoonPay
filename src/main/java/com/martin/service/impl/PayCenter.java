@@ -1,6 +1,7 @@
 package com.martin.service.impl;
 
-import com.martin.bean.*;
+import com.martin.bean.PayFlowBean;
+import com.martin.bean.VoucherBean;
 import com.martin.constant.PayChannelEnum;
 import com.martin.constant.PayConstant;
 import com.martin.dto.PayInfo;
@@ -66,35 +67,6 @@ public class PayCenter implements IPayCenter {
         payInfo.setBizId(bizId);
         payInfo.setVoucherList(voucherList);
         return payInfo;
-    }
-
-    /**
-     * @Description: 获取退款信息
-     * @param  flowIdList   收银台流水号
-     * @return PayInfo
-     * @throws
-     */
-    @Override
-    public List<PayInfo> getRefundInfo(List<String> flowIdList) throws Exception {
-        //根据flowId查流水
-        List<PayFlowBean> flowBeanList = payFlow.getPayFlowByIdList(flowIdList, PayConstant.PAY_SUCCESS);
-        if (flowBeanList == null || flowBeanList.size() <= 0) {
-            throw new BusinessException(null, "未查询到支付成功的订单");
-        }
-        PayInfo payInfo = null;
-        List<PayInfo> infoList = new ArrayList<>();
-        PayFlowBean flowBean = null;
-        for (int i = 0; i < flowBeanList.size(); i++) {
-            flowBean = flowBeanList.get(i);
-            payInfo = new PayInfo();
-            payInfo.setFlowId(flowBean.getFlowId());
-            payInfo.setBizId(flowBean.getBizId());
-            payInfo.setPayType(flowBean.getPayType());
-            payInfo.setGoodName("XXXX");
-            payInfo.setPayAmount(flowBean.getPayAmount() / 100.0);
-            infoList.add(payInfo);
-        }
-        return infoList;
     }
 
     /**
@@ -187,6 +159,35 @@ public class PayCenter implements IPayCenter {
     }
 
     /**
+     * @Description: 获取退款信息
+     * @param  flowIdList   收银台流水号
+     * @return PayInfo
+     * @throws
+     */
+    @Override
+    public List<PayInfo> getRefundInfo(List<String> flowIdList) throws Exception {
+        //根据flowId查流水
+        List<PayFlowBean> flowBeanList = payFlow.getPayFlowByIdList(flowIdList, PayConstant.PAY_SUCCESS);
+        if (flowBeanList == null || flowBeanList.size() <= 0) {
+            throw new BusinessException(null, "未查询到支付成功的订单");
+        }
+        PayInfo payInfo = null;
+        List<PayInfo> infoList = new ArrayList<>();
+        PayFlowBean flowBean = null;
+        for (int i = 0; i < flowBeanList.size(); i++) {
+            flowBean = flowBeanList.get(i);
+            payInfo = new PayInfo();
+            payInfo.setFlowId(flowBean.getFlowId());
+            payInfo.setBizId(flowBean.getBizId());
+            payInfo.setPayType(flowBean.getPayType());
+            payInfo.setGoodName("XXXX");
+            payInfo.setPayAmount(flowBean.getPayAmount() / 100.0);
+            infoList.add(payInfo);
+        }
+        return infoList;
+    }
+
+    /**
      * @Description: 退款/批量退款的payType一定要一样
      * @return void
      * @throws
@@ -221,7 +222,7 @@ public class PayCenter implements IPayCenter {
                 refundId = RandomUtils.getPaymentNo();
                 extMap.put("refundId", refundId);
                 refundResult = (RefundResult) payService.refund(flowBeanList, extMap);
-                if(refundResult != null){
+                if (refundResult != null) {
                     flowBean = flowBeanList.get(i);
                     flowBean.setRefundId(Long.parseLong(refundId));
                     flowBean.setRefundReason(refundReason);

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.martin.dao.TBPayFlowMapper">
+    <sql id="baseSql">
+      flow_id,flow_type,biz_id,biz_type,thd_flow_id,thd_type,notify_url,return_url,total_amount,pay_amount,create_time,pay_time,state,pay_state,
+      fail_code,fail_desc,packet_user_id,random_code,refund_id,thd_refund_id,refund_time
+    </sql>
+    <select id="selectListById" resultType="com.martin.bean.TBPayFlowBean">
+        select
+        <include refid="baseSql"/>
+        from tb_payflow WHERE flow_id IN
+        <foreach collection="flowIdList" item="idItem" open="(" separator="," close=")">
+            #{idItem}
+        </foreach>
+    </select>
+</mapper>
