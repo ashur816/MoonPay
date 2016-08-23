@@ -30,7 +30,7 @@ import java.util.*;
  * @date 2016/6/16 14:10
  */
 @Controller
-@RequestMapping("/axp/cashier")
+@RequestMapping("/moon/cashier")
 public class PayController {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -279,7 +279,8 @@ public class PayController {
                 returnCode = CALLBACK_FAIL;
                 return returnCode;
             }
-            payCenter.doNotify(notifyType, payType, ipAddress, reqMap);
+//            payCenter.doNotify(notifyType, payType, ipAddress, reqMap);
+            tBPayService.doNotify(notifyType, payType, ipAddress, reqMap);
         } catch (Exception e) {
             returnCode = CALLBACK_FAIL;
             logger.error("PaymentController.doNotify，异常-{}", e);
@@ -377,7 +378,8 @@ public class PayController {
 
                 String[] str = flowIds.split(",");
                 List<String> flowIdList = Arrays.asList(str);
-                Object refundResult = payCenter.doRefund(flowIdList, tmpStr);
+//                Object refundResult = payCenter.doRefund(flowIdList, tmpStr);
+                Object refundResult = tBPayService.doRefund(flowIdList, tmpStr);
                 if (refundResult != null) {
                     logger.info("退款返回信息成功");
                     retMsg = refundResult.toString();
@@ -411,7 +413,8 @@ public class PayController {
 
                 String[] str = flowIds.split(",");
                 List<String> flowIdList = Arrays.asList(str);
-                PayInfo payInfo = (PayInfo) payCenter.doRefund(flowIdList, tmpStr);
+//                PayInfo payInfo = (PayInfo) payCenter.doRefund(flowIdList, tmpStr);
+                PayInfo payInfo = (PayInfo) tBPayService.doRefund(flowIdList, tmpStr);
 
                 String payType = payInfo.getPayType().toString();
                 if (ALI_PAY.equals(payType)) {

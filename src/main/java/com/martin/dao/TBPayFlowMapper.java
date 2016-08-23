@@ -17,4 +17,6 @@ import java.util.List;
 public interface TBPayFlowMapper extends Mapper<TBPayFlowBean> {
 
     List<TBPayFlowBean> selectListById(@Param("flowIdList") List<String> flowIdList, @Param("payState") Integer payState);
+
+    TBPayFlowBean selectByThdId(@Param("thdFlowId") String thdFlowId, @Param("payState") Integer payState);
 }

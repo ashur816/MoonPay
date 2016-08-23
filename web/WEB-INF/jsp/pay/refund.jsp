@@ -19,7 +19,7 @@
         </li>
     </ul>
 
-    <input type="hidden" readonly size="30" id="payType" value="${payInfo.payType}"/>
+    <input type="hidden" readonly size="30" id="payType" value=""/>
     <div id="payList"></div>
 
     <p></p>
@@ -45,12 +45,12 @@
         $("#btnPay").click(function () {
             var payType = $("#payType").val();
             if (payType == 2) {
-                window.open(context + "/pay/doRefundPwd.htm?flowIds=" + $("#flowIds").val() + "&refundReason=" + $("#refundReason").val());
+                window.open(context + "/moon/cashier/doRefundPwd.htm?flowIds=" + $("#flowIds").val() + "&refundReason=" + $("#refundReason").val());
             }
             else {
                 $.ajax({
                     type: "post",
-                    url: context + "/pay/doRefund.htm",
+                    url: context + "/moon/cashier/doRefund.htm",
                     dataType: "json",
                     data: {payType: payType, flowIds: $("#flowIds").val(), refundReason: $("#refundReason").val()},
                     success: function (data) {
@@ -66,31 +66,44 @@
         $("#btnQry").click(function () {
             $.ajax({
                 type: "post",
-                url: context + "/pay/getRefund.htm",
+                url: context + "/moon/cashier/getRefund.htm",
                 dataType: "json",
                 data: {flowIds: $("#flowIds").val()},
                 success: function (data) {
                     var arrList = eval(data);
                     var html = "";
+                    var payType;
+                    var payState;
                     for (var i = 0; i < arrList.length; i++) {
                         var payInfo = arrList[i];
                         html += '<p></p><ul class="mui-table-view mui-table-view-striped mui-table-view-condensed"><li class="mui-table-view-cell"><div class="mui-table"><div class="mui-table-cell mui-col-xs-10">'
                                 + '<p>订单号：' + payInfo.bizId + '</p>'
                                 + '<p>支付流水：' + payInfo.flowId + '</p>';
-                        if (payInfo.payType == "1") {
+                        payType = payInfo.payType;
+                        if (payType == "1") {
                             html += '<p>支付渠道：微信</p>';
                         }
-                        else if (payInfo.payType == "2") {
+                        else if (payType == "2") {
                             html += '<p>支付渠道：支付宝</p>';
                         }
                         else {
                             html += '<p>支付渠道：不详</p>';
                         }
-                        html += '<p>退款金额：' + payInfo.payAmount + '</p>'
+
+                        payState = payInfo.payState;
+                        if(payState == 1){
+                            html += '<p>支付状态：已支付</p>';
+                        }
+                        else {
+                            html += '<p>支付状态：未支付</p>';
+                        }
+
+                        html += '<p>退款金额：' + payInfo.payAmount + '元</p>'
                                 + '</div><div class="mui-table-cell mui-col-xs-2 mui-text-right"></div></div></li></ul>';
                     }
                     $("#payList").html(html);
                     $("#btnReason").css("display", "block");
+                    $("#payType").val(payType);
                 },
                 error: function (data) {
                     alert(data.responseText);

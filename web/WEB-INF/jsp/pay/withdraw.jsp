@@ -39,7 +39,7 @@
             var payType = $("input[name='payType']:checked").val();
             $.ajax({
                 type: "post",
-                url: context + "/pay/doWithdraw.htm",
+                url: context + "/moon/cashier/doWithdraw.htm",
                 dataType: "json",
                 data: {payType: payType, acctId: acctId, drawAmount: drawAmount},
                 success: function (data) {

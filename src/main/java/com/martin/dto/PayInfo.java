@@ -72,6 +72,11 @@ public class PayInfo implements Serializable {
     public String bizId;
 
     /**
+     * 支付状态
+     */
+    public Integer payState;
+
+    /**
      * 代金券信息
      */
     public List<VoucherBean> voucherList;
@@ -172,6 +177,14 @@ public class PayInfo implements Serializable {
 
     public void setBizId(String bizId) {
         this.bizId = bizId;
+    }
+
+    public Integer getPayState() {
+        return payState;
+    }
+
+    public void setPayState(Integer payState) {
+        this.payState = payState;
     }
 
     public List<VoucherBean> getVoucherList() {

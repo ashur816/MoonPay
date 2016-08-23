@@ -9,6 +9,7 @@ import com.martin.dto.PayInfo;
 import com.martin.dto.RefundResult;
 import com.martin.exception.BusinessException;
 import com.martin.service.ITBService;
+import com.martin.service.alipay.AliPay;
 import com.martin.service.alipay.AliPayUtils;
 import com.martin.service.tenpay.TenPay;
 import com.martin.service.tenpay.TenPayUtils;
@@ -39,6 +40,9 @@ public class TBPayService implements ITBService {
     @Resource
     private TenPay tenPay;
 
+    @Resource
+    private AliPay aliPay;
+
     /**
      * @Description: 获取退款信息
      * @param  flowIdList   收银台流水号
@@ -63,6 +67,7 @@ public class TBPayService implements ITBService {
             payInfo.setPayType(flowBean.getThdType().toString());
             payInfo.setGoodName("XXXX");
             payInfo.setPayAmount(flowBean.getPayAmount() / 100.0);
+            payInfo.setPayState(flowBean.getPayState());
             infoList.add(payInfo);
         }
         return infoList;
@@ -101,11 +106,11 @@ public class TBPayService implements ITBService {
             for (int i = 0; i < flowBeanList.size(); i++) {
                 refundId = RandomUtils.getPaymentNo();
                 extMap.put("refundId", refundId);
-                refundResult = (RefundResult)tenRefund(flowBeanList, extMap);
+                refundResult = tenRefund(flowBeanList, extMap);
                 if (refundResult != null) {
                     flowBean = flowBeanList.get(i);
                     flowBean.setRefundId(Long.parseLong(refundId));
-                    flowBean.setFailDesc(refundReason);
+                    flowBean.setThdFlowId(refundReason);
                     flowBean.setPayState(PayConstant.REFUND_SUCCESS);
                     flowBean.setThdRefundId(refundResult.getThdFlowId());
                     flowBean.setRefundTime(new Date());
@@ -118,6 +123,63 @@ public class TBPayService implements ITBService {
             retObj = aliRefund(flowBeanList, extMap);
         }
         return retObj;
+    }
+
+    /**
+     * @Description: 第三方回调
+     * @return void
+     * @throws
+     * @param notifyType
+     * @param payType
+     * @param ipAddress
+     * @param reqParam
+     */
+    @Override
+    public void doNotify(String notifyType, String payType, String ipAddress, Map<String, String> reqParam) throws Exception {
+        if (StringUtils.isBlank(notifyType)) {
+            throw new BusinessException(null, "通知类型不能为空");
+        }
+
+        if (StringUtils.isBlank(payType)) {
+            throw new BusinessException(null, "支付方式不能为空");
+        }
+        if (PayConstant.NOTICE_REFUND.equals(notifyType)) {//退款回调
+            //解析返回
+            List<RefundResult> refundResults = aliPay.refundReturn(reqParam);
+            RefundResult refundResult;
+            int payState;
+            int callbackState;
+            for (int i = 0; i < refundResults.size(); i++) {
+                refundResult = refundResults.get(i);
+
+                TBPayFlowBean flowBean = tbPayFlowMapper.selectByThdId(refundResult.getThdFlowId(), PayConstant.ALL_PAY_STATE);
+                if (flowBean != null) {
+                    payState = flowBean.getPayState();
+                    callbackState = refundResult.getPayState();
+                    if (PayConstant.PAY_SUCCESS == payState || PayConstant.REFUND_ING == payState || PayConstant.REFUND_FAIL == payState) {//支付成功、退款中、退款失败的 才能继续退款
+                        //支付状态
+                        flowBean.setPayState(callbackState);
+                        if (PayConstant.REFUND_SUCCESS == callbackState) {
+                            //退款单号
+                            flowBean.setThdRefundId(refundResult.getThdRefundId());
+                            //退款时间
+                            flowBean.setRefundTime(new Date());
+                        } else {
+                            flowBean.setFailCode(refundResult.getFailCode());
+                            flowBean.setFailDesc(refundResult.getFailDesc());
+                        }
+                        //更新交易流水
+                        tbPayFlowMapper.updateByPrimaryKeySelective(flowBean);
+                    } else {
+                        //跳过不管
+                    }
+                } else {
+                    throw new BusinessException(null, "未查询到支付流水");
+                }
+            }
+        } else {
+
+        }
     }
 
     /**
@@ -135,7 +197,7 @@ public class TBPayService implements ITBService {
         paraMap.put("seller_user_id", PayParam.aliSellerId);
         paraMap.put("_input_charset", PayParam.aliInputCharset);
         paraMap.put("sign_type", PayParam.aliSignType);
-        paraMap.put("notify_url", PayParam.aliNotifyUrl);
+        paraMap.put("notify_url", PayParam.aliRefundUrl);
         //退款时间 格式为：yyyy-MM-dd HH:mm:ss
         paraMap.put("refund_date", DateUtils.formatDateTime(new Date()));
         //退款批次号

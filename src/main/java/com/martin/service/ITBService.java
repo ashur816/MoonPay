@@ -3,6 +3,7 @@ package com.martin.service;
 import com.martin.dto.PayInfo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName: ITBService
@@ -28,4 +29,11 @@ public interface ITBService {
      * @param refundReason
      */
     Object doRefund(List<String> flowIdList, String refundReason) throws Exception;
+
+    /**
+     * @Description: 第三方回调
+     * @return void
+     * @throws
+     */
+    void doNotify(String notifyType, String payType, String ipAddress, Map<String, String> reqParam) throws Exception;
 }

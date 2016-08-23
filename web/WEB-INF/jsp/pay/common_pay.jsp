@@ -13,7 +13,7 @@
     </h1>
 </header>
 <div class="moon-content">
-    <form id="payForm" action="<%=request.getContextPath()%>/payCenter/doWebPay.htm" method="post">
+    <form id="payForm" action="<%=request.getContextPath()%>/moon/cashier/doWebPay.htm" method="post">
         <input type="hidden" name="bizId" value="${payInfo.bizId}">
         <input type="hidden" name="thdType" value="2">
         <div class="moon-list">
@@ -54,10 +54,10 @@ $(function () {
     $("input[name='payType']").change(function () {
         var payType = $("input[name='payType']:checked").val();
         if (payType == 1) {
-            $("#payForm").attr("action", context + "/axp/cashier/doScanPay.htm");
+            $("#payForm").attr("action", context + "/moon/cashier/doScanPay.htm");
         }
         else {
-            $("#payForm").attr("action", context + "/axp/cashier/doWebPay.htm");
+            $("#payForm").attr("action", context + "/moon/cashier/doWebPay.htm");
         }
     });
 });
