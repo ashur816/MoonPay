@@ -44,8 +44,16 @@
     $(function () {
         $("#btnPay").click(function () {
             var payType = $("#payType").val();
+            var flowIds = "";
+            $("input[name='selFlag']:checked").each(function (index, obj) {
+                flowIds += obj.getAttribute("flowId") + ",";
+            });
+            if (flowIds == "") {
+                mui.alert("请选择数据");
+                return false;
+            }
             if (payType == 2) {
-                window.open(context + "/moon/cashier/doRefundPwd.htm?flowIds=" + $("#flowIds").val() + "&refundReason=" + $("#refundReason").val());
+                window.open(context + "/moon/cashier/doRefundPwd.htm?flowIds=" + flowIds.substring(0, flowIds.length - 1) + "&refundReason=" + $("#refundReason").val());
             }
             else {
                 $.ajax({
@@ -76,7 +84,9 @@
                     var payState;
                     for (var i = 0; i < arrList.length; i++) {
                         var payInfo = arrList[i];
-                        html += '<p></p><ul class="mui-table-view mui-table-view-striped mui-table-view-condensed"><li class="mui-table-view-cell"><div class="mui-table"><div class="mui-table-cell mui-col-xs-10">'
+                        html += '<p></p><ul class="mui-table-view mui-table-view-striped mui-table-view-condensed"><li class="mui-table-view-cell mui-checkbox mui-left">'
+                                + '<input name="selFlag" type="checkbox" flowId=' + payInfo.flowId + ' checked/>'
+                                + '<div class="mui-table"><div class="mui-table-cell mui-col-xs-10">'
                                 + '<p>订单号：' + payInfo.bizId + '</p>'
                                 + '<p>支付流水：' + payInfo.flowId + '</p>';
                         payType = payInfo.payType;
@@ -91,7 +101,7 @@
                         }
 
                         payState = payInfo.payState;
-                        if(payState == 1){
+                        if (payState == 1) {
                             html += '<p>支付状态：已支付</p>';
                         }
                         else {
@@ -99,7 +109,7 @@
                         }
 
                         html += '<p>退款金额：' + payInfo.payAmount + '元</p>'
-                                + '</div><div class="mui-table-cell mui-col-xs-2 mui-text-right"></div></div></li></ul>';
+                                + '</div><div class="mui-table-cell mui-col-xs-2 mui-text-right"></div></div></li></ul></div>';
                     }
                     $("#payList").html(html);
                     $("#btnReason").css("display", "block");
@@ -111,5 +121,4 @@
             });
         });
     });
-
 </script>

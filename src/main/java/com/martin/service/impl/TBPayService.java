@@ -87,7 +87,7 @@ public class TBPayService implements ITBService {
         }
         //根据流水号查流水
         List<TBPayFlowBean> flowBeanList = tbPayFlowMapper.selectListById(flowIdList, PayConstant.PAY_SUCCESS);
-        if (flowBeanList == null) {
+        if (!(flowBeanList != null && flowBeanList.size() > 0)) {
             throw new BusinessException(null, "未查询到支付信息");
         }
 
