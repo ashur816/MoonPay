@@ -14,7 +14,7 @@
     <ul class="mui-table-view">
         <li class="mui-table-view-cell">
             <label>订单号</label>
-            <input id="flowIds" type="text" class="mui-input-clear mui-input " placeholder="支付流水号，逗号分隔">
+            <input id="flowIds" type="text" class="mui-input-clear mui-input" placeholder="支付流水号，逗号分隔">
             <button id="btnQry" type="button" class="mui-btn mui-btn-success span-right">查询</button>
         </li>
     </ul>
