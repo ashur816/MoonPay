@@ -8,265 +8,335 @@ package com.martin.constant;
  */
 public class PayParam {
     //商品在第三方显示信息
-    public static String body;
+    public static String webBody;
+    public static String appBody;
 
     //证书路径
     public static String certPath;
+    //主页地址
+    public static String homeUrl;
 
-    public static String aliUrl;
-
+    public static String aliMapiUrl;
+    public static String aliOpenUrl;
     public static String aliVerifyUrl;
-
-    //授权模式
-    public static String aliAuthCode;
 
     //授权地址
     public static String aliAuthUrl;
-
-    //授权回调地址
-    public static String aliAuthRetUrl;
-
+    //授权模式
+    public static String aliAuthCode;
+    //调用的接口名，查单
+    public static String aliQueryService;
     //调用的接口名，支付
     public static String aliPayService;
-
+    //调用的接口名，企业付款
+    public static String aliTransferService;
     //调用的接口名，退款
     public static String aliRefundService;
-
-    //调用应用id
-    public static String aliAppId;
-
-    // 合作身份者ID，签约账号，以2088开头由16位纯数字组成的字符串，查看地址：https://b.alipay.com/order/pidAndKey.htm
-    public static String aliPartner;
-
-    // 收款支付宝账号，以2088开头由16位纯数字组成的字符串，一般情况下收款账号就是签约账号
-    public static String aliSellerId;
-
-    //商户的私钥,需要PKCS8格式，RSA公私钥生成：https://doc.open.alipay.com/doc2/detail.htm?spm=a219a.7629140.0.0.nBDxfy&treeId=58&articleId=103242&docType=1
-    public static String aliPrivateKey;
-
-    // 支付宝的公钥,查看地址：https://b.alipay.com/order/pidAndKey.htm
-    public static String aliPublicKey;
-
-    public static String aliMd5Key;
-
-    // 服务器异步通知页面路径  需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
-    public static String aliNotifyUrl;
-
+    //调用的接口名，关单
+    public static String aliCloseService;
+    // WEB签名方式
+    public static String aliWebSignType;
+    // APP签名方式
+    public static String aliAppSignType;
+    // 字符编码格式 目前支持 gbk 或 utf-8
+    public static String aliInputCharset;
+    // 支付类型 ，无需修改
+    public static String aliPaymentType;
+    //授权回调地址
+    public static String aliAuthRetUrl;
     // 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
     public static String aliReturnUrl;
 
-    // 退款服务器异步通知页面路径
-    public static String aliRefundUrl;
+    public static String aliRefundNotifyUrl;
+    public static String aliTransferNotifyUrl;
+    public static String aliWebNotifyUrl;
+    public static String aliAppNotifyUrl;
 
-    // 签名方式
-    public static String aliSignType;
+    // 合作身份者ID，签约账号，以2088开头由16位纯数字组成的字符串，查看地址：https://b.alipay.com/order/pidAndKey.htm
+    public static String aliPartnerId;
+    public static String aliAccountNo;
+    public static String aliAccountName;
+    // 支付宝的公钥,查看地址：https://b.alipay.com/order/pidAndKey.htm
+    public static String aliAliPublicKey;
+    // 合作伙伴MD5密钥
+    public static String aliMD5Key;
 
-    // 字符编码格式 目前支持 gbk 或 utf-8
-    public static String aliInputCharset;
+    // WEB应用
+    public static String aliWebAppId;
+    public static String aliWebPrivateKey;
 
-    // 支付类型 ，无需修改
-    public static String aliPaymentType;
-
-    // 防钓鱼时间戳  若要使用请调用类文件submit中的query_timestamp函数
-    public static String aliAntiPhishingKey;
-
-    // 客户端的IP地址 非局域网的外网IP地址，如：221.0.0.1
-    public static String aliExterInvokeIp;
-
-    // 设置未付款交易的超时时间，一旦超时，该笔交易就会自动被关闭
-    public static String aliItBPay;
+    // APP应用
+    public static String aliAppAppId;
+    public static String aliAppPrivateKey;
 
 
     public static String tenOrderUrl;
     public static String tenQueryUrl;
     public static String tenPayUrl;
     public static String tenRefundUrl;
-    //授权模式
-    public static String tenAuthCode;
+    public static String tenTransferUrl;
+    public static String tenCloseUrl;
     //授权地址
     public static String tenAuthUrl;
-    //授权回调地址
-    public static String tenAuthRetUrl;
-    //微信分配的公众账号ID
-    public static String tenAppId;
-    //微信支付分配的商户号
-    public static String tenMchId;
-    //设备号 终端设备号(门店号或收银设备ID)，注意：PC网页或公众号内支付请传"WEB"
-    public static String tenDeviceInfo;
-    //密钥，微信公众号的 AppSecret
-    public static String tenAppSecret;
-    //密钥，在微信支付账号中配置，不是微信公众号的 AppSecret
-    public static String tenPrivateKey;
-    public static String tenNotifyUrl;
-    public static String tenReturnUrl;
-    //机密方式
+    //授权模式
+    public static String tenAuthCode;
+    //退款方式
+    public static String refundAccount;
+    //加密方式
     public static String tenSignType;
     //是否支持信用卡
     public static String tenLimitPay;
-    //是否支持信用卡
-    public static String tenTradeType;
+    public static String tenWebTradeType;
+    public static String tenAppTradeType;
 
-    public void setBody(String body) {
-        PayParam.body = body;
+    public static String tenWebNotifyUrl;
+    public static String tenAppNotifyUrl;
+
+    //WEB
+    public static String tenWebAppId;
+    public static String tenWebMchId;
+    public static String tenDeviceInfo;
+    //密钥，在微信支付账号中配置，不是微信公众号的 AppSecret
+    public static String tenWebPrivateKey;
+    //密钥，微信公众号的 AppSecret
+    public static String tenAppSecret;
+    public static String tenWebAuthRetUrl;
+    public static String tenWebReturnUrl;
+
+    //APP
+    public static String tenAppAppId;
+    public static String tenAppMchId;
+    public static String tenAppPrivateKey;
+
+    public void setWebBody(String webBody) {
+        this.webBody = webBody;
+    }
+
+    public void setAppBody(String appBody) {
+        this.appBody = appBody;
     }
 
     public void setCertPath(String certPath) {
-        PayParam.certPath = certPath;
+        this.certPath = certPath;
     }
 
-    public void setAliUrl(String aliUrl) {
-        PayParam.aliUrl = aliUrl;
+    public void setHomeUrl(String homeUrl) {
+        this.homeUrl = homeUrl;
+    }
+
+    public void setAliMapiUrl(String aliMapiUrl) {
+        this.aliMapiUrl = aliMapiUrl;
+    }
+
+    public void setAliOpenUrl(String aliOpenUrl) {
+        this.aliOpenUrl = aliOpenUrl;
     }
 
     public void setAliVerifyUrl(String aliVerifyUrl) {
-        PayParam.aliVerifyUrl = aliVerifyUrl;
-    }
-
-    public void setAliAuthCode(String aliAuthCode) {
-        PayParam.aliAuthCode = aliAuthCode;
+        this.aliVerifyUrl = aliVerifyUrl;
     }
 
     public void setAliAuthUrl(String aliAuthUrl) {
-        PayParam.aliAuthUrl = aliAuthUrl;
+        this.aliAuthUrl = aliAuthUrl;
     }
 
-    public void setAliAuthRetUrl(String aliAuthRetUrl) {
-        PayParam.aliAuthRetUrl = aliAuthRetUrl;
+    public void setAliAuthCode(String aliAuthCode) {
+        this.aliAuthCode = aliAuthCode;
+    }
+
+    public void setAliQueryService(String aliQueryService) {
+        this.aliQueryService = aliQueryService;
     }
 
     public void setAliPayService(String aliPayService) {
-        PayParam.aliPayService = aliPayService;
+        this.aliPayService = aliPayService;
+    }
+
+    public void setAliTransferService(String aliTransferService) {
+        this.aliTransferService = aliTransferService;
     }
 
     public void setAliRefundService(String aliRefundService) {
-        PayParam.aliRefundService = aliRefundService;
+        this.aliRefundService = aliRefundService;
     }
 
-    public void setAliAppId(String aliAppId) {
-        PayParam.aliAppId = aliAppId;
+    public void setAliCloseService(String aliCloseService) {
+        this.aliCloseService = aliCloseService;
     }
 
-    public void setAliPartner(String aliPartner) {
-        PayParam.aliPartner = aliPartner;
+    public void setAliWebSignType(String aliWebSignType) {
+        this.aliWebSignType = aliWebSignType;
     }
 
-    public void setAliSellerId(String aliSellerId) {
-        PayParam.aliSellerId = aliSellerId;
-    }
-
-    public void setAliPrivateKey(String aliPrivateKey) {
-        PayParam.aliPrivateKey = aliPrivateKey;
-    }
-
-    public void setAliPublicKey(String aliPublicKey) {
-        PayParam.aliPublicKey = aliPublicKey;
-    }
-
-    public void setAliMd5Key(String aliMd5Key) {
-        PayParam.aliMd5Key = aliMd5Key;
-    }
-
-    public void setAliNotifyUrl(String aliNotifyUrl) {
-        PayParam.aliNotifyUrl = aliNotifyUrl;
-    }
-
-    public void setAliReturnUrl(String aliReturnUrl) {
-        PayParam.aliReturnUrl = aliReturnUrl;
-    }
-
-    public void setAliRefundUrl(String aliRefundUrl) {
-        PayParam.aliRefundUrl = aliRefundUrl;
-    }
-
-    public void setAliSignType(String aliSignType) {
-        PayParam.aliSignType = aliSignType;
+    public void setAliAppSignType(String aliAppSignType) {
+        this.aliAppSignType = aliAppSignType;
     }
 
     public void setAliInputCharset(String aliInputCharset) {
-        PayParam.aliInputCharset = aliInputCharset;
+        this.aliInputCharset = aliInputCharset;
     }
 
     public void setAliPaymentType(String aliPaymentType) {
-        PayParam.aliPaymentType = aliPaymentType;
+        this.aliPaymentType = aliPaymentType;
     }
 
-    public void setAliAntiPhishingKey(String aliAntiPhishingKey) {
-        PayParam.aliAntiPhishingKey = aliAntiPhishingKey;
+    public void setAliAuthRetUrl(String aliAuthRetUrl) {
+        this.aliAuthRetUrl = aliAuthRetUrl;
     }
 
-    public void setAliExterInvokeIp(String aliExterInvokeIp) {
-        PayParam.aliExterInvokeIp = aliExterInvokeIp;
+    public void setAliReturnUrl(String aliReturnUrl) {
+        this.aliReturnUrl = aliReturnUrl;
     }
 
-    public void setAliItBPay(String aliItBPay) {
-        PayParam.aliItBPay = aliItBPay;
+    public void setAliRefundNotifyUrl(String aliRefundNotifyUrl) {
+        this.aliRefundNotifyUrl = aliRefundNotifyUrl;
+    }
+
+    public void setAliTransferNotifyUrl(String aliTransferNotifyUrl) {
+        this.aliTransferNotifyUrl = aliTransferNotifyUrl;
+    }
+
+    public void setAliWebNotifyUrl(String aliWebNotifyUrl) {
+        this.aliWebNotifyUrl = aliWebNotifyUrl;
+    }
+
+    public void setAliAppNotifyUrl(String aliAppNotifyUrl) {
+        this.aliAppNotifyUrl = aliAppNotifyUrl;
+    }
+
+    public void setAliPartnerId(String aliPartnerId) {
+        this.aliPartnerId = aliPartnerId;
+    }
+
+    public void setAliAccountNo(String aliAccountNo) {
+        this.aliAccountNo = aliAccountNo;
+    }
+
+    public void setAliAccountName(String aliAccountName) {
+        this.aliAccountName = aliAccountName;
+    }
+
+    public void setAliAliPublicKey(String aliAliPublicKey) {
+        this.aliAliPublicKey = aliAliPublicKey;
+    }
+
+    public void setAliMD5Key(String aliMD5Key) {
+        this.aliMD5Key = aliMD5Key;
+    }
+
+    public void setAliWebAppId(String aliWebAppId) {
+        this.aliWebAppId = aliWebAppId;
+    }
+
+    public void setAliWebPrivateKey(String aliWebPrivateKey) {
+        this.aliWebPrivateKey = aliWebPrivateKey;
+    }
+
+    public void setAliAppAppId(String aliAppAppId) {
+        this.aliAppAppId = aliAppAppId;
+    }
+
+    public void setAliAppPrivateKey(String aliAppPrivateKey) {
+        this.aliAppPrivateKey = aliAppPrivateKey;
     }
 
     public void setTenOrderUrl(String tenOrderUrl) {
-        PayParam.tenOrderUrl = tenOrderUrl;
+        this.tenOrderUrl = tenOrderUrl;
     }
 
     public void setTenQueryUrl(String tenQueryUrl) {
-        PayParam.tenQueryUrl = tenQueryUrl;
+        this.tenQueryUrl = tenQueryUrl;
     }
 
     public void setTenPayUrl(String tenPayUrl) {
-        PayParam.tenPayUrl = tenPayUrl;
+        this.tenPayUrl = tenPayUrl;
     }
 
     public void setTenRefundUrl(String tenRefundUrl) {
-        PayParam.tenRefundUrl = tenRefundUrl;
+        this.tenRefundUrl = tenRefundUrl;
     }
 
-    public void setTenAuthCode(String tenAuthCode) {
-        PayParam.tenAuthCode = tenAuthCode;
+    public void setTenTransferUrl(String tenTransferUrl) {
+        this.tenTransferUrl = tenTransferUrl;
+    }
+
+    public void setTenCloseUrl(String tenCloseUrl) {
+        this.tenCloseUrl = tenCloseUrl;
     }
 
     public void setTenAuthUrl(String tenAuthUrl) {
-        PayParam.tenAuthUrl = tenAuthUrl;
+        this.tenAuthUrl = tenAuthUrl;
     }
 
-    public void setTenAuthRetUrl(String tenAuthRetUrl) {
-        PayParam.tenAuthRetUrl = tenAuthRetUrl;
+    public void setTenAuthCode(String tenAuthCode) {
+        this.tenAuthCode = tenAuthCode;
     }
 
-    public void setTenAppId(String tenAppId) {
-        PayParam.tenAppId = tenAppId;
-    }
-
-    public void setTenMchId(String tenMchId) {
-        PayParam.tenMchId = tenMchId;
-    }
-
-    public void setTenDeviceInfo(String tenDeviceInfo) {
-        PayParam.tenDeviceInfo = tenDeviceInfo;
-    }
-
-    public void setTenAppSecret(String tenAppSecret) {
-        PayParam.tenAppSecret = tenAppSecret;
-    }
-
-    public void setTenPrivateKey(String tenPrivateKey) {
-        PayParam.tenPrivateKey = tenPrivateKey;
-    }
-
-    public void setTenNotifyUrl(String tenNotifyUrl) {
-        PayParam.tenNotifyUrl = tenNotifyUrl;
-    }
-
-    public void setTenReturnUrl(String tenReturnUrl) {
-        PayParam.tenReturnUrl = tenReturnUrl;
+    public void setRefundAccount(String refundAccount) {
+        this.refundAccount = refundAccount;
     }
 
     public void setTenSignType(String tenSignType) {
-        PayParam.tenSignType = tenSignType;
+        this.tenSignType = tenSignType;
     }
 
     public void setTenLimitPay(String tenLimitPay) {
-        PayParam.tenLimitPay = tenLimitPay;
+        this.tenLimitPay = tenLimitPay;
     }
 
-    public void setTenTradeType(String tenTradeType) {
-        PayParam.tenTradeType = tenTradeType;
+    public void setTenWebTradeType(String tenWebTradeType) {
+        this.tenWebTradeType = tenWebTradeType;
+    }
+
+    public void setTenAppTradeType(String tenAppTradeType) {
+        this.tenAppTradeType = tenAppTradeType;
+    }
+
+    public void setTenWebNotifyUrl(String tenWebNotifyUrl) {
+        this.tenWebNotifyUrl = tenWebNotifyUrl;
+    }
+
+    public void setTenAppNotifyUrl(String tenAppNotifyUrl) {
+        this.tenAppNotifyUrl = tenAppNotifyUrl;
+    }
+
+    public void setTenWebAppId(String tenWebAppId) {
+        this.tenWebAppId = tenWebAppId;
+    }
+
+    public void setTenWebMchId(String tenWebMchId) {
+        this.tenWebMchId = tenWebMchId;
+    }
+
+    public void setTenDeviceInfo(String tenDeviceInfo) {
+        this.tenDeviceInfo = tenDeviceInfo;
+    }
+
+    public void setTenWebPrivateKey(String tenWebPrivateKey) {
+        this.tenWebPrivateKey = tenWebPrivateKey;
+    }
+
+    public void setTenAppSecret(String tenAppSecret) {
+        this.tenAppSecret = tenAppSecret;
+    }
+
+    public void setTenWebAuthRetUrl(String tenWebAuthRetUrl) {
+        this.tenWebAuthRetUrl = tenWebAuthRetUrl;
+    }
+
+    public void setTenWebReturnUrl(String tenWebReturnUrl) {
+        this.tenWebReturnUrl = tenWebReturnUrl;
+    }
+
+    public void setTenAppAppId(String tenAppAppId) {
+        this.tenAppAppId = tenAppAppId;
+    }
+
+    public void setTenAppMchId(String tenAppMchId) {
+        this.tenAppMchId = tenAppMchId;
+    }
+
+    public void setTenAppPrivateKey(String tenAppPrivateKey) {
+        this.tenAppPrivateKey = tenAppPrivateKey;
     }
 }

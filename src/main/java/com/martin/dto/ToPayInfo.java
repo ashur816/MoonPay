@@ -36,21 +36,6 @@ public class ToPayInfo implements Serializable {
      */
     private Integer payAmount;
 
-    /**
-     * 服务器异步通知页面路径
-     */
-    private String notifyUrl;
-
-    /**
-     * 页面跳转同步通知页面路径
-     */
-    private String returnUrl;
-
-    /**
-     * 下单客户端地址
-     */
-    private String ipAddress;
-
     public String getBizId() {
         return bizId;
     }
@@ -89,29 +74,5 @@ public class ToPayInfo implements Serializable {
 
     public void setPayAmount(Integer payAmount) {
         this.payAmount = payAmount;
-    }
-
-    public String getNotifyUrl() {
-        return notifyUrl;
-    }
-
-    public void setNotifyUrl(String notifyUrl) {
-        this.notifyUrl = notifyUrl;
-    }
-
-    public String getReturnUrl() {
-        return returnUrl;
-    }
-
-    public void setReturnUrl(String returnUrl) {
-        this.returnUrl = returnUrl;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
     }
 }

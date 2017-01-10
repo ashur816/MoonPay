@@ -4,48 +4,68 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
 
     <bean id="payParam" class="com.martin.constant.PayParam">
-        <property name="body" value="${pay.body}"></property>
+        <property name="webBody" value="${pay.webBody}"></property>
+        <property name="appBody" value="${pay.appBody}"></property>
         <property name="certPath" value="${pay.certPath}"></property>
+        <property name="homeUrl" value="${home.url}"></property>
 
-        <property name="aliUrl" value="${alipay.url}"></property>
+        <property name="aliMapiUrl" value="${alipay.mapiUrl}"></property>
+        <property name="aliOpenUrl" value="${alipay.openUrl}"></property>
         <property name="aliVerifyUrl" value="${alipay.verifyUrl}"></property>
-        <property name="aliAuthCode" value="${alipay.authCode}"></property>
         <property name="aliAuthUrl" value="${alipay.authUrl}"></property>
+        <property name="aliAuthCode" value="${alipay.authCode}"></property>
+        <property name="aliQueryService" value="${alipay.queryService}"></property>
         <property name="aliPayService" value="${alipay.payService}"></property>
+        <property name="aliTransferService" value="${alipay.transferService}"></property>
         <property name="aliRefundService" value="${alipay.refundService}"></property>
-        <property name="aliAppId" value="${alipay.appId}"></property>
-        <property name="aliPartner" value="${alipay.partner}"></property>
-        <property name="aliSellerId" value="${alipay.sellerId}"></property>
-        <property name="aliPrivateKey" value="${alipay.privateKey}"></property>
-        <property name="aliPublicKey" value="${alipay.publicKey}"></property>
-        <property name="aliSignType" value="${alipay.signType}"></property>
-        <property name="aliMd5Key" value="${alipay.md5key}"></property>
+        <property name="aliCloseService" value="${alipay.closeService}"></property>
+        <property name="aliWebSignType" value="${alipay.webSignType}"></property>
+        <property name="aliAppSignType" value="${alipay.appSignType}"></property>
         <property name="aliInputCharset" value="${alipay.inputCharset}"></property>
         <property name="aliPaymentType" value="${alipay.paymentType}"></property>
-        <property name="aliAntiPhishingKey" value="${alipay.antiPhishingKey}"></property>
-        <property name="aliExterInvokeIp" value="${alipay.exterInvokeIp}"></property>
-        <property name="aliItBPay" value="${alipay.itBPay}"></property>
         <property name="aliAuthRetUrl" value="${alipay.authRetUrl}"></property>
-        <property name="aliNotifyUrl" value="${alipay.notifyUrl}"></property>
         <property name="aliReturnUrl" value="${alipay.returnUrl}"></property>
-        <property name="aliRefundUrl" value="${alipay.refundUrl}"></property>
+        <property name="aliRefundNotifyUrl" value="${alipay.refundNotifyUrl}"></property>
+        <property name="aliTransferNotifyUrl" value="${alipay.transferNotifyUrl}"></property>
+        <property name="aliWebNotifyUrl" value="${alipay.webNotifyUrl}"></property>
+        <property name="aliAppNotifyUrl" value="${alipay.appNotifyUrl}"></property>
+        <property name="aliPartnerId" value="${alipay.partnerId}"></property>
+        <property name="aliAccountNo" value="${alipay.accountNo}"></property>
+        <property name="aliAccountName" value="${alipay.accountName}"></property>
+        <property name="aliAliPublicKey" value="${alipay.aliPublicKey}"></property>
+        <property name="aliMD5Key" value="${alipay.MD5Key}"></property>
+
+        <property name="aliWebAppId" value="${alipay.webAppId}"></property>
+        <property name="aliWebPrivateKey" value="${alipay.webPrivateKey}"></property>
+
+        <property name="aliAppAppId" value="${alipay.appAppId}"></property>
+        <property name="aliAppPrivateKey" value="${alipay.appPrivateKey}"></property>
 
         <property name="tenOrderUrl" value="${tenpay.orderUrl}"></property>
-        <property name="tenQueryUrl" value="${tenpay.queryUrl}"></property>
-        <property name="tenPayUrl" value="${tenpay.payUrl}"></property>
         <property name="tenRefundUrl" value="${tenpay.refundUrl}"></property>
-        <property name="tenAuthCode" value="${tenpay.authCode}"></property>
+        <property name="tenTransferUrl" value="${tenpay.transferUrl}"></property>
+        <property name="tenQueryUrl" value="${tenpay.queryUrl}"></property>
         <property name="tenAuthUrl" value="${tenpay.authUrl}"></property>
-        <property name="tenAppId" value="${tenpay.appid}"></property>
-        <property name="tenMchId" value="${tenpay.mchId}"></property>
-        <property name="tenDeviceInfo" value="${tenpay.deviceInfo}"></property>
-        <property name="tenPrivateKey" value="${tenpay.privateKey}"></property>
-        <property name="tenAppSecret" value="${tenpay.appSecret}"></property>
+        <property name="tenCloseUrl" value="${tenpay.closeUrl}"></property>
+        <property name="tenAuthCode" value="${tenpay.authCode}"></property>
+        <property name="refundAccount" value="${tenpay.refundAccount}"></property>
         <property name="tenSignType" value="${tenpay.signType}"></property>
         <property name="tenLimitPay" value="${tenpay.limitPay}"></property>
-        <property name="tenTradeType" value="${tenpay.tradeType}"></property>
-        <property name="tenAuthRetUrl" value="${tenpay.authRetUrl}"></property>
-        <property name="tenNotifyUrl" value="${tenpay.notifyUrl}"></property>
-        <property name="tenReturnUrl" value="${tenpay.returnUrl}"></property>
+        <property name="tenWebTradeType" value="${tenpay.webTradeType}"></property>
+        <property name="tenAppTradeType" value="${tenpay.appTradeType}"></property>
+        <property name="tenWebNotifyUrl" value="${tenpay.webNotifyUrl}"></property>
+        <property name="tenAppNotifyUrl" value="${tenpay.appNotifyUrl}"></property>
+
+        <property name="tenWebAppId" value="${tenpay.webAppid}"></property>
+        <property name="tenWebMchId" value="${tenpay.webMchId}"></property>
+        <property name="tenDeviceInfo" value="${tenpay.webDeviceInfo}"></property>
+        <property name="tenWebPrivateKey" value="${tenpay.webPrivateKey}"></property>
+        <property name="tenAppSecret" value="${tenpay.webAppSecret}"></property>
+        <property name="tenWebAuthRetUrl" value="${tenpay.webAuthRetUrl}"></property>
+        <property name="tenWebReturnUrl" value="${tenpay.webReturnUrl}"></property>
+
+        <property name="tenAppAppId" value="${tenpay.appAppid}"></property>
+        <property name="tenAppMchId" value="${tenpay.appMchId}"></property>
+        <property name="tenAppPrivateKey" value="${tenpay.appPrivateKey}"></property>
     </bean>
 </beans>

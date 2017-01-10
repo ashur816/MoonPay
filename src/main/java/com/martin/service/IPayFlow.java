@@ -5,58 +5,60 @@ import com.martin.bean.PayFlowBean;
 import java.util.List;
 
 /**
+ * @author ZXY
  * @ClassName: PayFlowService
  * @Description: 支付流水服务
- * @author ZXY
  * @date 2016/6/30 17:27
  */
 public interface IPayFlow {
 
     /**
-     * @Description: 新增支付流水
      * @param
      * @return
      * @throws
-     */
-    PayFlowBean addPayFlow(PayFlowBean payFlowBean);
-
-    /**
-     * @Description: 更新支付流水
-     * @param
-     * @return
-     * @throws
-     */
-    PayFlowBean updPayFlow(PayFlowBean payFlowBean);
-
-    /**
-     * @Description: 根据业务查询支付流水
-     * @param bizId 订单号
-     * @return
-     * @throws
-     */
-    PayFlowBean getPayFlowByBiz(String bizId);
-
-    /**
      * @Description: 查询支付流水
-     * @param
-     * @return
-     * @throws
      */
     PayFlowBean getPayFlowById(Long flowId, Integer payState);
 
     /**
-     * @Description: 根据第三方支付流水查询支付流水
      * @param
      * @return
      * @throws
+     * @Description: 新增支付流水
      */
-    PayFlowBean getPayFlowByThdId(String thdFlowId, Integer payState);
+    void addPayFlow(PayFlowBean payFlowBean);
 
     /**
-     * @Description: 批量查询支付流水
      * @param
      * @return
      * @throws
+     * @Description: 更新支付流水
      */
-    List<PayFlowBean> getPayFlowByIdList(List<String> flowIdList, Integer payState);
+    void updPayFlow(PayFlowBean payFlowBean);
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 组装支付流水
+     */
+    PayFlowBean buildPayFlow(String clientSource, String paySource, String bizId, int bizType, int payAmount);
+
+    /**
+     * @param flowId
+     * @param thdFlowId
+     * @return Boolean
+     * @throws
+     * @Description: 更新预付单号
+     */
+    Boolean updateThdFlowId(Long flowId, String thdFlowId) throws Exception;
+
+    /**
+     * @param bizId
+     * @param bizType
+     * @return PayFlowBean
+     * @throws
+     * @Description: 根据 biz_id + biz_type 查是否已有流水
+     */
+    List<PayFlowBean> getPayFlowListByBiz(String bizId, Integer bizType) throws Exception;
 }

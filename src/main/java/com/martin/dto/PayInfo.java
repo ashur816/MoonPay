@@ -1,9 +1,6 @@
 package com.martin.dto;
 
-import com.martin.bean.VoucherBean;
-
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * @ClassName: PayInfo
@@ -23,7 +20,7 @@ public class PayInfo implements Serializable {
     /**
      * 支付渠道
      */
-    public String payType;
+    public Integer payType;
 
     /**
      * 商品名
@@ -76,12 +73,6 @@ public class PayInfo implements Serializable {
      */
     public Integer payState;
 
-    /**
-     * 代金券信息
-     */
-    public List<VoucherBean> voucherList;
-
-
     public PayInfo() {
     }
 
@@ -99,11 +90,11 @@ public class PayInfo implements Serializable {
         this.flowId = flowId;
     }
 
-    public String getPayType() {
+    public Integer getPayType() {
         return payType;
     }
 
-    public void setPayType(String payType) {
+    public void setPayType(Integer payType) {
         this.payType = payType;
     }
 
@@ -185,13 +176,5 @@ public class PayInfo implements Serializable {
 
     public void setPayState(Integer payState) {
         this.payState = payState;
-    }
-
-    public List<VoucherBean> getVoucherList() {
-        return voucherList;
-    }
-
-    public void setVoucherList(List<VoucherBean> voucherList) {
-        this.voucherList = voucherList;
     }
 }

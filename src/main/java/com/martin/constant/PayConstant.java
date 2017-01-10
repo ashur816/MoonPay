@@ -32,16 +32,25 @@ public class PayConstant {
     public static int BIZ_TYPE_GRAB = 1;
     public static int BIZ_TYPE_WITHDRAW = 2;
 
-    /* 账户类型 */
-    public static int ACCT_TYPE_ZD = 0;
-    public static int ACCT_TYPE_USER = 1;
+    /* 终端类型 */
+    public static final String APP_ID_WEB = "moon_web";
+    public static final String APP_ID_APP = "moon_app";
+
+    /* 支付渠道类型 */
+    public static int PAY_TYPE_TEN = 1;//微信
+    public static int PAY_TYPE_ALI = 2;//支付宝
 
     /* 通知类型 */
     public static String NOTICE_RETURN = "return";//同步通知
+    public static String NOTICE_WEB_PAY = "webpay";//web支付异步通知
+    public static String NOTICE_APP_PAY = "apppay";//app支付异步通知
+    public static String NOTICE_WEB_REFUND = "webrefund";//web退款异步通知
+    public static String NOTICE_APP_REFUND = "apprefund";//app退款异步通知
+    public static String NOTICE_TRANSFER = "transfer";//企业付款异步通知
 
-    public static String NOTICE_NOTIFY = "pay";//异步通知
-
-    public static String NOTICE_REFUND = "refund";//退款通知
+    /* 回调执行结果 */
+    public final static String CALLBACK_SUCCESS = "success";
+    public final static String CALLBACK_FAIL = "fail";
 
     public static int STATE_0 = 0;//数据状态--删除
     public static int STATE_1 = 1;//数据状态--正常

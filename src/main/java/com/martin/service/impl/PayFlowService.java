@@ -3,7 +3,6 @@ package com.martin.service.impl;
 import com.martin.bean.PayFlowBean;
 import com.martin.dao.PayFlowMapper;
 import com.martin.service.IPayFlow;
-import com.martin.utils.RandomUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -11,9 +10,9 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * @author ZXY
  * @ClassName: PayFlowService
  * @Description: 支付流水
- * @author ZXY
  * @date 2016/6/30 17:40
  */
 @Service("payFlowService")
@@ -23,75 +22,85 @@ public class PayFlowService implements IPayFlow {
     private PayFlowMapper payFlowMapper;
 
     /**
+     * @param bizId
+     * @param bizType
+     * @return PayFlowBean
+     * @throws
+     * @Description: 根据 biz_id + biz_type 查是否已有流水
+     */
+    @Override
+    public List<PayFlowBean> getPayFlowListByBiz(String bizId, Integer bizType) throws Exception {
+        return payFlowMapper.getPayFlowListByBiz(bizId, bizType);
+    }
+
+    /**
+     * @param payFlowBean
+     * @return
+     * @throws
      * @Description: 新增支付流水
-     * @return
-     * @throws
      */
     @Override
-    public PayFlowBean addPayFlow(PayFlowBean payFlowBean) {
-        //生成流水号
-        long flowId = Long.valueOf(RandomUtils.getPaymentNo());
-        payFlowBean.setFlowId(flowId);
-        payFlowBean.setCreateTime(new Date());
+    public void addPayFlow(PayFlowBean payFlowBean) {
         payFlowMapper.insertSelective(payFlowBean);
-        return payFlowBean;
     }
 
     /**
+     * @return
+     * @throws
      * @Description: 更新支付流水
-     * @return
-     * @throws
      */
     @Override
-    public PayFlowBean updPayFlow(PayFlowBean payFlowBean) {
+    public void updPayFlow(PayFlowBean payFlowBean) {
         payFlowMapper.updateByPrimaryKeySelective(payFlowBean);
-        return payFlowBean;
     }
 
     /**
-     * @Description: 根据业务查询支付流水
-     * @param bizId 订单号
-     * @return
-     * @throws
-     */
-    @Override
-    public PayFlowBean getPayFlowByBiz(String bizId) {
-        return payFlowMapper.selectByBiz(bizId);
-    }
-
-    /**
-     * @Description: 根据支付状态查询流水
      * @param flowId
      * @param payState
      * @return
      * @throws
+     * @Description: 根据支付状态查询流水
      */
     @Override
     public PayFlowBean getPayFlowById(Long flowId, Integer payState) {
-        return payFlowMapper.selectById(flowId, payState);
+        return payFlowMapper.getPayFlowById(flowId, payState);
     }
 
     /**
-     * @Description: 根据第三方支付流水查询支付流水
+     * @param clientSource
+     * @param paySource
+     * @param bizId
+     * @param bizType
+     * @return
+     * @throws
+     * @Description: 组装支付流水
+     */
+    @Override
+    public PayFlowBean buildPayFlow(String clientSource, String paySource, String bizId, int bizType, int payAmount) {
+        PayFlowBean flowBean = new PayFlowBean();
+        flowBean.setPayAmount(payAmount);
+        flowBean.setBizId(bizId);
+        flowBean.setBizType(bizType);
+        flowBean.setClientSource(clientSource);
+        flowBean.setPaySource(paySource);
+        flowBean.setCreateTime(new Date());
+        return flowBean;
+    }
+
+    /**
+     * @param flowId
      * @param thdFlowId
-     * @param payState
-     * @return
+     * @return Boolean
      * @throws
+     * @Description: 更新预付单号
      */
     @Override
-    public PayFlowBean getPayFlowByThdId(String thdFlowId, Integer payState) {
-        return payFlowMapper.selectByThdId(thdFlowId, payState);
+    public Boolean updateThdFlowId(Long flowId, String thdFlowId) throws Exception {
+        int num = payFlowMapper.updateThdFlowId(flowId, thdFlowId);
+        if (1 == num) {
+            return true;
+        }
+        return false;
     }
 
-    /**
-     * @Description: 批量查询支付流水
-     * @param flowIdList
-     * @param payState
-     * @return
-     * @throws
-     */
-    @Override
-    public List<PayFlowBean> getPayFlowByIdList(List<String> flowIdList, Integer payState) {
-        return payFlowMapper.selectListById(flowIdList, payState);
-    }
 }

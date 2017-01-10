@@ -2,10 +2,8 @@ package com.martin.bean;
 
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @ClassName: PayFlowBean
@@ -33,19 +31,19 @@ public class PayFlowBean implements Serializable {
     /**
      * 第三方交易类型
      **/
-    private String payType;
+    private Integer payType;
     /**
      * 第三方交易流水
      **/
     private String thdFlowId;
     /**
-     * 通知地址
+     * 发起支付的客户端来源
      **/
-    private String notifyUrl;
+    private String clientSource;
     /**
-     * 回调地址
+     * 第三方支付的账户id
      **/
-    private String returnUrl;
+    private String paySource;
     /**
      * 总交易金额
      **/
@@ -94,15 +92,6 @@ public class PayFlowBean implements Serializable {
      *退款时间
      **/
     private Date refundTime;
-    /**
-     * 微信支付随机码
-     **/
-    private Integer randomCode;
-    /**
-     * 明细
-     */
-    @Transient
-    private List<PayFlowDetailBean> detailList;
 
     public PayFlowBean() {
         super();
@@ -124,20 +113,20 @@ public class PayFlowBean implements Serializable {
         this.bizId = bizId;
     }
 
-    public Date getPayTime() {
-        return payTime;
-    }
-
-    public void setPayTime(Date payTime) {
-        this.payTime = payTime;
-    }
-
     public Integer getBizType() {
         return bizType;
     }
 
     public void setBizType(Integer bizType) {
         this.bizType = bizType;
+    }
+
+    public Integer getPayType() {
+        return payType;
+    }
+
+    public void setPayType(Integer payType) {
+        this.payType = payType;
     }
 
     public String getThdFlowId() {
@@ -148,28 +137,20 @@ public class PayFlowBean implements Serializable {
         this.thdFlowId = thdFlowId;
     }
 
-    public String getPayType() {
-        return payType;
+    public String getClientSource() {
+        return clientSource;
     }
 
-    public void setPayType(String payType) {
-        this.payType = payType;
+    public void setClientSource(String clientSource) {
+        this.clientSource = clientSource;
     }
 
-    public String getNotifyUrl() {
-        return notifyUrl;
+    public String getPaySource() {
+        return paySource;
     }
 
-    public void setNotifyUrl(String notifyUrl) {
-        this.notifyUrl = notifyUrl;
-    }
-
-    public String getReturnUrl() {
-        return returnUrl;
-    }
-
-    public void setReturnUrl(String returnUrl) {
-        this.returnUrl = returnUrl;
+    public void setPaySource(String paySource) {
+        this.paySource = paySource;
     }
 
     public Integer getTotalAmount() {
@@ -194,6 +175,14 @@ public class PayFlowBean implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public Date getPayTime() {
+        return payTime;
+    }
+
+    public void setPayTime(Date payTime) {
+        this.payTime = payTime;
     }
 
     public Integer getState() {
@@ -258,21 +247,5 @@ public class PayFlowBean implements Serializable {
 
     public void setRefundTime(Date refundTime) {
         this.refundTime = refundTime;
-    }
-
-    public Integer getRandomCode() {
-        return randomCode;
-    }
-
-    public void setRandomCode(Integer randomCode) {
-        this.randomCode = randomCode;
-    }
-
-    public List<PayFlowDetailBean> getDetailList() {
-        return detailList;
-    }
-
-    public void setDetailList(List<PayFlowDetailBean> detailList) {
-        this.detailList = detailList;
     }
 }

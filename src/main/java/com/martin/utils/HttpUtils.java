@@ -130,12 +130,12 @@ public class HttpUtils {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
         FileInputStream inStream = new FileInputStream(new File("D:/ZD_cert.p12"));
         try {
-            keyStore.load(inStream, PayParam.tenMchId.toCharArray());
+            keyStore.load(inStream, PayParam.tenWebMchId.toCharArray());
         } finally {
             inStream.close();
         }
 
-        SSLContext sslcontext = SSLContexts.custom().loadKeyMaterial(keyStore, PayParam.tenMchId.toCharArray()).build();
+        SSLContext sslcontext = SSLContexts.custom().loadKeyMaterial(keyStore, PayParam.tenWebMchId.toCharArray()).build();
         // Allow TLSv1 protocol only
         SSLConnectionSocketFactory sslSf = new SSLConnectionSocketFactory(sslcontext, new String[]{"TLSv1"}, null, SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
         CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSf).build();

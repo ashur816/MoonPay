@@ -2,14 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.martin.dao.PayFlowMapper">
     <sql id="baseSql">
-      flow_id,biz_id,biz_type,thd_flow_id,pay_type,notify_url,return_url,total_amount,pay_amount,create_time,pay_time,state,pay_state,fail_code,fail_desc,refund_id,refund_reason,thd_refund_id,refund_time
+      flow_id,flow_batch_no,biz_id,biz_type,thd_flow_id,pay_type,total_amount,pay_amount,create_time,pay_time,state,pay_state,
+      fail_code,fail_desc,refund_id,thd_refund_id,refund_time,client_source,pay_source
     </sql>
-    <select id="selectByBiz" resultType="com.martin.bean.PayFlowBean">
-        select
-        <include refid="baseSql"/>
-        from m_pay_flow WHERE state=1 and biz_id=#{bizId}
+    <select id="getPayFlowListByBiz" resultType="com.martin.bean.PayFlowBean">
+        SELECT
+        <include refid="baseSql"></include>
+        FROM m_pay_flow WHERE biz_id=#{bizId} AND biz_type=#{bizType} AND state=1 ORDER BY pay_state
     </select>
-    <select id="selectById" resultType="com.martin.bean.PayFlowBean">
+    <select id="getPayFlowById" resultType="com.martin.bean.PayFlowBean">
         select
         <include refid="baseSql"/>
         from m_pay_flow WHERE flow_id=#{flowId}
@@ -17,6 +18,84 @@
             and pay_state=#{payState}
         </if>
     </select>
+    <insert id="addPayFlow" parameterType="com.martin.bean.PayFlowBean">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="flowId != null">
+                flow_id,
+            </if>
+            <if test="bizId != null">
+                biz_id,
+            </if>
+            <if test="bizType != null">
+                biz_type,
+            </if>
+            <if test="thdFlowId != null">
+                thd_flow_id,
+            </if>
+            <if test="thdType != null">
+                pay_type,
+            </if>
+            <if test="totalAmount != null">
+                total_amount,
+            </if>
+            <if test="payAmount != null">
+                pay_amount,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="state != null">
+                state,
+            </if>
+            <if test="payState != null">
+                pay_state,
+            </if>
+            <if test="clientSource != null">
+                client_source,
+            </if>
+            <if test="paySource != null">
+                pay_source,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="flowId != null">
+                #{flowId},
+            </if>
+            <if test="bizId != null">
+                #{bizId},
+            </if>
+            <if test="bizType != null">
+                #{bizType},
+            </if>
+            <if test="thdFlowId != null">
+                #{thdFlowId},
+            </if>
+            <if test="thdType != null">
+                #{thdType},
+            </if>
+            <if test="totalAmount != null">
+                #{totalAmount},
+            </if>
+            <if test="payAmount != null">
+                #{payAmount},
+            </if>
+            <if test="createTime != null">
+                #{createTime},
+            </if>
+            <if test="state != null">
+                #{state},
+            </if>
+            <if test="payState != null">
+                #{payState},
+            </if>
+            <if test="clientSource != null">
+                #{clientSource},
+            </if>
+            <if test="paySource != null">
+                #{paySource},
+            </if>
+        </trim>
+    </insert>
     <select id="selectListById" resultType="com.martin.bean.PayFlowBean">
         select
         <include refid="baseSql"/>
@@ -33,4 +112,7 @@
             and pay_state=#{payState}
         </if>
     </select>
+    <update id="updateThdFlowId">
+        UPDATE m_pay_flow SET thd_flow_id=#{1} WHERE flow_id=#{0}
+    </update>
 </mapper>

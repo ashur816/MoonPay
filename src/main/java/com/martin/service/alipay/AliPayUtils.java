@@ -2,6 +2,10 @@ package com.martin.service.alipay;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -14,6 +18,12 @@ public class AliPayUtils {
 
     //编码格式
     private static String charset = "UTF-8";
+
+    //连接超时时间，默认10秒
+    private static int socketTimeout = 10000;
+
+    //传输超时时间，默认30秒
+    private static int connectTimeout = 30000;
 
     /**
      * 除去数组中的空值和签名参数
@@ -33,7 +43,7 @@ public class AliPayUtils {
         for (Map.Entry<String, String> entry : sArray.entrySet()) {
             key = entry.getKey();
             value = entry.getValue();
-            if (StringUtils.isBlank(value) || key.equalsIgnoreCase("sign") || key.equalsIgnoreCase("sign_type")) {
+            if (StringUtils.isEmpty(value) || key.equalsIgnoreCase("sign") || key.equalsIgnoreCase("sign_type")) {
                 continue;
             }
             result.put(key, value);
@@ -72,7 +82,7 @@ public class AliPayUtils {
      * 生成签名结果
      * @return 签名结果字符串
      */
-    public static String buildRequestMySign(String privateKey, String signType, Map<String, String> sPara) {
+    public static String buildRequestMySign(String privateKey, String signType, Map<String, String> sPara) throws Exception {
         String preStr = createLinkString(sPara); //把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
         String mySign = "";
         if (("MD5").equalsIgnoreCase(signType)) {
@@ -86,7 +96,7 @@ public class AliPayUtils {
     /**
      * 建立请求，以表单HTML形式构造（默认）
      */
-    public static String buildReqForm(String payUrl, String privateKey, String signType, Map<String, String> sParaTemp) {
+    public static String buildReqForm(String payUrl, String privateKey, String signType, Map<String, String> sParaTemp) throws Exception {
         //除去数组中的空值和签名参数
         Map<String, String> paraMap = paraFilter(sParaTemp);
 
@@ -117,19 +127,27 @@ public class AliPayUtils {
     }
 
     /**
-     * 生成请求信息
+     * 获取远程服务器ATN结果
+     * @return 服务器ATN结果
+     * 验证结果集：
+     * invalid命令参数不对 出现这个错误，请检测返回处理中partner和key是否为空
+     * true 返回正确信息
+     * false 请检查防火墙或者是服务器阻止端口问题以及验证时间是否超过一分钟
      */
-    public static String buildRequestInfo(String privateKey, String signType, Map<String, String> sParaTemp) {
-        //除去数组中的空值和签名参数
-        Map<String, String> paraMap = paraFilter(sParaTemp);
+    public static String checkUrl(String urlValue) {
+        String inputLine = "";
 
-        //生成签名结果
-        String mySign = buildRequestMySign(privateKey, signType, paraMap);
+        try {
+            URL url = new URL(urlValue);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), charset));
+            inputLine = in.readLine();
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            inputLine = "";
+        }
 
-        //签名结果与签名方式加入请求提交参数组中
-        paraMap.put("sign", mySign);
-        paraMap.put("sign_type", signType);
-
-        return createLinkString(paraMap);
+        return inputLine;
     }
 }
