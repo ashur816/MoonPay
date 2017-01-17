@@ -2,9 +2,13 @@ package com.martin.controller;
 
 import com.martin.constant.PayConstant;
 import com.martin.dto.PayInfo;
+import com.martin.dto.ResultInfo;
+import com.martin.exception.BusinessException;
+import com.martin.service.IPayAppCenter;
 import com.martin.service.IPayCommonCenter;
 import com.martin.service.IPayWebCenter;
 import com.martin.utils.IpUtils;
+import com.martin.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +42,10 @@ public class PayController {
     @Resource
     private IPayWebCenter payWebCenter;
 
-    /**
-     * @param request 包含 订单id
-     * @return
-     * @throws
-     * @Description: 跳转退款
-     */
-    @RequestMapping(value = "/toRefund")
-    public ModelAndView toRefund(HttpServletRequest request) {
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("pay/refund");
-        return modelAndView;
-    }
+    @Resource
+    private IPayAppCenter payAppCenter;
 
+    /*********************************************** WEB支付 ******************************************************/
     /**
      * 跳转网页支付 根据请求头，判断支付途径
      * 在微信里面打开的，肯定是微信支付
@@ -89,6 +84,7 @@ public class PayController {
                     payType = PayConstant.PAY_TYPE_ALI;
                     PayInfo payInfo = payWebCenter.doPay(appId, payType, bizId, Integer.parseInt(bizType), ipAddress, "");
                     doError(payInfo, modelAndView);
+                    modelAndView.setViewName("pay/ali_pay");
                 }
             } catch (Exception e) {
                 logger.error("PayController.doWebPay异常-{}", e);
@@ -140,6 +136,38 @@ public class PayController {
         }
         modelAndView.addObject("error", error);
         return modelAndView;
+    }
+
+    /*********************************************** APP支付 ******************************************************/
+    /**
+     * 获取APP支付参数
+     * @param request 包含 订单id
+     * @return
+     * @throws
+     */
+    @ResponseBody
+    @RequestMapping(value = "/toAppPay")
+    public ResultInfo toAppPay(HttpServletRequest request, String appId, String bizId, String bizType, String payType) {
+        ResultInfo resultInfo;
+        if (StringUtils.isBlank(bizId)) {
+            resultInfo = new ResultInfo(-1, "", "业务单号不能为空");
+        } else if (StringUtils.isBlank(bizType)) {
+            resultInfo = new ResultInfo(-1, "", "业务类型不能为空");
+        } else {
+            String ipAddress = IpUtils.getIpAddress(request);
+            try {
+                Map payMap = payAppCenter.buildPayInfo(appId, payType, bizId, bizType, ipAddress);
+                resultInfo = new ResultInfo(0, "", "", payMap);
+            } catch (Exception e) {
+                logger.error("PayController.toAppPay异常-{}", e);
+                if (e instanceof BusinessException) {
+                    resultInfo = new ResultInfo(-1, "", e.getMessage());
+                } else {
+                    resultInfo = new ResultInfo(-1, "", "获取支付参数异常");
+                }
+            }
+        }
+        return resultInfo;
     }
 
     /**
@@ -207,6 +235,51 @@ public class PayController {
         }
         logger.info("第三方回调结束，返回状态：{}", returnCode);
         return returnCode;
+    }
+
+    /*********************************************** 退款 ******************************************************/
+    /**
+     * @param request 包含 订单id
+     * @return
+     * @throws
+     * @Description: 跳转退款
+     */
+    @RequestMapping(value = "/toRefund")
+    public ModelAndView toRefund(HttpServletRequest request) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("pay/refund");
+        return modelAndView;
+    }
+
+    /**
+     * @param request
+     * @return
+     * @throws
+     * @Description: 查询订单
+     */
+    @ResponseBody
+    @RequestMapping(value = "/getRefund")
+    public ResultInfo getRefundInfo(HttpServletRequest request, String flowId, String appId, String payType) {
+        ResultInfo resultInfo;
+        if (StringUtils.isBlank(appId)) {
+            resultInfo = new ResultInfo(-1, "", "appId信息不能为空");
+        } else if (StringUtils.isBlank(payType)) {
+            resultInfo = new ResultInfo(-1, "", "payType信息不能为空");
+        } else {
+            try {
+                List<PayInfo> payInfoList = payCommonCenter.getRefundInfo(appId, Integer.parseInt(payType), flowId);
+                if (payInfoList != null) {
+                    logger.info("退款返回信息成功");
+                    resultInfo = new ResultInfo(0, "", "", JsonUtils.translateToJson(payInfoList));
+                } else {
+                    resultInfo = new ResultInfo(-1, "", "未获取到付款信息");
+                }
+            } catch (Exception e) {
+                logger.error("getRefundInfo异常-{}", e);
+                resultInfo = new ResultInfo(-1, "", e.getMessage());
+            }
+        }
+        return resultInfo;
     }
 
     /**
@@ -285,7 +358,6 @@ public class PayController {
      * @throws
      * @Description: 公用错误处理
      */
-
     private void doError(PayInfo payInfo, ModelAndView modelAndView) {
         if (payInfo != null) {
             logger.info("支付返回成功");

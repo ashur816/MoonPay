@@ -18,7 +18,32 @@ public interface IPayFlow {
      * @throws
      * @Description: 查询支付流水
      */
-    PayFlowBean getPayFlowById(Long flowId, Integer payState);
+    PayFlowBean getPayFlowById(long flowId, int payState);
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 查询支付流水
+     */
+    List<PayFlowBean> getPayFlowList(long flowId, int payState);
+
+    /**
+     * @param bizId
+     * @param bizType
+     * @return PayFlowBean
+     * @throws
+     * @Description: 根据 biz_id + biz_type 查是否已有流水
+     */
+    List<PayFlowBean> getPayFlowListByBiz(String bizId, int bizType) throws Exception;
+
+    /**
+     * @param flowIdList
+     * @return
+     * @throws
+     * @Description: 批量获取支付流水
+     */
+    List<PayFlowBean> getPayFlowListByIdList(List<String> flowIdList, int payState) throws Exception;
 
     /**
      * @param
@@ -51,14 +76,5 @@ public interface IPayFlow {
      * @throws
      * @Description: 更新预付单号
      */
-    Boolean updateThdFlowId(Long flowId, String thdFlowId) throws Exception;
-
-    /**
-     * @param bizId
-     * @param bizType
-     * @return PayFlowBean
-     * @throws
-     * @Description: 根据 biz_id + biz_type 查是否已有流水
-     */
-    List<PayFlowBean> getPayFlowListByBiz(String bizId, Integer bizType) throws Exception;
+    Boolean updateThdFlowId(long flowId, String thdFlowId) throws Exception;
 }

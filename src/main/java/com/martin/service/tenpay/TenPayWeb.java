@@ -272,10 +272,13 @@ public class TenPayWeb implements IPayWebService {
         PayResult payResult = new PayResult();
         if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
             String tradeState = returnMap.get("trade_state");
+            String thdFlowId = returnMap.get("transaction_id");
             payResult.setPayState(transPayState(tradeState));
+            payResult.setThdFlowId(thdFlowId);
         } else {
             payResult.setPayState(PayConstant.PAY_NOT);
         }
+
 
         return payResult;
     }

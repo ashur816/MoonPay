@@ -18,7 +18,14 @@ public interface IPayCommonCenter {
      * @return void
      * @throws
      */
-    void doNotify(String notifyType, int thdType, String ipAddress, Map<String, String> reqParam) throws Exception;
+    void doNotify(String notifyType, int payType, String ipAddress, Map<String, String> reqParam) throws Exception;
+
+    /**
+     * @Description: 获取退款信息
+     * @return void
+     * @throws
+     */
+    List<PayInfo> getRefundInfo(String appId, int payType, String flowId) throws Exception;
 
     /**
      * @Description: 企业付款
@@ -26,7 +33,7 @@ public interface IPayCommonCenter {
      * @return
      * @throws
      */
-    Object doTransfer(Integer thdType, List<Long> flowIdList, String ipAddress) throws Exception;
+    Object doTransfer(int payType, List<Long> flowIdList, String ipAddress) throws Exception;
 
     /**
      * @Description:

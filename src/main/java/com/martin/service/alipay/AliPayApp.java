@@ -1,6 +1,7 @@
 package com.martin.service.alipay;
 
 import com.martin.bean.PayFlowBean;
+import com.martin.constant.PayConstant;
 import com.martin.constant.PayParam;
 import com.martin.constant.PayReturnCodeEnum;
 import com.martin.dto.PayResult;
@@ -24,7 +25,7 @@ import java.util.Map;
  * @author ZXY
  * @date 2016/5/24 10:22
  */
-@Service("aliPaySdkService")
+@Service("aliPayAppService")
 public class AliPayApp implements IPayAppService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -158,7 +159,10 @@ public class AliPayApp implements IPayAppService {
         logger.info("WEB支付宝查单结果-{}", code);
         PayResult payResult = new PayResult();
         payResult.setPayState(transPayState(code));
-
+        if(PayConstant.PAY_SUCCESS == payResult.getPayState()){
+            //支付成功的更新第三方交易流水号
+            payResult.setThdFlowId(returnMap.get("trade_no").toString());
+        }
         return payResult;
     }
 

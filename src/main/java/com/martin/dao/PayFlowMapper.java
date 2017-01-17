@@ -16,13 +16,15 @@ import java.util.List;
 @Repository
 public interface PayFlowMapper extends Mapper<PayFlowBean> {
 
-    List<PayFlowBean> getPayFlowListByBiz(@Param("bizId") String bizId, @Param("bizType") Integer bizType);
+    List<PayFlowBean> getPayFlowListByBiz(@Param("bizId") String bizId, @Param("bizType") int bizType);
 
-    PayFlowBean getPayFlowById(@Param("flowId") Long flowId, @Param("payState") Integer payState);
+    PayFlowBean getPayFlowById(@Param("flowId") long flowId, @Param("payState") int payState);
 
-    List<PayFlowBean> selectListById(@Param("flowIdList") List<String> flowIdList, @Param("payState") Integer payState);
+    List<PayFlowBean> getPayFlowList(@Param("flowId") long flowId, @Param("payState") int payState);
 
-    PayFlowBean selectByThdId(@Param("thdFlowId") String thdFlowId, @Param("payState") Integer payState);
+    List<PayFlowBean> selectListByIdList(@Param("flowIdList") List<String> flowIdList, @Param("payState") int payState);
 
-    int updateThdFlowId(@Param("flowId") Long flowId, @Param("thdFlowId") String thdFlowId);
+    PayFlowBean selectByThdId(@Param("thdFlowId") String thdFlowId, @Param("payState") int payState);
+
+    int updateThdFlowId(@Param("flowId") long flowId, @Param("thdFlowId") String thdFlowId);
 }

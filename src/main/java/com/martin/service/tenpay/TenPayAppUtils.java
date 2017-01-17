@@ -13,7 +13,7 @@ import java.util.Set;
  * @author ZXY
  * @date 2016/5/27 16:54
  */
-class TenPaySdkUtils {
+class TenPayAppUtils {
 
     //编码格式
     private static String charset = "UTF-8";

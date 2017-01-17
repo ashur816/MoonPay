@@ -3,6 +3,7 @@ package com.martin.service.impl;
 import com.martin.bean.PayFlowBean;
 import com.martin.dao.PayFlowMapper;
 import com.martin.service.IPayFlow;
+import com.martin.utils.RandomUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,8 +30,19 @@ public class PayFlowService implements IPayFlow {
      * @Description: 根据 biz_id + biz_type 查是否已有流水
      */
     @Override
-    public List<PayFlowBean> getPayFlowListByBiz(String bizId, Integer bizType) throws Exception {
+    public List<PayFlowBean> getPayFlowListByBiz(String bizId, int bizType) throws Exception {
         return payFlowMapper.getPayFlowListByBiz(bizId, bizType);
+    }
+
+    /**
+     * @param flowIdList
+     * @return
+     * @throws
+     * @Description: 批量获取支付流水
+     */
+    @Override
+    public List<PayFlowBean> getPayFlowListByIdList(List<String> flowIdList, int payState) throws Exception {
+        return payFlowMapper.selectListByIdList(flowIdList, payState);
     }
 
     /**
@@ -62,8 +74,20 @@ public class PayFlowService implements IPayFlow {
      * @Description: 根据支付状态查询流水
      */
     @Override
-    public PayFlowBean getPayFlowById(Long flowId, Integer payState) {
+    public PayFlowBean getPayFlowById(long flowId, int payState) {
         return payFlowMapper.getPayFlowById(flowId, payState);
+    }
+
+    /**
+     * @param flowId
+     * @param payState
+     * @return
+     * @throws
+     * @Description: 查询支付流水
+     */
+    @Override
+    public List<PayFlowBean> getPayFlowList(long flowId, int payState) {
+        return payFlowMapper.getPayFlowList(flowId, payState);
     }
 
     /**
@@ -78,6 +102,8 @@ public class PayFlowService implements IPayFlow {
     @Override
     public PayFlowBean buildPayFlow(String clientSource, String paySource, String bizId, int bizType, int payAmount) {
         PayFlowBean flowBean = new PayFlowBean();
+        flowBean.setFlowId(Long.parseLong(RandomUtils.getPaymentNo()));
+        flowBean.setTotalAmount(payAmount);
         flowBean.setPayAmount(payAmount);
         flowBean.setBizId(bizId);
         flowBean.setBizType(bizType);
@@ -95,7 +121,7 @@ public class PayFlowService implements IPayFlow {
      * @Description: 更新预付单号
      */
     @Override
-    public Boolean updateThdFlowId(Long flowId, String thdFlowId) throws Exception {
+    public Boolean updateThdFlowId(long flowId, String thdFlowId) throws Exception {
         int num = payFlowMapper.updateThdFlowId(flowId, thdFlowId);
         if (1 == num) {
             return true;

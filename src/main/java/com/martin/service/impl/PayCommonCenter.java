@@ -66,6 +66,52 @@ public class PayCommonCenter implements IPayCommonCenter {
         }
     }
 
+    /**
+     * @param appId
+     * @param payType
+     * @param flowId
+     * @return void
+     * @throws
+     * @Description: 获取退款信息
+     */
+    @Override
+    public List<PayInfo> getRefundInfo(String appId, int payType, String flowId) throws Exception {
+        List<PayInfo> payInfoList;
+        if (appId.equals(PayConstant.APP_ID_WEB)) {
+            payInfoList = payWebCenter.getRefundInfo(payType, flowId);
+        } else if (appId.equals(PayConstant.APP_ID_APP)) {
+            payInfoList = payAppCenter.getRefundInfo(payType, flowId);
+        } else {
+            throw new BusinessException("不支持的终端类型");
+        }
+        return payInfoList;
+    }
+
+    /**
+     * @param flowIdList
+     * @param refundReason
+     * @return void
+     * @throws
+     * @Description:
+     */
+    @Override
+    public PayInfo doRefund(List<String> flowIdList, String refundReason) throws Exception {
+        //查询支付流水信息
+        List<PayFlowBean> flowBeanList = payFlow.getPayFlowListByIdList(flowIdList, PayConstant.PAY_SUCCESS);
+        if (flowBeanList != null && flowBeanList.size() > 0) {
+            String clientSource = flowBeanList.get(0).getClientSource();
+            if (clientSource.equals(PayConstant.APP_ID_APP)) {
+                payWebCenter.doRefund(flowBeanList, refundReason);
+            } else if (clientSource.equals(PayConstant.APP_ID_WEB)) {
+                payAppCenter.doRefund(flowBeanList, refundReason);
+            } else {
+                //数据异常
+                throw new BusinessException("数据异常");
+            }
+        }
+        return null;
+    }
+
 
     /*********************************** 提现 + 提现回调(企业付款接口提交) ******************************************/
     /**
@@ -75,7 +121,7 @@ public class PayCommonCenter implements IPayCommonCenter {
      * @Description: 企业付款（供运营平台使用）
      */
     @Override
-    public Object doTransfer(Integer payType, List<Long> flowIdList, String ipAddress) throws Exception {
+    public Object doTransfer(int payType, List<Long> flowIdList, String ipAddress) throws Exception {
         if (flowIdList == null || 0 >= flowIdList.size()) {
             throw new BusinessException("111");
         }
@@ -136,18 +182,6 @@ public class PayCommonCenter implements IPayCommonCenter {
             throw new BusinessException("09506");
         }
         return retObj;
-    }
-
-    /**
-     * @param flowIdList
-     * @param refundReason
-     * @return void
-     * @throws
-     * @Description:
-     */
-    @Override
-    public PayInfo doRefund(List<String> flowIdList, String refundReason) throws Exception {
-        return null;
     }
 
     /*********************************** 私有方法 ******************************************/

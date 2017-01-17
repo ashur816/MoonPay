@@ -8,8 +8,8 @@ public class BusinessException extends RuntimeException {
     private String messageCode;
     private String message;
 
-    public BusinessException(String messageCode) {
-        this.messageCode = messageCode;
+    public BusinessException(String message) {
+        this.message = message;
     }
 
     public BusinessException(String messageCode, String message) {

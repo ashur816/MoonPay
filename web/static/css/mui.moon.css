@@ -12,29 +12,37 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-.span-right{
-     display: inline-block;
-     position: absolute;
-     right: 5px;
-     top: 25%;
-     height: 50%;
-     border-left: 1px solid #D5D5D5;
- }
+.span-right {
+    display: inline-block;
+    position: absolute;
+    right: 5px;
+    top: 25%;
+    height: 50%;
+    border-left: 1px solid #D5D5D5;
+}
 
-.icon-select{
+.button-right {
+    right: 5px;
+    top: 25%;
+    height: 25px;
+    text-align: right;
+    border-left: 1px solid #D5D5D5;
+}
+
+.icon-select {
     position: absolute;
     right: 10px;
-    top:10px;
+    top: 10px;
 }
 
 .icon-select:before {
     content: "\e618";
     font-size: 25px;
-    color:grey;
+    color: grey;
 }
 
 .icon-select-active:before {
     content: "\e608";
     font-size: 25px;
-    color:#E93F4C;
+    color: #E93F4C;
 }

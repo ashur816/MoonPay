@@ -17,12 +17,12 @@ import javax.annotation.Resource;
 import java.util.*;
 
 /**
+ * @author ZXY
  * @ClassName: SdkTenPay
  * @Description: 微信APP支付类
- * @author ZXY
  */
-@Service("tenPaySdkService")
-public class TenPaySdk implements IPayAppService {
+@Service("tenPayAppService")
+public class TenPayApp implements IPayAppService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -31,8 +31,9 @@ public class TenPaySdk implements IPayAppService {
 
     /**
      * 生成预定单给微信支付网关，返回
+     *
      * @param flowBean
-     * @param extMap 中包含 appId、mchId、ipAddress、privateKey
+     * @param extMap   中包含 appId、mchId、ipAddress、privateKey
      * @return
      */
     @Override
@@ -93,7 +94,7 @@ public class TenPaySdk implements IPayAppService {
             tmpMap.put("partnerid", mchId);
             tmpMap.put("prepayid", prepayId);
             tmpMap.put("timestamp", Long.toString(new Date().getTime()));
-            String sign = TenPaySdkUtils.createSdkSign(privateKey, tmpMap);
+            String sign = TenPayAppUtils.createSdkSign(privateKey, tmpMap);
             tmpMap.put("sign", sign);
         } else if (PayReturnCodeEnum.TENPAY_OUT_TRADE_NO_USED.getCode().equals(errCode)) {//订单号重复,直接返回原订单信息
             //查询原订单
@@ -107,15 +108,15 @@ public class TenPaySdk implements IPayAppService {
             tmpMap.put("partnerid", mchId);
             tmpMap.put("prepayid", prepayId);
             tmpMap.put("timestamp", Long.toString(new Date().getTime()));
-            String sign = TenPaySdkUtils.createSdkSign(privateKey, tmpMap);
+            String sign = TenPayAppUtils.createSdkSign(privateKey, tmpMap);
             tmpMap.put("sign", sign);
         } else if (PayReturnCodeEnum.TENPAY_ORDERPAID.getCode().equals(errCode)) {
             //订单已支付
-            throw new BusinessException("09031");
+            throw new BusinessException("订单已支付");
         } else {
             logger.info("APP支付微信预下单失败：{}", StringUtils.isNotBlank(returnMsg) ? returnMsg : errDes);
             //微信支付预下单失败
-            throw new BusinessException("09020");
+            throw new BusinessException("微信支付预下单失败");
         }
 
         //支付总金额
@@ -123,10 +124,10 @@ public class TenPaySdk implements IPayAppService {
     }
 
     /**
-     * @Description: 支付回调先取出flowId
      * @param paraMap
      * @return
      * @throws
+     * @Description: 支付回调先取出flowId
      */
     @Override
     public long getReturnFlowId(Map<String, String> paraMap) throws Exception {
@@ -148,10 +149,10 @@ public class TenPaySdk implements IPayAppService {
     }
 
     /**
-     * @Description: 支付回调参数校验
      * @param paraMap
      * @return
      * @throws
+     * @Description: 支付回调参数校验
      */
     @Override
     public PayResult payReturn(String privateKey, Map<String, String> paraMap) throws Exception {
@@ -186,10 +187,10 @@ public class TenPaySdk implements IPayAppService {
     }
 
     /**
-     * @Description: 查询第三方支付状态
      * @param flowId
      * @return
      * @throws
+     * @Description: 查询第三方支付状态
      */
     @Override
     public PayResult getPayStatus(Long flowId, Map<String, String> extMap) throws Exception {
@@ -222,19 +223,20 @@ public class TenPaySdk implements IPayAppService {
         PayResult payResult = new PayResult();
         if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
             String tradeState = returnMap.get("trade_state");
+            String thdFlowId = returnMap.get("transaction_id");
             payResult.setPayState(transPayState(tradeState));
+            payResult.setThdFlowId(thdFlowId);
         } else {
             payResult.setPayState(PayConstant.PAY_NOT);
         }
-
         return payResult;
     }
 
     /**
-     * @Description: 关闭第三方支付订单
      * @param flowId
      * @return
      * @throws
+     * @Description: 关闭第三方支付订单
      */
     @Override
     public void closeThdPay(Long flowId, Map<String, String> extMap) throws Exception {
@@ -271,6 +273,7 @@ public class TenPaySdk implements IPayAppService {
 
     /**
      * 转换支付状态
+     *
      * @return
      */
     private int transPayState(String tradeState) {

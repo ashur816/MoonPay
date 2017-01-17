@@ -20,9 +20,9 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 /**
+ * @author ZXY
  * @ClassName: AliPay
  * @Description: 支付宝--用来企业付款
- * @author ZXY
  * @date 2016/5/24 10:22
  */
 @Service("aliPayWebService")
@@ -32,6 +32,7 @@ public class AliPayWeb implements IPayWebService {
 
     /**
      * 预授权
+     *
      * @param bizId
      * @return
      */
@@ -55,6 +56,7 @@ public class AliPayWeb implements IPayWebService {
 
     /**
      * 生成支付信息
+     *
      * @param flowBean
      * @return
      */
@@ -83,19 +85,19 @@ public class AliPayWeb implements IPayWebService {
         //商品名称
         paraMap.put("subject", PayParam.webBody);
         //支付总金额
-        double payAmount = flowBean.getPayAmount() / 100.0;
-        paraMap.put("total_fee", String.valueOf(payAmount));
+        double needPayAmount = flowBean.getTotalAmount() / 100.0;
+        paraMap.put("total_fee", String.valueOf(needPayAmount));
         paraMap.put("body", PayParam.webBody);
 
         String html = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.aliWebSignType, paraMap);
-        return new PayInfo(PayParam.webBody, payAmount, html);
+        return new PayInfo(PayParam.webBody, needPayAmount, html);
     }
 
     /**
-     * @Description: 支付回调参数校验
      * @param paraMap
      * @return
      * @throws
+     * @Description: 支付回调参数校验
      */
     @Override
     public PayResult payReturn(Map<String, String> paraMap) throws Exception {
@@ -119,6 +121,7 @@ public class AliPayWeb implements IPayWebService {
 
     /**
      * 批量退款，兼容单个
+     *
      * @param flowBeanList
      * @param extMap
      * @return
@@ -163,10 +166,10 @@ public class AliPayWeb implements IPayWebService {
     }
 
     /**
-     * @Description: 退款回调参数校验
      * @param paraMap
      * @return
      * @throws
+     * @Description: 退款回调参数校验
      */
     @Override
     public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
@@ -204,10 +207,10 @@ public class AliPayWeb implements IPayWebService {
     }
 
     /**
-     * @Description: 查询第三方支付状态
      * @param flowId
      * @return
      * @throws
+     * @Description: 查询第三方支付状态
      */
     @Override
     public PayResult getPayStatus(Long flowId) throws Exception {
@@ -243,14 +246,18 @@ public class AliPayWeb implements IPayWebService {
         logger.info("WEB支付宝查单结果-{}", code);
         PayResult payResult = new PayResult();
         payResult.setPayState(transPayState(code));
+        if(PayConstant.PAY_SUCCESS == payResult.getPayState()){
+            //支付成功的更新第三方交易流水号
+            payResult.setThdFlowId(returnMap.get("trade_no").toString());
+        }
         return payResult;
     }
 
     /**
-     * @Description: 关闭第三方支付订单 只有等待买家付款状态下才能发起交易关闭
      * @param flowId
      * @return
      * @throws
+     * @Description: 关闭第三方支付订单 只有等待买家付款状态下才能发起交易关闭
      */
     @Override
     public void closeThdPay(Long flowId) throws Exception {
@@ -280,18 +287,17 @@ public class AliPayWeb implements IPayWebService {
         if (ObjectUtils.isNotEmpty(msg) && "SUCCESS".equalsIgnoreCase(msg.toString())) {
             //关闭成功
             logger.info("WEB支付宝关单成功-{}", msg);
-        }
-        else {
+        } else {
             //关闭失败
             logger.info("WEB支付宝关单失败-{}", subCode);
         }
     }
 
     /**
-     * @Description: 回调验签
      * @param
      * @return
      * @throws
+     * @Description: 回调验签
      */
     private void returnValidate(Map<String, String> paraMap) throws Exception {
         if (paraMap == null || paraMap.size() < 1) {
@@ -324,6 +330,7 @@ public class AliPayWeb implements IPayWebService {
 
     /**
      * 转换支付状态
+     *
      * @return
      */
     private int transPayState(String tradeState) {

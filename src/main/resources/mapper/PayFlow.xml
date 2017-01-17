@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.martin.dao.PayFlowMapper">
     <sql id="baseSql">
-      flow_id,flow_batch_no,biz_id,biz_type,thd_flow_id,pay_type,total_amount,pay_amount,create_time,pay_time,state,pay_state,
-      fail_code,fail_desc,refund_id,thd_refund_id,refund_time,client_source,pay_source
+      flow_id,biz_id,biz_type,thd_flow_id,pay_type,client_source,pay_source,total_amount,pay_amount,create_time,
+      pay_time,state,pay_state,fail_code,fail_desc,refund_id,refund_reason,thd_refund_id,refund_time
     </sql>
     <select id="getPayFlowListByBiz" resultType="com.martin.bean.PayFlowBean">
         SELECT
@@ -96,7 +96,7 @@
             </if>
         </trim>
     </insert>
-    <select id="selectListById" resultType="com.martin.bean.PayFlowBean">
+    <select id="selectListByIdList" resultType="com.martin.bean.PayFlowBean">
         select
         <include refid="baseSql"/>
         from m_pay_flow WHERE flow_id IN
@@ -112,7 +112,15 @@
             and pay_state=#{payState}
         </if>
     </select>
+    <select id="getPayFlowList" resultType="com.martin.bean.PayFlowBean">
+        SELECT
+        <include refid="baseSql"/>
+        FROM m_pay_flow WHERE pay_state=#{payState}
+        <if test="flowId!=null and flowId!=0">
+            and flow_id=#{flowId}
+        </if>
+    </select>
     <update id="updateThdFlowId">
-        UPDATE m_pay_flow SET thd_flow_id=#{1} WHERE flow_id=#{0}
+        UPDATE m_pay_flow SET thd_flow_id=#{thdFlowId} WHERE flow_id=#{flowId}
     </update>
 </mapper>
