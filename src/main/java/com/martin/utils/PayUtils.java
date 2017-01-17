@@ -32,7 +32,7 @@ public class PayUtils {
             prefixId = clientSource.substring(0, clientSource.indexOf("."));
         } else {
             //appId参数格式不正确
-            throw new BusinessException("117");
+            throw new BusinessException("appId参数格式不正确");
         }
         Map<String, String> extMap = new HashMap<>();
         if (payType == PayConstant.PAY_TYPE_TEN) {//微信
@@ -46,7 +46,7 @@ public class PayUtils {
                 extMap.put("privateKey", PayParam.tenAppPrivateKey);
             } else {
                 //appId参数格式不正确
-                throw new BusinessException("117");
+                throw new BusinessException("appId参数格式不正确");
             }
         } else {//支付宝
             if (PayConstant.APP_ID_WEB.equals(prefixId)) {//WEB版
@@ -57,7 +57,7 @@ public class PayUtils {
                 extMap.put("privateKey", PayParam.aliAppPrivateKey);
             } else {
                 //appId参数格式不正确
-                throw new BusinessException("117");
+                throw new BusinessException("appId参数格式不正确");
             }
         }
         return extMap;
@@ -78,7 +78,7 @@ public class PayUtils {
             commonPayService = "aliPayCommonService";
         } else {
             //暂不支持当前支付方式
-            throw new BusinessException("09030");
+            throw new BusinessException("暂不支持当前支付方式");
         }
         //返回服务实例
         return new ServiceContainer<IPayCommonService>().get(commonPayService);
@@ -99,7 +99,7 @@ public class PayUtils {
             webPayService = "aliPayWebService";
         } else {
             //暂不支持当前支付方式
-            throw new BusinessException("09030");
+            throw new BusinessException("暂不支持当前支付方式");
         }
         //返回服务实例
         return new ServiceContainer<IPayWebService>().get(webPayService);
@@ -120,7 +120,7 @@ public class PayUtils {
             sdkPayService = "aliPayAppService";
         } else {
             //暂不支持当前支付方式
-            throw new BusinessException("09030");
+            throw new BusinessException("暂不支持当前支付方式");
         }
         //返回服务实例
         return new ServiceContainer<IPayAppService>().get(sdkPayService);

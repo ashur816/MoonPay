@@ -46,7 +46,7 @@ public class PayCommonCenter implements IPayCommonCenter {
     public void doNotify(String notifyType, int payType, String ipAddress, Map<String, String> reqParam) throws Exception {
         if (StringUtils.isEmpty(notifyType)) {
             //通知类型不能为空
-            throw new BusinessException("09028");
+            throw new BusinessException("通知类型不能为空");
         }
 
         IPayCommonService payCommonService = PayUtils.getCommonPayInstance(payType);
@@ -62,7 +62,7 @@ public class PayCommonCenter implements IPayCommonCenter {
             transferNotify(payCommonService, reqParam);
         } else {
             //回调通知类型错误
-            throw new BusinessException("09028");
+            throw new BusinessException("回调通知类型错误");
         }
     }
 
@@ -123,13 +123,13 @@ public class PayCommonCenter implements IPayCommonCenter {
     @Override
     public Object doTransfer(int payType, List<Long> flowIdList, String ipAddress) throws Exception {
         if (flowIdList == null || 0 >= flowIdList.size()) {
-            throw new BusinessException("111");
+            throw new BusinessException("参数不能为空");
         }
         //根据流水号查未付款流水
         List<PayFlowBean> flowBeanList = null;//payFlow.getPayFlowById(flowIdList, PayConstant.PAY_NOT);
         if (flowBeanList == null || 0 >= flowBeanList.size()) {
             //未查询到支付流水信息
-            throw new BusinessException("09026");
+            throw new BusinessException("未查询到支付流水信息");
         }
 
         Map<String, String> extMap = new HashMap<>();
@@ -165,11 +165,11 @@ public class PayCommonCenter implements IPayCommonCenter {
                     //更新相关数据
                     transferFailedUpdate(flowBean);
                     //操作失败
-                    throw new BusinessException("09096", payResult.getFailDesc());
+                    throw new BusinessException("操作失败{}", payResult.getFailDesc());
                 } else {
                     logger.error("微信企业付款失败，原因未知");
                     //操作失败
-                    throw new BusinessException("09096", "原因未知");
+                    throw new BusinessException("操作失败{}", "原因未知");
                 }
             }
             retObj = "操作成功";
@@ -179,7 +179,7 @@ public class PayCommonCenter implements IPayCommonCenter {
             retObj = payCommonService.transfer(flowBeanList, extMap);
         } else {
             //第三方支付类型未定义
-            throw new BusinessException("09506");
+            throw new BusinessException("第三方支付类型未定义");
         }
         return retObj;
     }
@@ -227,7 +227,7 @@ public class PayCommonCenter implements IPayCommonCenter {
                     //其余的直接退出
                 }
             } else {
-                throw new BusinessException("09026");
+                throw new BusinessException("未查询到支付流水");
             }
         }
     }

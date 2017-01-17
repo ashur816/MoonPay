@@ -135,7 +135,7 @@ public class TenPayApp implements IPayAppService {
         SortedMap<String, String> sortedMap = TenPayUtils.getMapFromXML(tmpXml);
         if (sortedMap == null || sortedMap.size() < 1) {
             //参数不能为空
-            throw new BusinessException(null, "参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         long flowId = 0L;
         String outTradeNo = sortedMap.get("out_trade_no");
@@ -143,7 +143,7 @@ public class TenPayApp implements IPayAppService {
             flowId = Long.valueOf(outTradeNo);
         } else {
             //未查询到支付流水信息
-            throw new BusinessException("09026");
+            throw new BusinessException("未查询到支付流水信息");
         }
         return flowId;
     }
@@ -296,14 +296,14 @@ public class TenPayApp implements IPayAppService {
 
         if (sortedMap == null || sortedMap.size() < 1) {
             //参数不能为空
-            throw new BusinessException(null, "参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
 
         String returnSign = sortedMap.get("sign");
         String mySign = TenPayUtils.createSign(privateKey, sortedMap);
         if (!returnSign.equals(mySign)) {
             //回调签名不匹配
-            throw new BusinessException(null, "回调签名不匹配");
+            throw new BusinessException("回调签名不匹配");
         }
         return sortedMap;
     }

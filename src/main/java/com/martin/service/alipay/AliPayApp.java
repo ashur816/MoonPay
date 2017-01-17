@@ -84,7 +84,7 @@ public class AliPayApp implements IPayAppService {
             flowId = Long.valueOf(outTradeNo);
         } else {
             //未查询到支付流水信息
-            throw new BusinessException("09026");
+            throw new BusinessException("未查询到支付流水信息");
         }
         return flowId;
     }
@@ -217,7 +217,7 @@ public class AliPayApp implements IPayAppService {
         logger.info("开始APP支付宝验签处理");
         if (paraMap == null || paraMap.size() < 1) {
             //参数不能为空
-            throw new BusinessException("111");
+            throw new BusinessException("参数不能为空");
         }
 
         //判断responseTxt是否为true，isSign是否为true
@@ -231,7 +231,7 @@ public class AliPayApp implements IPayAppService {
         }
         if ("false".equalsIgnoreCase(responseTxt)) {
             //支付宝回调异常
-            throw new BusinessException("09023");
+            throw new BusinessException("支付宝回调异常");
         }
 
         String aliSign = paraMap.get("sign");
@@ -252,7 +252,7 @@ public class AliPayApp implements IPayAppService {
         boolean signResult = AliPayAppUtils.checkBackSign(paraMap, PayParam.aliAliPublicKey, aliSign);
         if (!signResult) {
             //支付宝回调签名不匹配
-            throw new BusinessException("09024");
+            throw new BusinessException("支付宝回调签名不匹配");
         }
         logger.info("APP支付宝验签处理完成");
     }

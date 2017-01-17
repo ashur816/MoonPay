@@ -156,7 +156,7 @@ public class AliPayCommon implements IPayCommonService {
     private void returnValidate(Map<String, String> paraMap) throws Exception {
         if (paraMap == null || paraMap.size() < 1) {
             //参数不能为空
-            throw new BusinessException("111");
+            throw new BusinessException("参数不能为空");
         }
 
         //判断responseTxt是否为true，isSign是否为true
@@ -170,7 +170,7 @@ public class AliPayCommon implements IPayCommonService {
         }
         if ("false".equalsIgnoreCase(responseTxt)) {
             //支付宝回调异常
-            throw new BusinessException("09023");
+            throw new BusinessException("支付宝回调异常");
         }
 
         String returnSign = paraMap.get("sign");
@@ -178,7 +178,7 @@ public class AliPayCommon implements IPayCommonService {
         String mySign = AliPayUtils.buildRequestMySign(PayParam.aliMD5Key, PayParam.aliWebSignType, tmpMap);
         if (!returnSign.equals(mySign)) {
             //支付宝回调签名不匹配
-            throw new BusinessException("09024");
+            throw new BusinessException("支付宝回调签名不匹配");
         }
     }
 }

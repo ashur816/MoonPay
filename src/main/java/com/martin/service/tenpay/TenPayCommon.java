@@ -111,7 +111,7 @@ public class TenPayCommon implements IPayCommonService {
         sb.append("&appid=" + PayParam.tenWebAppId + "&secret=" + PayParam.tenAppSecret + "&code=" + code + "&grant_type=" + "authorization_code");
         String result = TenPayUtils.sendPostXml("https://api.weixin.qq.com/sns/oauth2/access_token", sb.toString());
         if (StringUtils.isEmpty(result)) {
-            throw new BusinessException("09033");
+            throw new BusinessException("未关注微信公众号");
         }
         return JsonUtils.readValueByName(result, "openid");
     }
@@ -140,14 +140,14 @@ public class TenPayCommon implements IPayCommonService {
 
         if (sortedMap == null || sortedMap.size() < 1) {
             //参数不能为空
-            throw new BusinessException(null, "参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
 
         String returnSign = sortedMap.get("sign");
         String mySign = TenPayUtils.createSign(PayParam.tenWebPrivateKey, sortedMap);
         if (!returnSign.equals(mySign)) {
             //回调签名不匹配
-            throw new BusinessException(null, "回调签名不匹配");
+            throw new BusinessException("回调签名不匹配");
         }
         return sortedMap;
     }

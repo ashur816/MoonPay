@@ -91,7 +91,7 @@ public class TenPayWeb implements IPayWebService {
         String openId = getOpenId(extMap.get("code"));
         if (StringUtils.isEmpty(openId)) {
             //用户必须关注指端微信号
-            throw new BusinessException("09033");
+            throw new BusinessException("用户必须关注指端微信号");
         }
         paraMap.put("openid", openId);
         // ZD流水号
@@ -145,11 +145,11 @@ public class TenPayWeb implements IPayWebService {
             tmpMap.put("paySign", sign);
         } else if (PayReturnCodeEnum.TENPAY_ORDERPAID.getCode().equals(errCode)) {
             //订单已支付
-            throw new BusinessException("09031");
+            throw new BusinessException("订单已支付");
         } else {
             logger.info("微信预下单失败：{}", !StringUtils.isEmpty(returnMsg) ? returnMsg : errDes);
             //微信支付预下单失败
-            throw new BusinessException("09020");
+            throw new BusinessException("微信支付预下单失败");
         }
         String html = TenPayUtils.createPageRequest(tmpMap);
         //支付总金额
@@ -372,7 +372,7 @@ public class TenPayWeb implements IPayWebService {
         sb.append("&appid=" + PayParam.tenWebAppId + "&secret=" + PayParam.tenAppSecret + "&code=" + code + "&grant_type=" + "authorization_code");
         String result = TenPayUtils.sendPostXml("https://api.weixin.qq.com/sns/oauth2/access_token", sb.toString());
         if (StringUtils.isEmpty(result)) {
-            throw new BusinessException("09033");
+            throw new BusinessException("用户必须关注指端微信号");
         }
         return JsonUtils.readValueByName(result, "openid");
     }
@@ -401,14 +401,14 @@ public class TenPayWeb implements IPayWebService {
 
         if (sortedMap == null || sortedMap.size() < 1) {
             //参数不能为空
-            throw new BusinessException(null, "参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
 
         String returnSign = sortedMap.get("sign");
         String mySign = TenPayUtils.createSign(PayParam.tenWebPrivateKey, sortedMap);
         if (!returnSign.equals(mySign)) {
             //回调签名不匹配
-            throw new BusinessException(null, "回调签名不匹配");
+            throw new BusinessException("回调签名不匹配");
         }
         return sortedMap;
     }

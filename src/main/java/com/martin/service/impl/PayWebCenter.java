@@ -61,7 +61,7 @@ public class PayWebCenter implements IPayWebCenter {
     @Override
     public PayInfo doPay(String appId, int payType, String bizId, int bizType, String ipAddress, String code) throws Exception {
         if (StringUtils.isEmpty(bizId) || StringUtils.isEmpty(ipAddress)) {
-            throw new BusinessException("111");
+            throw new BusinessException("参数不能为空");
         }
 
         //防并发，保证一个订单只有一个人支付
@@ -85,11 +85,11 @@ public class PayWebCenter implements IPayWebCenter {
                             tmpBean.setPayTime(new Date());
                             payFlow.updPayFlow(tmpBean);
                             //订单已经支付，系统正在处理中，请勿重复支付
-                            throw new BusinessException("09018");
+                            throw new BusinessException("订单已经支付，系统正在处理中，请勿重复支付");
                         }
                     } else {
                         //该订单已支付
-                        throw new BusinessException("09031");
+                        throw new BusinessException("该订单已支付");
                     }
                 }
             }
