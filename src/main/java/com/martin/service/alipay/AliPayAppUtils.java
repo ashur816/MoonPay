@@ -1,5 +1,7 @@
 package com.martin.service.alipay;
 
+import com.martin.utils.PayUtils;
+
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
@@ -11,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * @author ZXY
  * @ClassName: AlipayCore
  * @Description: 支付宝工具类
- * @author ZXY
  * @date 2016/5/24 19:27
  */
 public class AliPayAppUtils {
@@ -22,30 +24,16 @@ public class AliPayAppUtils {
     private static String charset = "UTF-8";
 
     public static Map<String, String> createAliPayOrder(String privateKey, Map<String, String> params) throws Exception {
-        String orderParam = buildOrderParam(params);
-        String sign = getSign(params, privateKey);
-        final String orderInfo = orderParam + "&sign=" + sign;
+        //1. 请求参数按照key=value&key=value方式拼接的未签名原始字符串
+        String bizParam = PayUtils.buildPayParam(params);
+        //2. 再对原始字符串进行签名
+        String sign = getSign(bizParam, privateKey);
+        //3. 最后对请求字符串的所有一级value（biz_content作为一个value）进行encode
         params.put("sign", sign);
-        params.put("payInfo", orderInfo);
+        String payInfo = encodePayInfo(params);
+        params.put("sign", sign);
+        params.put("payInfo", payInfo);
         return params;
-    }
-
-    private static String buildOrderParam(Map<String, String> map) {
-        List<String> keys = new ArrayList<>(map.keySet());
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < keys.size() - 1; i++) {
-            String key = keys.get(i);
-            String value = map.get(key);
-            sb.append(buildKeyValue(key, value, 0));
-            sb.append("&");
-        }
-
-        String tailKey = keys.get(keys.size() - 1);
-        String tailValue = map.get(tailKey);
-        sb.append(buildKeyValue(tailKey, tailValue, 0));
-
-        return sb.toString();
     }
 
     /**
@@ -80,33 +68,45 @@ public class AliPayAppUtils {
 
     /**
      * 对支付参数信息进行签名
-     * @param map 待签名授权信息
+     *
      * @return
      */
-    public static String getSign(Map<String, String> map, String rsaKey) throws Exception {
+    public static String getSign(String bizParam, String rsaKey) throws Exception {
+        return RSA.sign(bizParam, rsaKey, charset);
+    }
+
+    /**
+     * 对value值进行encode
+     */
+    public static String encodePayInfo(Map<String, String> map) throws Exception {
         List<String> keys = new ArrayList<>(map.keySet());
         // key排序
         Collections.sort(keys);
 
-        StringBuilder authInfo = new StringBuilder();
-        for (int i = 0; i < keys.size() - 1; i++) {
+        StringBuilder sb = new StringBuilder();
+        String sign = "";
+        for (int i = 0; i < keys.size(); i++) {
             String key = keys.get(i);
             String value = map.get(key);
-            authInfo.append(buildKeyValue(key, value, -1));
-            authInfo.append("&");
+            String encodeValue = URLEncoder.encode(value, charset);
+            if ("sign".equals(key)) {
+                sign = encodeValue;
+            }
+            else {
+                sb.append(key).append("=").append(encodeValue);
+                if (i != keys.size() - 1) {
+                    sb.append("&");
+                }
+            }
         }
+        sb.append("&sign=").append(sign);
 
-        String tailKey = keys.get(keys.size() - 1);
-        String tailValue = map.get(tailKey);
-        authInfo.append(buildKeyValue(tailKey, tailValue, -1));
-
-        String oriSign = RSA.sign(authInfo.toString(), rsaKey, charset);
-        String encodedSign = URLEncoder.encode(oriSign, charset);
-        return encodedSign;
+        return sb.toString();
     }
 
     /**
      * 对支付回调参数信息进行签名
+     *
      * @param map 待签名授权信息
      * @return
      */
@@ -133,7 +133,8 @@ public class AliPayAppUtils {
 
     /**
      * 向指定 URL 发送POST方法的请求
-     * @param url 发送请求的 URL
+     *
+     * @param url     发送请求的 URL
      * @param paraMap
      * @return 所代表远程资源的响应结果
      * @throws Exception
@@ -159,8 +160,9 @@ public class AliPayAppUtils {
             out = new PrintWriter(new OutputStreamWriter(conn.getOutputStream(), "UTF-8"));
 
             //拼装请求参数
-            String sign = getSign(paraMap, privateKey);
-            String tmpString = buildOrderParam(paraMap) + "&sign=" + sign;
+            String bizParam = PayUtils.buildPayParam(paraMap);
+            String sign = getSign(bizParam, privateKey);
+            String tmpString = bizParam + "&sign=" + sign;
             // 发送请求参数
             out.print(tmpString);
 

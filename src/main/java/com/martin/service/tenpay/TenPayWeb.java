@@ -11,6 +11,7 @@ import com.martin.exception.BusinessException;
 import com.martin.service.IPayFlow;
 import com.martin.service.IPayWebService;
 import com.martin.utils.JsonUtils;
+import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class TenPayWeb implements IPayWebService {
         paraMap.put("response_type", "code");
         paraMap.put("state", PayConstant.PAY_TYPE_TEN + "|" + bizId + "|" + bizType);
 
-        String param = TenPayUtils.createLinkString(paraMap);
+        String param = PayUtils.buildPayParam(paraMap);
 
         PayInfo payInfo = new PayInfo();
         payInfo.setDestUrl(PayParam.tenAuthUrl);

@@ -46,18 +46,18 @@ public class AliPayApp implements IPayAppService {
         paraMap.put("method", "alipay.trade.app.pay");
         paraMap.put("charset", "utf-8");
         paraMap.put("sign_type", PayParam.aliAppSignType);
-        paraMap.put("timestamp", DateUtils.format(new Date(), "yyyyMMddHHmmss"));
+        paraMap.put("timestamp", DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
         paraMap.put("version", "1.0");
         paraMap.put("notify_url", PayParam.aliAppNotifyUrl);
 
         // biz_content 业务请求参数的集合 subject out_trade_no total_amount product_code passback_params
         Map<String, String> bizMap = new HashMap<>();
         //商品名称
-        bizMap.put("subject", PayParam.appBody);
         bizMap.put("body", PayParam.appBody);
-        bizMap.put("timeout_express", "30m");
+        bizMap.put("subject", PayParam.appBody);
         //支付流水号
         bizMap.put("out_trade_no", String.valueOf(flowBean.getFlowId()));
+        bizMap.put("timeout_express", "30m");
         //支付总金额
         double payAmount = flowBean.getPayAmount() / 100.0;
         bizMap.put("total_amount", String.valueOf(payAmount));

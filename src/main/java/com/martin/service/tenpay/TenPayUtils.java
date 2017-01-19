@@ -3,6 +3,7 @@ package com.martin.service.tenpay;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.martin.constant.PayParam;
+import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -30,9 +31,9 @@ import java.security.KeyStore;
 import java.util.*;
 
 /**
+ * @author ZXY
  * @ClassName: TenPayCore
  * @Description: 微信支付工具类
- * @author ZXY
  * @date 2016/5/27 16:54
  */
 class TenPayUtils {
@@ -76,19 +77,11 @@ class TenPayUtils {
         //过滤空值和sign
         SortedMap filterMap = paraFilter(parameters);
 
-        StringBuilder sb = new StringBuilder();
-        Set es = filterMap.entrySet();//所有参与传参的参数按照ASCII排序（升序）
-        for (Object e : es) {
-            Map.Entry entry = (Map.Entry) e;
-            String k = (String) entry.getKey();
-            Object v = entry.getValue();
-            if (null != v && !"".equals(v)) {
-                sb.append(k).append("=").append(v).append("&");
-            }
-        }
-        sb.append("key=").append(key);
-        System.out.println("支付参数-" + sb.toString());
-        return MD5Encode(sb.toString());
+        //拼装请求参数
+        String bizParam = PayUtils.buildPayParam(filterMap);
+        bizParam += "key=" + key;
+        System.out.println("支付参数-" + bizParam);
+        return MD5Encode(bizParam);
     }
 
 
@@ -112,6 +105,7 @@ class TenPayUtils {
 
     /**
      * 除去数组中的空值和签名参数
+     *
      * @param sArray 签名参数组
      * @return 去掉空值与签名参数后的新签名参数组
      */
@@ -139,6 +133,7 @@ class TenPayUtils {
 
     /**
      * 通过Https往API post xml数据
+     *
      * @param url    API地址
      * @param xmlObj 要提交的XML数据对象
      * @return API回包的实际数据
@@ -174,10 +169,10 @@ class TenPayUtils {
     }
 
     /**
-     * @Description: 使用安全证书，发送请求
      * @param
      * @return
      * @throws
+     * @Description: 使用安全证书，发送请求
      */
     public static String sendPostWithCert(String url, String params, String charset) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
@@ -218,32 +213,10 @@ class TenPayUtils {
     }
 
     /**
-     * 把数组所有元素排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
-     * @param params 需要排序并参与字符拼接的参数组
-     * @return 拼接后字符串
-     */
-    public static String createLinkString(Map<String, String> params) {
-
-        List<String> keys = new ArrayList<>(params.keySet());
-        Collections.sort(keys);
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < keys.size(); i++) {
-            String key = keys.get(i);
-            String value = params.get(key);
-            sb.append(key).append("=").append(value);
-            if (i != keys.size() - 1) {
-                sb.append("&");
-            }
-        }
-        return sb.toString();
-    }
-
-    /**
-     * @Description: xml转map
      * @param
      * @return
      * @throws
+     * @Description: xml转map
      */
     public static SortedMap<String, String> getMapFromXML(String xmlString) throws Exception {
 

@@ -1,16 +1,16 @@
 package com.martin.service.tenpay;
 
+import com.martin.utils.PayUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
+ * @author ZXY
  * @ClassName: TenPayCore
  * @Description: 微信支付工具类
- * @author ZXY
  * @date 2016/5/27 16:54
  */
 class TenPayAppUtils {
@@ -22,24 +22,9 @@ class TenPayAppUtils {
      * 获取签名
      */
     public static String createSdkSign(String privateKey, LinkedHashMap<String, String> paraMap) {
-
-        StringBuilder sb = new StringBuilder();
-
-        Set es = paraMap.entrySet();//所有参与传参的参数按照ASCII排序（升序）
-        for (Object e : es) {
-            Map.Entry entry = (Map.Entry) e;
-            String k = (String) entry.getKey();
-            Object v = entry.getValue();
-            if (null != v && !"".equals(v)) {
-                sb.append(k).append("=").append(v).append("&");
-            }
-        }
-
-        sb.append("key=");
-        sb.append(privateKey); // 这里必须要用商户的KEY代码,我靠..
-
-        System.err.println(sb.toString());
-        String appSign = MD5(sb.toString());
+        String param = PayUtils.buildPayParam(paraMap);
+        param += "key=" + privateKey;// 这里必须要用商户的KEY代码,我靠..
+        String appSign = MD5(param);
         return appSign;
     }
 

@@ -8,8 +8,7 @@ import com.martin.service.IPayAppService;
 import com.martin.service.IPayCommonService;
 import com.martin.service.IPayWebService;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @ClassName: PayUtils
@@ -140,5 +139,25 @@ public class PayUtils {
     public static PayResult getSdkPayStatus(long flowId, int payType, Map<String, String> extMap) throws Exception {
         IPayAppService paySdkService = PayUtils.getAppPayInstance(payType);
         return paySdkService.getPayStatus(flowId, extMap);
+    }
+
+    /**
+     * 把数组所有元素排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
+    */
+    public static String buildPayParam(Map<String, String> map) {
+        List<String> keys = new ArrayList<>(map.keySet());
+        // key排序
+        Collections.sort(keys);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            String value = map.get(key);
+            sb.append(key).append("=").append(value);
+            if (i != keys.size() - 1) {
+                sb.append("&");
+            }
+        }
+
+        return sb.toString();
     }
 }
