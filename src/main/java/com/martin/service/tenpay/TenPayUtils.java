@@ -79,7 +79,7 @@ class TenPayUtils {
 
         //拼装请求参数
         String bizParam = PayUtils.buildPayParam(filterMap);
-        bizParam += "key=" + key;
+        bizParam += "&key=" + key;
         System.out.println("支付参数-" + bizParam);
         return MD5Encode(bizParam);
     }

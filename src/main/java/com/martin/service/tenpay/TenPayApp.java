@@ -46,10 +46,10 @@ public class TenPayApp implements IPayAppService {
         //组装参数返回给前台
         SortedMap<String, String> paraMap = new TreeMap<>();
         paraMap.put("appid", appId);
+        paraMap.put("mch_id", mchId);
         //商品或支付单简要描述
         paraMap.put("body", PayParam.appBody);
         paraMap.put("limit_pay", PayParam.tenLimitPay);
-        paraMap.put("mch_id", mchId);
         paraMap.put("notify_url", PayParam.tenAppNotifyUrl);
 
         paraMap.put("trade_type", PayParam.tenAppTradeType);
