@@ -29,7 +29,7 @@ public class PayConstant {
     public static int PAY_FAIL = 4;//支付失败
 
     /* 业务类型 */
-    public static int BIZ_TYPE_GRAB = 1;
+    public static int BIZ_TYPE_EXPRESS = 1;//快递
     public static int BIZ_TYPE_WITHDRAW = 2;
 
     /* 终端类型 */

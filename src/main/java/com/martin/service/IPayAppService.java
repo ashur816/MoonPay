@@ -3,6 +3,7 @@ package com.martin.service;
 import com.martin.bean.PayFlowBean;
 import com.martin.dto.PayResult;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,4 +53,12 @@ public interface IPayAppService {
      * @throws
      */
     void closeThdPay(Long flowId, Map<String, String> extMap) throws Exception;
+
+    /**
+     * 批量退款，兼容单个
+     * @param flowBeanList
+     * @param extMap
+     * @return
+     */
+    Object refund(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception;
 }

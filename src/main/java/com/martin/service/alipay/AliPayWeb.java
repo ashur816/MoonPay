@@ -220,8 +220,8 @@ public class AliPayWeb implements IPayWebService {
         paraMap.put("app_id", PayParam.aliWebAppId);
         paraMap.put("method", PayParam.aliQueryService);
         paraMap.put("charset", "utf-8");
-        paraMap.put("sign_type", PayParam.aliAppSignType);//只支持RSA
-        paraMap.put("timestamp", DateUtils.format(new Date(), "yyyyMMddHHmmss"));
+        paraMap.put("sign_type", "RSA");//只支持RSA
+        paraMap.put("timestamp", DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
         paraMap.put("version", "1.0");
 
         // biz_content 业务请求参数的集合
@@ -236,6 +236,7 @@ public class AliPayWeb implements IPayWebService {
         Map tmpMap = JsonUtils.readMap(tmpString);
         Map returnMap = (Map) tmpMap.get("alipay_trade_query_response");
         Object subCode = returnMap.get("sub_code");
+        Object subMsg = returnMap.get("sub_msg");
         Object tradeStatus = returnMap.get("trade_status");
         String code = "WAIT_BUYER_PAY";
         if (ObjectUtils.isNotEmpty(subCode)) {
@@ -243,10 +244,10 @@ public class AliPayWeb implements IPayWebService {
         } else if (ObjectUtils.isNotEmpty(tradeStatus)) {
             code = tradeStatus.toString();
         }
-        logger.info("WEB支付宝查单结果-{}", code);
+        logger.info("WEB支付宝查单结果-{},-{}", code, subMsg);
         PayResult payResult = new PayResult();
         payResult.setPayState(transPayState(code));
-        if(PayConstant.PAY_SUCCESS == payResult.getPayState()){
+        if (PayConstant.PAY_SUCCESS == payResult.getPayState()) {
             //支付成功的更新第三方交易流水号
             payResult.setThdFlowId(returnMap.get("trade_no").toString());
         }

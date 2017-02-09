@@ -166,6 +166,7 @@ public class TenPayWeb implements IPayWebService {
      */
     @Override
     public PayResult payReturn(Map<String, String> paraMap) throws Exception {
+        logger.info("WEB微信支付回调处理");
         SortedMap<String, String> sortedMap = returnValidate(paraMap);
         String resultCode = sortedMap.get("result_code");
         String returnCode = sortedMap.get("return_code");
@@ -202,7 +203,7 @@ public class TenPayWeb implements IPayWebService {
      */
     @Override
     public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
-        logger.info("微信退款回调处理");
+        logger.info("WEB微信退款回调处理");
         SortedMap<String, String> sortedMap = returnValidate(paraMap);
 
         String resultCode = sortedMap.get("result_code");
@@ -279,7 +280,6 @@ public class TenPayWeb implements IPayWebService {
         } else {
             payResult.setPayState(PayConstant.PAY_NOT);
         }
-
 
         return payResult;
     }

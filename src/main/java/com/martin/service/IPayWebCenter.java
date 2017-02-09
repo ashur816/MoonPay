@@ -34,13 +34,6 @@ public interface IPayWebCenter {
     /**
      * @return void
      * @throws
-     * @Description: 获取退款信息
-     */
-    List<PayInfo> getRefundInfo(int payType, String tmpFlowId) throws Exception;
-
-    /**
-     * @return void
-     * @throws
      * @Description: 退款
      */
     Object doRefund(List<PayFlowBean> flowBeanList,String refundReason) throws Exception;

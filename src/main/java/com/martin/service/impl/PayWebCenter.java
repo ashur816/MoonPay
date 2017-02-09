@@ -8,6 +8,7 @@ import com.martin.dto.PayResult;
 import com.martin.dto.RefundResult;
 import com.martin.dto.ToPayInfo;
 import com.martin.exception.BusinessException;
+import com.martin.service.IPayCommonCenter;
 import com.martin.service.IPayFlow;
 import com.martin.service.IPayWebCenter;
 import com.martin.service.IPayWebService;
@@ -16,11 +17,17 @@ import com.martin.utils.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author ZXY
@@ -35,6 +42,12 @@ public class PayWebCenter implements IPayWebCenter {
 
     @Resource
     private IPayFlow payFlow;
+
+    @Resource
+    private IPayCommonCenter payCommonCenter;
+
+    @Resource
+    private RedisTemplate<Object, Object> redisTemplate;
 
     /**
      * @param payType 支付渠道 支付宝/微信等
@@ -79,11 +92,32 @@ public class PayWebCenter implements IPayWebCenter {
                         //去第三方查询支付情况
                         PayResult payResult = PayUtils.getWebPayStatus(tmpBean.getFlowId(), oldThdType);
                         if (PayConstant.PAY_SUCCESS == payResult.getPayState()) {
-                            //更新支付流水
                             tmpBean.setThdFlowId(payResult.getThdFlowId());
-                            tmpBean.setPayState(PayConstant.PAY_SUCCESS);
                             tmpBean.setPayTime(new Date());
+                            //业务回调处理
+                            try {
+                                payCommonCenter.doNotifyBusiness(bizId, bizType, tmpBean.getPayAmount());
+                                //全部执行成功，即为支付成功
+                                tmpBean.setPayState(PayConstant.PAY_SUCCESS);
+                            } catch (Exception e) {
+                                if (e instanceof BusinessException) {//业务异常
+                                    //业务处理异常
+                                    tmpBean.setPayState(PayConstant.PAY_ERROR_BIZ);
+                                    BusinessException be = (BusinessException) e;
+                                    String errorMsg = be.getMessage();
+                                    logger.info("WEB支付回调异常:{}", errorMsg);
+                                    //记录异常
+                                    tmpBean.setFailDesc(errorMsg);
+                                } else {
+                                    //业务处理异常
+                                    tmpBean.setPayState(PayConstant.PAY_ERROR_BIZ);
+                                    tmpBean.setFailDesc("代码报错:" + e.getMessage());
+                                }
+                            }
+
+                            //更新支付流水
                             payFlow.updPayFlow(tmpBean);
+
                             //订单已经支付，系统正在处理中，请勿重复支付
                             throw new BusinessException("订单已经支付，系统正在处理中，请勿重复支付");
                         }
@@ -95,10 +129,8 @@ public class PayWebCenter implements IPayWebCenter {
             }
         }
 
-        //获取订单支付信息
-        ToPayInfo orderPayInfo = new ToPayInfo();
-        orderPayInfo.setGoodName("测试");
-        orderPayInfo.setPayAmount(1);
+        //获取要支付的信息
+        ToPayInfo orderPayInfo = payCommonCenter.getToPayInfo(bizId, bizType);
 
         //获取支付参数
         Map<String, String> extMap = PayUtils.getPaySource(payType, appId);
@@ -121,31 +153,6 @@ public class PayWebCenter implements IPayWebCenter {
         PayInfo payInfo = payService.buildPayInfo(flowBean, extMap);
         payInfo.setBizId(bizId);
         return payInfo;
-    }
-
-    /**
-     * @param tmpFlowId
-     * @return void
-     * @throws
-     * @Description: 获取退款信息
-     */
-    @Override
-    public List<PayInfo> getRefundInfo(int payType, String tmpFlowId) throws Exception {
-        long flowId = 0L;
-        if (StringUtils.isNotBlank(tmpFlowId)) {
-            flowId = Long.parseLong(tmpFlowId);
-        }
-        //根据流水号查询
-        List<PayFlowBean> flowBeanList = payFlow.getPayFlowList(flowId, PayConstant.PAY_SUCCESS);
-        List<PayInfo> payInfoList = new ArrayList<>();
-        for (PayFlowBean tmpBean : flowBeanList) {
-            PayInfo payInfo = new PayInfo();
-            payInfo.setFlowId(tmpBean.getFlowId());
-            payInfo.setPayType(tmpBean.getPayType());
-            payInfo.setPayAmount(Double.parseDouble(tmpBean.getPayAmount().toString()));
-            payInfoList.add(payInfo);
-        }
-        return payInfoList;
     }
 
     /**
@@ -214,7 +221,85 @@ public class PayWebCenter implements IPayWebCenter {
      */
     @Override
     public void doPayNotify(int payType, String ipAddress, Map<String, String> reqParam) throws Exception {
+        //解析返回
+        logger.info("WEB解析支付回调");
+        IPayWebService payWebService = PayUtils.getWebPayInstance(payType);
+        PayResult payResult = payWebService.payReturn(reqParam);
+        long flowId;
+        if (payResult != null) {
+            flowId = payResult.getFlowId();
+        } else {
+            throw new BusinessException("WEB回调解析失败");
+        }
 
+        //查支付流水 只查有效记录，无效记录不会出现回调
+        PayFlowBean flowBean = payFlow.getPayFlowById(flowId, PayConstant.ALL_PAY_STATE);
+        if (flowBean == null) {
+            throw new BusinessException("未查询到支付流水信息");
+        }
+
+        //业务类型 抢单支付 1，提现 2，预订单 3
+        int payState = flowBean.getPayState();
+        int callbackState = payResult.getPayState();
+
+        logger.info("flowId={},payState={},callbackState={}", flowId, payState, callbackState);
+
+        if (PayConstant.PAY_UN_BACK == payState || PayConstant.PAY_NOT == payState || PayConstant.PAY_ERROR_BIZ == payState) {//已发支付，待回调 或者 未支付 或者 支付成功，业务处理失败的
+            //防并发，保证回调业务不会并发
+//            String existKey = getAndSet(RedisKeyEnum.PAY_KEY_NOTIFYING.getKey() + flowId, String.valueOf(flowId), 2L);
+//            if (StringUtils.isEmpty(existKey)) {
+            logger.info("进入WEB支付回调处理");
+
+            if (PayConstant.PAY_SUCCESS == callbackState || PayConstant.PAY_UN_BACK == callbackState) {//第三方交易成功的
+                String bizId = flowBean.getBizId();
+                int bizType = flowBean.getBizType();
+
+                //状态改成待业务处理
+                flowBean.setPayState(PayConstant.PAY_UN_BIZ);
+                //支付时间
+                flowBean.setPayTime(new Date());
+                flowBean.setThdFlowId(payResult.getThdFlowId());
+
+                //业务回调处理
+                try {
+                    payCommonCenter.doNotifyBusiness(bizId, bizType, flowBean.getPayAmount());
+                    //全部执行成功，即为支付成功
+                    flowBean.setPayState(PayConstant.PAY_SUCCESS);
+                } catch (Exception e) {
+                    if (e instanceof BusinessException) {//业务异常
+                        //业务处理异常
+                        flowBean.setPayState(PayConstant.PAY_ERROR_BIZ);
+                        BusinessException be = (BusinessException) e;
+                        String errorMsg = be.getMessage();
+                        logger.info("WEB支付回调异常:{}", errorMsg);
+                        //记录异常
+                        flowBean.setFailDesc(errorMsg);
+                    } else {
+                        //业务处理异常
+                        flowBean.setPayState(PayConstant.PAY_ERROR_BIZ);
+                        flowBean.setFailDesc("代码报错:" + e.getMessage());
+                    }
+                }
+            } else if (PayConstant.PAY_FAIL == callbackState) {
+                logger.info("回调WEB支付失败");
+                flowBean.setFailCode(payResult.getFailCode());
+                flowBean.setFailDesc(payResult.getFailDesc());
+                flowBean.setPayState(PayConstant.PAY_FAIL);
+                //支付失败，数据作废
+                flowBean.setState(PayConstant.STATE_0);
+            } else {
+                //其余的直接退出
+                return;
+            }
+
+            //更新交易流水
+            payFlow.updPayFlow(flowBean);
+        } else {
+            logger.error("WEB支付重复回调被拦截 flowId-{}", flowId);
+        }
+//        } else {
+//            //忽略，不处理
+//        }
     }
 
     /**
@@ -227,6 +312,78 @@ public class PayWebCenter implements IPayWebCenter {
      */
     @Override
     public void doRefundNotify(int payType, String ipAddress, Map<String, String> reqParam) throws Exception {
+        //解析返回
+        logger.info("WEB解析退款回调");
+        IPayWebService payWebService = PayUtils.getWebPayInstance(payType);
+        List<RefundResult> refundResults = payWebService.refundReturn(reqParam);
+        RefundResult refundResult;
+        int payState;
+        int callbackState;
+        long flowId;
+        for (int i = 0; i < refundResults.size(); i++) {
+            refundResult = refundResults.get(i);
+            callbackState = refundResult.getPayState();
+            if (callbackState == PayConstant.REFUND_FAIL) {//失败的 签名失败 参数格式校验错误等
+                //不处理
+                continue;
+            } else {
+                flowId = refundResult.getFlowId();
+                PayFlowBean flowBean = payFlow.getPayFlowById(flowId, -1);
+                if (flowBean != null) {
+                    payState = flowBean.getPayState();
+                    callbackState = refundResult.getPayState();
+                    logger.info("退款回调参数 flowId-{},payState-{},callbackState-{}", flowId, payState, callbackState);
+                    if (PayConstant.PAY_SUCCESS == payState || PayConstant.REFUND_ING == payState || PayConstant.REFUND_FAIL == payState) {//支付成功、退款中、退款失败的 才能继续退款
+                        //支付状态
+                        flowBean.setPayState(callbackState);
+                        if (PayConstant.REFUND_SUCCESS == callbackState) {
+                            Date now = new Date();
+                            //退款单号
+                            flowBean.setThdRefundId(refundResult.getThdRefundId());
+                            //退款时间
+                            flowBean.setRefundTime(now);
+                            flowBean.setPayState(callbackState);
 
+                            //业务处理
+                        } else {
+                            flowBean.setFailCode(refundResult.getFailCode());
+                            flowBean.setFailDesc(refundResult.getFailDesc());
+                        }
+                        //更新交易流水
+                        payFlow.updPayFlow(flowBean);
+                    } else {
+                        //跳过不管
+                    }
+                } else {
+                    throw new BusinessException("未查询到支付流水信息");
+                }
+            }
+        }
+    }
+
+    /**
+     * redis 原子操作
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    private String getAndSet(final String key, final String value, final long expireSeconds) {
+        return redisTemplate.execute(new RedisCallback<String>() {
+            @Override
+            public String doInRedis(RedisConnection connection) throws DataAccessException {
+                byte[] result = connection.getSet(redisTemplate.getStringSerializer().serialize(key), redisTemplate.getStringSerializer().serialize(value));
+                redisTemplate.expire(key, expireSeconds, TimeUnit.SECONDS);
+                if (result != null) {
+                    try {
+                        return new String(result, "utf-8");
+                    } catch (UnsupportedEncodingException e) {
+                        logger.error("getAndSet is error", e);
+                        return "getAndSet";
+                    }
+                }
+                return null;
+            }
+        });
     }
 }

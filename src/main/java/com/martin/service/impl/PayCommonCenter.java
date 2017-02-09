@@ -4,6 +4,7 @@ import com.martin.bean.PayFlowBean;
 import com.martin.constant.PayConstant;
 import com.martin.dto.PayInfo;
 import com.martin.dto.PayResult;
+import com.martin.dto.ToPayInfo;
 import com.martin.dto.TransferResult;
 import com.martin.exception.BusinessException;
 import com.martin.service.*;
@@ -38,6 +39,21 @@ public class PayCommonCenter implements IPayCommonCenter {
     private IPayAppCenter payAppCenter;
 
     /**
+     * @param bizId
+     * @param bizType
+     * @return void
+     * @throws
+     * @Description: 获取业务订单信息，根据业务类型不同，访问不同的接口获取信息
+     */
+    @Override
+    public ToPayInfo getToPayInfo(String bizId, int bizType) throws Exception {
+        ToPayInfo toPayInfo = new ToPayInfo();
+        toPayInfo.setGoodName("测试");
+        toPayInfo.setPayAmount(1);
+        return toPayInfo;
+    }
+
+    /**
      * @return String
      * @throws
      * @Description: 第三方回调转发
@@ -67,22 +83,45 @@ public class PayCommonCenter implements IPayCommonCenter {
     }
 
     /**
+     * @param bizId
+     * @param bizType
+     * @param payAmount
+     * @return void
+     * @throws
+     * @Description: 支付回调分发业务处理
+     */
+    @Override
+    public void doNotifyBusiness(String bizId, int bizType, int payAmount) throws Exception {
+        String errorFlag = "订单侧";
+        if (PayConstant.BIZ_TYPE_EXPRESS == bizType) {
+        } else {
+            throw new BusinessException(errorFlag + "报错：暂不支持此业务支付类型");
+        }
+        logger.info("WEB回调执行成功");
+    }
+
+    /**
      * @param appId
      * @param payType
-     * @param flowId
+     * @param tmpFlowId
      * @return void
      * @throws
      * @Description: 获取退款信息
      */
     @Override
-    public List<PayInfo> getRefundInfo(String appId, int payType, String flowId) throws Exception {
-        List<PayInfo> payInfoList;
-        if (appId.equals(PayConstant.APP_ID_WEB)) {
-            payInfoList = payWebCenter.getRefundInfo(payType, flowId);
-        } else if (appId.equals(PayConstant.APP_ID_APP)) {
-            payInfoList = payAppCenter.getRefundInfo(payType, flowId);
-        } else {
-            throw new BusinessException("不支持的终端类型");
+    public List<PayInfo> getRefundInfo(String appId, int payType, String tmpFlowId) throws Exception {
+        if(StringUtils.isBlank(tmpFlowId)){
+            tmpFlowId = "0";
+        }
+        //根据流水号查询
+        List<PayFlowBean> flowBeanList = payFlow.getPayFlowList(Long.parseLong(tmpFlowId), PayConstant.PAY_SUCCESS);
+        List<PayInfo> payInfoList = new ArrayList<>();
+        for (PayFlowBean tmpBean : flowBeanList) {
+            PayInfo payInfo = new PayInfo();
+            payInfo.setFlowId(tmpBean.getFlowId());
+            payInfo.setPayType(tmpBean.getPayType());
+            payInfo.setPayAmount(Double.parseDouble(tmpBean.getPayAmount().toString()));
+            payInfoList.add(payInfo);
         }
         return payInfoList;
     }

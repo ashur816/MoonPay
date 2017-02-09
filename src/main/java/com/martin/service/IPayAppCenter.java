@@ -1,7 +1,6 @@
 package com.martin.service;
 
 import com.martin.bean.PayFlowBean;
-import com.martin.dto.PayInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -19,13 +18,6 @@ public interface IPayAppCenter {
      * @Description: 生成支付信息
      */
     Map<String, Object> buildPayInfo(String appId, String tmpPayType, String bizId, String tmpBizType, String ipAddress) throws Exception;
-
-    /**
-     * @return void
-     * @throws
-     * @Description: 获取退款信息
-     */
-    List<PayInfo> getRefundInfo(int payType, String flowId) throws Exception;
 
     /**
      * @return void

@@ -177,7 +177,7 @@ public class PayController {
      * @Description: 支付第三方异步回调
      */
     @ResponseBody
-    @RequestMapping(value = "/{notifyType}/{payType}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{notifyType}/{tmpPayType}", method = RequestMethod.POST)
     public Object doNotify(HttpServletRequest request, @PathVariable String notifyType, @PathVariable String tmpPayType) {
         Map reqMap = new LinkedHashMap<>();
         String returnCode = PayConstant.CALLBACK_SUCCESS;
@@ -255,7 +255,7 @@ public class PayController {
      * @param request
      * @return
      * @throws
-     * @Description: 查询订单
+     * @Description: 获取退款信息
      */
     @ResponseBody
     @RequestMapping(value = "/getRefund")
@@ -335,7 +335,7 @@ public class PayController {
 
                 String[] str = flowIds.split(",");
                 List<String> flowIdList = Arrays.asList(str);
-                PayInfo payInfo = (PayInfo) payCommonCenter.doRefund(flowIdList, tmpStr);
+                PayInfo payInfo = payCommonCenter.doRefund(flowIdList, tmpStr);
 
                 int payType = payInfo.getPayType();
                 if (PayConstant.PAY_TYPE_ALI == payType) {
