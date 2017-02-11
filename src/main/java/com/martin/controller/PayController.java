@@ -47,6 +47,7 @@ public class PayController {
 
     /**
      * 收银台界面
+     *
      * @param request
      * @return
      * @throws
@@ -55,6 +56,20 @@ public class PayController {
     public ModelAndView toCashier(HttpServletRequest request) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("pay/common_pay");
+        return modelAndView;
+    }
+
+    /**
+     * 企业付款界面
+     *
+     * @param request
+     * @return
+     * @throws
+     */
+    @RequestMapping(value = "/toTransfer")
+    public ModelAndView toTransfer(HttpServletRequest request) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("pay/transfer");
         return modelAndView;
     }
 
@@ -364,6 +379,42 @@ public class PayController {
             }
         }
         return modelAndView;
+    }
+
+    /**
+     * 获取APP支付参数
+     *
+     * @param request 包含 订单id
+     * @return
+     * @throws
+     */
+    @ResponseBody
+    @RequestMapping(value = "/doTransfer")
+    public ResultInfo doTransfer(HttpServletRequest request, String thdNo, String thdName, String drawAmount, String payType) {
+        ResultInfo resultInfo;
+        try {
+            if (StringUtils.isBlank(thdNo)) {
+                resultInfo = new ResultInfo(-1, "", "提现账号不能为空");
+            } else if (StringUtils.isBlank(thdName)) {
+                resultInfo = new ResultInfo(-1, "", "账户名称不能为空");
+            } else if (StringUtils.isBlank(drawAmount)) {
+                resultInfo = new ResultInfo(-1, "", "提现金额不能为空");
+            } else if (StringUtils.isBlank(payType)) {
+                resultInfo = new ResultInfo(-1, "", "提现渠道不能为空");
+            } else {
+                String ipAddress = IpUtils.getIpAddress(request);
+                Object retInfo = payCommonCenter.doTransfer(thdNo, thdName, Integer.parseInt(drawAmount), Integer.parseInt(payType), ipAddress);
+                resultInfo = new ResultInfo(1, "", "", retInfo);
+            }
+        } catch (Exception e) {
+            logger.error("PayController.toAppPay异常-{}", e);
+            if (e instanceof BusinessException) {
+                resultInfo = new ResultInfo(-1, "", e.getMessage());
+            } else {
+                resultInfo = new ResultInfo(-1, "", "获取支付参数异常");
+            }
+        }
+        return resultInfo;
     }
 
     /**

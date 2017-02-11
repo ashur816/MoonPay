@@ -7,53 +7,53 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * @author ZXY
  * @ClassName: IPayCenter
  * @Description: 支付中心接口
- * @author ZXY
  * @date 2016/6/16 13:25
  */
 public interface IPayCommonCenter {
 
     /**
-     * @Description: 获取业务订单信息
      * @return void
      * @throws
+     * @Description: 获取业务订单信息
      */
     ToPayInfo getToPayInfo(String bizId, int bizType) throws Exception;
 
     /**
-     * @Description: 第三方回调
      * @return void
      * @throws
+     * @Description: 第三方回调
      */
     void doNotify(String notifyType, int payType, String ipAddress, Map<String, String> reqParam) throws Exception;
 
     /**
-     * @Description: 支付回调分发业务处理
      * @return void
      * @throws
+     * @Description: 支付回调分发业务处理
      */
     void doNotifyBusiness(String bizId, int bizType, int payAmount) throws Exception;
 
     /**
-     * @Description: 获取退款信息
      * @return void
      * @throws
+     * @Description: 获取退款信息
      */
     List<PayInfo> getRefundInfo(String appId, int payType, String tmpFlowId) throws Exception;
 
     /**
-     * @Description: 企业付款
      * @param
      * @return
      * @throws
+     * @Description: 企业付款
      */
-    Object doTransfer(int payType, List<Long> flowIdList, String ipAddress) throws Exception;
+    Object doTransfer(String thdNo, String thdName, int drawAmount, int payType, String ipAddress) throws Exception;
 
     /**
-     * @Description: 退款
      * @return void
      * @throws
+     * @Description: 退款
      */
     Object doRefund(List<String> flowIdList, String refundReason) throws Exception;
 }

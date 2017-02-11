@@ -193,25 +193,25 @@ public class PayCommonCenter implements IPayCommonCenter {
 
     /*********************************** 提现 + 提现回调(企业付款接口提交) ******************************************/
     /**
-     * @param flowIdList
      * @return
      * @throws
      * @Description: 企业付款（供运营平台使用）
      */
     @Override
-    public Object doTransfer(int payType, List<Long> flowIdList, String ipAddress) throws Exception {
-        if (flowIdList == null || 0 >= flowIdList.size()) {
-            throw new BusinessException("参数不能为空");
-        }
-        //根据流水号查未付款流水
-        List<PayFlowBean> flowBeanList = null;//payFlow.getPayFlowById(flowIdList, PayConstant.PAY_NOT);
-        if (flowBeanList == null || 0 >= flowBeanList.size()) {
-            //未查询到支付流水信息
-            throw new BusinessException("未查询到支付流水信息");
-        }
+    public Object doTransfer(String thdNo, String thdName, int drawAmount, int payType, String ipAddress) throws Exception {
+        //先生成支付流水
+        long flowId = Long.parseLong(RandomUtils.getPaymentNo());
+        PayFlowBean flowBean = new PayFlowBean();
+        flowBean.setFlowId(flowId);
+        flowBean.setBizId(thdNo);
+        flowBean.setPayType(payType);
+        flowBean.setBizType(PayConstant.BIZ_TYPE_WITHDRAW);
+        flowBean.setPayAmount(drawAmount);
+        flowBean.setCreateTime(new Date());
+        payFlow.addPayFlow(flowBean);
 
         Map<String, String> extMap = new HashMap<>();
-        extMap.put("transferReason", "爱学派提现");
+        extMap.put("transferReason", "moon提现");
         extMap.put("ipAddress", ipAddress);
         //同一批必须是同一个支付渠道的
         IPayCommonService payCommonService = PayUtils.getCommonPayInstance(payType);
@@ -219,42 +219,39 @@ public class PayCommonCenter implements IPayCommonCenter {
         Object retObj;
         //微信是同步返回  单笔支付 是安全证书校验 不需要输密码
         if (PayConstant.PAY_TYPE_TEN == payType) {
-            for (PayFlowBean flowBean : flowBeanList) {
 
-                //查询用户openId
-                extMap.put("openId", "");
-                extMap.put("payeeName", "");
+            //查询用户openId
+            extMap.put("openId", thdNo);
+            extMap.put("payeeName", "张向阳");
 
-                ArrayList<PayFlowBean> tmpList = new ArrayList<>();
-                tmpList.add(flowBean);
-
-                //发起单笔支付
-                PayResult payResult = (PayResult) payCommonService.transfer(tmpList, extMap);
-                if (payResult != null && "SUCCESS".equalsIgnoreCase(payResult.getTradeState())) {
-                    //状态改成支付成功
-                    flowBean.setPayState(PayConstant.PAY_SUCCESS);
-                    //支付时间
-                    flowBean.setPayTime(new Date());
-                    flowBean.setThdFlowId(payResult.getThdFlowId());
-                    transferSuccessToBiz(flowBean);
-                } else if (payResult != null && "FAIL".equalsIgnoreCase(payResult.getTradeState())) {
-                    flowBean.setFailCode(payResult.getFailCode());
-                    flowBean.setFailDesc(payResult.getFailDesc());
-                    //更新相关数据
-                    transferFailedUpdate(flowBean);
-                    //操作失败
-                    throw new BusinessException("操作失败{}", payResult.getFailDesc());
-                } else {
-                    logger.error("微信企业付款失败，原因未知");
-                    //操作失败
-                    throw new BusinessException("操作失败{}", "原因未知");
-                }
+            //发起单笔支付
+            PayResult payResult = (PayResult) payCommonService.transfer(flowBean, extMap);
+            if (payResult != null && "SUCCESS".equalsIgnoreCase(payResult.getTradeState())) {
+                //状态改成支付成功
+                flowBean.setPayState(PayConstant.PAY_SUCCESS);
+                //支付时间
+                flowBean.setPayTime(new Date());
+                flowBean.setThdFlowId(payResult.getThdFlowId());
+                transferSuccessToBiz(flowBean);
+            } else if (payResult != null && "FAIL".equalsIgnoreCase(payResult.getTradeState())) {
+                flowBean.setFailCode(payResult.getFailCode());
+                flowBean.setFailDesc(payResult.getFailDesc());
+                //更新相关数据
+                transferFailedUpdate(flowBean);
+                //操作失败
+                throw new BusinessException("操作失败{}", payResult.getFailDesc());
+            } else {
+                logger.error("微信企业付款失败，原因未知");
+                //操作失败
+                throw new BusinessException("操作失败{}", "原因未知");
             }
             retObj = "操作成功";
         } else if (PayConstant.PAY_TYPE_ALI == payType) {//支付宝是异步返回 多笔批量 要在前台输密码
             String batchNo = RandomUtils.getPaymentNo();
+            extMap.put("thdNo", thdNo);
+            extMap.put("thdName", thdName);
             extMap.put("batchNo", batchNo);
-            retObj = payCommonService.transfer(flowBeanList, extMap);
+            retObj = payCommonService.transfer(flowBean, extMap);
         } else {
             //第三方支付类型未定义
             throw new BusinessException("第三方支付类型未定义");

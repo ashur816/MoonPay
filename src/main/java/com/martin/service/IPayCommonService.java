@@ -20,7 +20,7 @@ public interface IPayCommonService {
      * @param extMap
      * @return
      */
-    Object transfer(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception;
+    Object transfer(PayFlowBean flowBeanList, Map<String, String> extMap) throws Exception;
 
     /**
      * @Description: 企业付款返回信息

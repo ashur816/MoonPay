@@ -30,17 +30,14 @@ public class TenPayCommon implements IPayCommonService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * 批量付款，兼容单个
+     * 单个企业付款
      *
-     * @param flowBeanList
+     * @param flowBean
      * @param extMap
      * @return
      */
     @Override
-    public Object transfer(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
-        //仅有一笔，绝对存在
-        PayFlowBean flowBean = flowBeanList.get(0);
-
+    public Object transfer(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         SortedMap<String, String> paraMap = new TreeMap<>();
         paraMap.put("mch_appid", PayParam.tenWebAppId);
         paraMap.put("mchid", PayParam.tenWebMchId);

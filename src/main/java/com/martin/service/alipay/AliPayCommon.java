@@ -19,9 +19,9 @@ import javax.annotation.Resource;
 import java.util.*;
 
 /**
+ * @author ZXY
  * @ClassName: AliPay
  * @Description: 支付宝--用来企业付款
- * @author ZXY
  * @date 2016/5/24 10:22
  */
 @Service("aliPayCommonService")
@@ -33,13 +33,14 @@ public class AliPayCommon implements IPayCommonService {
     private IPayFlow payFlow;
 
     /**
-     * 批量付款，兼容单个
-     * @param flowBeanList
+     * 单个企业付款
+     *
+     * @param flowBean
      * @param extMap
      * @return
      */
     @Override
-    public Object transfer(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
+    public Object transfer(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         logger.info("开始支付宝企业付款-{}", extMap);
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
@@ -55,31 +56,23 @@ public class AliPayCommon implements IPayCommonService {
 
         //单笔数据集 流水号^收款方账号^收款账号姓名^付款金额^备注说明  第一笔交易退款数据集|第二笔交易退款数据集
         StringBuilder sBuilder = new StringBuilder();
-        double totalAmount = 0;
         double payAmount;
         int transferNum = 0;
         String transferReason = extMap.get("transferReason");
-        for (PayFlowBean flowBean : flowBeanList) {
-            payAmount = flowBean.getPayAmount() / 100.0;
+        payAmount = flowBean.getPayAmount() / 100.0;
 
-            //根据服务查询提现记录
-//            AcctExchangeCashInfo exchangeCashInfo = acctExchangeCashService.getExchangeCashThdparty(flowBean.getBizId());
-//            if (exchangeCashInfo != null) {
-                //查询收款方账号和名称
-                String acctNo = "632663267@qq.com";
-                String acctName = "zxy";
-                sBuilder.append(flowBean.getFlowId()).append("^").append(acctNo).append("^").append(acctName).append("^").append(payAmount).append("^").append(transferReason).append("|");
-                totalAmount += payAmount;
-                transferNum++;
-//            }
-        }
+        String thdNo = extMap.get("thdNo");
+        String thdName = extMap.get("thdName");
+
+        sBuilder.append(flowBean.getFlowId()).append("^").append(thdNo).append("^").append(thdName).append("^").append(payAmount).append("^").append(transferReason).append("|");
+
         paraMap.put("detail_data", sBuilder.deleteCharAt(sBuilder.length() - 1).toString());
         //付款批次号
         paraMap.put("batch_no", extMap.get("batchNo"));
         //总笔数
         paraMap.put("batch_num", String.valueOf(transferNum));
         //付款总金额
-        paraMap.put("batch_fee", String.valueOf(totalAmount));
+        paraMap.put("batch_fee", String.valueOf(payAmount));
         //付款时间 格式为：yyyy-MM-dd HH:mm:ss
         paraMap.put("pay_date", DateUtils.formatDate(new Date(), "yyyyMMdd"));
 
@@ -93,10 +86,10 @@ public class AliPayCommon implements IPayCommonService {
     }
 
     /**
-     * @Description: 企业付款返回信息
      * @param paraMap
      * @return
      * @throws
+     * @Description: 企业付款返回信息
      */
     @Override
     public List<TransferResult> transferReturn(Map<String, String> paraMap) throws Exception {
@@ -113,11 +106,11 @@ public class AliPayCommon implements IPayCommonService {
         //合并处理
         List<String> combineList = new ArrayList<>();
 
-        if(!StringUtils.isEmpty(successDetails)){
+        if (!StringUtils.isEmpty(successDetails)) {
             combineList.addAll(Arrays.asList(successDetails.split("\\|")));
         }
-        if(!StringUtils.isEmpty(failDetails)) {
-             combineList.addAll(Arrays.asList(failDetails.split("\\|")));
+        if (!StringUtils.isEmpty(failDetails)) {
+            combineList.addAll(Arrays.asList(failDetails.split("\\|")));
         }
 
         List<String> resultList;
@@ -134,11 +127,10 @@ public class AliPayCommon implements IPayCommonService {
             transferResult.setThdAcctName(resultList.get(2));
             transferResult.setPayAmount(Double.parseDouble(resultList.get(3)));
             resultFlag = resultList.get(4);
-            if("S".equals(resultFlag)){//成功的
+            if ("S".equals(resultFlag)) {//成功的
                 transferResult.setTransferState(PayConstant.PAY_SUCCESS);
                 transferResult.setThdFlowId(resultList.get(6));
-            }
-            else {//失败的
+            } else {//失败的
                 transferResult.setTransferState(PayConstant.PAY_FAIL);
                 transferResult.setFailDesc(resultList.get(5));
             }
@@ -150,6 +142,7 @@ public class AliPayCommon implements IPayCommonService {
 
     /**
      * 批量退款，兼容单个
+     *
      * @param flowBeanList
      * @param extMap
      * @return
@@ -235,10 +228,10 @@ public class AliPayCommon implements IPayCommonService {
     }
 
     /**
-     * @Description: 回调验签
      * @param
      * @return
      * @throws
+     * @Description: 回调验签
      */
     private void returnValidate(Map<String, String> paraMap) throws Exception {
         if (paraMap == null || paraMap.size() < 1) {
