@@ -6,7 +6,6 @@ import com.martin.constant.PayParam;
 import com.martin.constant.PayReturnCodeEnum;
 import com.martin.dto.PayInfo;
 import com.martin.dto.PayResult;
-import com.martin.dto.RefundResult;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayFlow;
 import com.martin.service.IPayWebService;
@@ -21,9 +20,9 @@ import javax.annotation.Resource;
 import java.util.*;
 
 /**
+ * @author ZXY
  * @ClassName: WeiXinPay
  * @Description: 微信公众号支付类
- * @author ZXY
  * @date 2016/5/24 10:31
  */
 @Service("tenPayWebService")
@@ -36,6 +35,7 @@ public class TenPayWeb implements IPayWebService {
 
     /**
      * 预授权
+     *
      * @param bizId 订单业务id
      * @return
      */
@@ -60,6 +60,7 @@ public class TenPayWeb implements IPayWebService {
 
     /**
      * 生成预定单给微信支付网关，返回
+     *
      * @param flowBean
      * @return
      */
@@ -159,10 +160,10 @@ public class TenPayWeb implements IPayWebService {
     }
 
     /**
-     * @Description: 支付回调参数校验
      * @param paraMap
      * @return
      * @throws
+     * @Description: 支付回调参数校验
      */
     @Override
     public PayResult payReturn(Map<String, String> paraMap) throws Exception {
@@ -196,55 +197,10 @@ public class TenPayWeb implements IPayWebService {
     }
 
     /**
-     * @Description: 退款回调参数校验
-     * @param paraMap
-     * @return
-     * @throws
-     */
-    @Override
-    public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
-        logger.info("WEB微信退款回调处理");
-        SortedMap<String, String> sortedMap = returnValidate(paraMap);
-
-        String resultCode = sortedMap.get("result_code");
-        String returnCode = sortedMap.get("return_code");
-        String tradeState = sortedMap.get("trade_state");
-
-        List<RefundResult> refundResults = new ArrayList<>();
-        RefundResult refundResult = new RefundResult();
-        if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
-            //支付结果
-            refundResult.setTradeState(tradeState);
-            // 支付流水ID
-            String tradeNo = sortedMap.get("out_trade_no");
-            refundResult.setFlowId(Long.valueOf(tradeNo));
-            // 原第三方支付流水
-            refundResult.setThdFlowId(sortedMap.get("transaction_id"));
-            // 微信退款流水号
-            refundResult.setThdRefundId(sortedMap.get("refund_id"));
-            //错误代码
-            refundResult.setFailCode(sortedMap.get("err_code"));
-            //错误代码描述
-            refundResult.setFailDesc(sortedMap.get("err_code_des"));
-
-            refundResult.setPayState(PayConstant.REFUND_SUCCESS);
-        } else {
-            //支付结果
-            refundResult.setPayState(PayConstant.REFUND_FAIL);
-            //错误代码
-            refundResult.setFailCode(sortedMap.get("err_code"));
-            //错误代码描述
-            refundResult.setFailDesc(sortedMap.get("err_code_des"));
-        }
-        refundResults.add(refundResult);
-        return refundResults;
-    }
-
-    /**
-     * @Description: 查询第三方支付状态
      * @param flowId
      * @return
      * @throws
+     * @Description: 查询第三方支付状态
      */
     @Override
     public PayResult getPayStatus(Long flowId) throws Exception {
@@ -285,49 +241,10 @@ public class TenPayWeb implements IPayWebService {
     }
 
     /**
-     * 单笔退款
-     * @param flowBeanList
-     * @param extMap
-     * @return
-     */
-    @Override
-    public RefundResult refund(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
-        logger.info("开始微信退款-{}", extMap);
-        PayFlowBean flowBean = flowBeanList.get(0);
-        SortedMap<String, String> paraMap = new TreeMap<>();
-        paraMap.put("appid", PayParam.tenWebAppId);
-        paraMap.put("mch_id", PayParam.tenWebMchId);
-        paraMap.put("op_user_id", PayParam.tenWebMchId);
-        paraMap.put("refund_account", PayParam.refundAccount);
-        //微信订单号
-        paraMap.put("transaction_id", flowBean.getThdFlowId());
-        //商户退款单号
-        paraMap.put("out_refund_no", extMap.get("refundId"));
-
-        String payAmount = String.valueOf(flowBean.getPayAmount());
-        paraMap.put("total_fee", payAmount);
-        paraMap.put("refund_fee", payAmount);
-
-        //生成信息
-        String xml = TenPayUtils.createRequestXml(PayParam.tenWebPrivateKey, paraMap);
-        logger.info("退款发送xml为:\n" + xml);
-
-        //发送给微信支付
-        String returnXml = TenPayUtils.sendPostWithCert(PayParam.tenRefundUrl, xml, "UTF-8");
-        logger.info("退款返回结果:" + returnXml);
-
-        Map tmpMap = new HashMap();
-        tmpMap.put("content", returnXml);
-        List<RefundResult> refundResults = refundReturn(tmpMap);
-
-        return refundResults.size() > 0 ? refundResults.get(0) : null;
-    }
-
-    /**
-     * @Description: 关闭第三方支付订单
      * @param flowId
      * @return
      * @throws
+     * @Description: 关闭第三方支付订单
      */
     @Override
     public void closeThdPay(Long flowId) throws Exception {
@@ -364,6 +281,7 @@ public class TenPayWeb implements IPayWebService {
 
     /**
      * 微信获得openid
+     *
      * @param code 微信用户token
      * @return
      */
@@ -380,6 +298,7 @@ public class TenPayWeb implements IPayWebService {
 
     /**
      * 转换支付状态
+     *
      * @return
      */
     private int transPayState(String tradeState) {

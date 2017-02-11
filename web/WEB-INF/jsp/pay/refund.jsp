@@ -24,8 +24,8 @@
             <label>流水号</label>
             <input id="flowId" type="text" class="mui-input-clear mui-input">
         </li>
-        <li class="mui-table-view-cell">
-            <button id="btnQry" type="button" class="mui-btn mui-btn-success">查询</button>
+        <li class="mui-table-view-cell" style="padding-top: 40px">
+            <button id="btnQry" type="button" style="width: 100px" class="mui-btn mui-btn-success">查询</button>
         </li>
     </ul>
 
@@ -33,6 +33,11 @@
     <div id="payList"></div>
 
     <p></p>
+    <ul id="showNoResult" style="display: none" class="mui-table-view mui-table-view-striped mui-table-view-condensed">
+        <li class="mui-table-view-cell">
+            <label class="web-font">未查询到支付信息</label>
+        </li>
+    </ul>
     <ul id="btnReason" style="display: none" class="mui-table-view mui-table-view-striped mui-table-view-condensed">
         <li class="mui-table-view-cell">
             <label class="web-font">退款原因</label>
@@ -93,38 +98,47 @@
                         var html = "";
                         var payType;
                         var payState;
-                        for (var i = 0; i < arrList.length; i++) {
-                            var payInfo = arrList[i];
-                            html += '<p></p><ul class="mui-table-view mui-table-view-striped mui-table-view-condensed"><li class="mui-table-view-cell mui-checkbox mui-left">'
-                                + '<input name="selFlag" type="checkbox" flowId=' + payInfo.flowId + ' checked/>'
-                                + '<div class="mui-table"><div class="mui-table-cell mui-col-xs-10">'
-                                + '<p>订单号：' + payInfo.bizId + '</p>'
-                                + '<p>支付流水：' + payInfo.flowId + '</p>';
-                            payType = payInfo.payType;
-                            if (payType == "1") {
-                                html += '<p>支付渠道：微信</p>';
-                            }
-                            else if (payType == "2") {
-                                html += '<p>支付渠道：支付宝</p>';
-                            }
-                            else {
-                                html += '<p>支付渠道：不详</p>';
-                            }
-
-                            payState = payInfo.payState;
-                            if (payState == 1) {
-                                html += '<p>支付状态：已支付</p>';
-                            }
-                            else {
-                                html += '<p>支付状态：未支付</p>';
-                            }
-
-                            html += '<p>退款金额：' + payInfo.payAmount + '元</p>'
-                                + '</div><div class="mui-table-cell mui-col-xs-2 mui-text-right"></div></div></li></ul></div>';
+                        var len = arrList.length;
+                        if (len == 0) {
+                            $("#showNoResult").css("display", "block");
+                            $("#btnReason").css("display", "none");
+                            $("#payList").html("");
                         }
-                        $("#payList").html(html);
-                        $("#btnReason").css("display", "block");
-                        $("#payType").val(payType);
+                        else {
+                            for (var i = 0; i < len; i++) {
+                                var payInfo = arrList[i];
+                                html += '<p></p><ul class="mui-table-view mui-table-view-striped mui-table-view-condensed"><li class="mui-table-view-cell mui-checkbox mui-left">'
+                                    + '<input name="selFlag" type="checkbox" flowId=' + payInfo.flowId + ' checked/>'
+                                    + '<div class="mui-table"><div class="mui-table-cell mui-col-xs-10">'
+                                    + '<p>订单号：' + payInfo.bizId + '</p>'
+                                    + '<p>支付流水：' + payInfo.flowId + '</p>';
+                                payType = payInfo.payType;
+                                if (payType == "1") {
+                                    html += '<p>支付渠道：微信</p>';
+                                }
+                                else if (payType == "2") {
+                                    html += '<p>支付渠道：支付宝</p>';
+                                }
+                                else {
+                                    html += '<p>支付渠道：不详</p>';
+                                }
+
+                                payState = payInfo.payState;
+                                if (payState == 1) {
+                                    html += '<p>支付状态：已支付</p>';
+                                }
+                                else {
+                                    html += '<p>支付状态：未支付</p>';
+                                }
+
+                                html += '<p>退款金额：' + payInfo.payAmount + '元</p>'
+                                    + '</div><div class="mui-table-cell mui-col-xs-2 mui-text-right"></div></div></li></ul></div>';
+                            }
+                            $("#payList").html(html);
+                            $("#payType").val(payType);
+                            $("#showNoResult").css("display", "none");
+                            $("#btnReason").css("display", "block");
+                        }
                     }
                     else {
                         $("#payList").html(html);

@@ -8,9 +8,9 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.List;
 
 /**
+ * @author ZXY
  * @ClassName: PayFlowMapper
  * @Description: 支付流水
- * @author ZXY
  * @date 2016/7/1 10:13
  */
 @Repository
@@ -27,4 +27,8 @@ public interface PayFlowMapper extends Mapper<PayFlowBean> {
     PayFlowBean selectByThdId(@Param("thdFlowId") String thdFlowId, @Param("payState") int payState);
 
     int updateThdFlowId(@Param("flowId") long flowId, @Param("thdFlowId") String thdFlowId);
+
+    List<PayFlowBean> getCanRefundList(@Param("flowId") long flowId, @Param("payState") int payState, @Param("payType") int payType, @Param("clientSource") String clientSource);
+
+    PayFlowBean getPayFlowByThdFlowId(@Param("thdFlowId") String thdFlowId);
 }

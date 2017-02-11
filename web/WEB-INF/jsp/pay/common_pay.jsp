@@ -1,65 +1,47 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<jsp:include page="../common/base.jsp"></jsp:include>
+<%String context = request.getContextPath(); %>
 <html>
 <head>
     <title>收银台</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
+    <link rel="stylesheet" href="<%=context%>/static/css/mui.min.css"/>
+    <link rel="stylesheet" href="<%=context%>/static/css/mui.moon.css"/>
 </head>
 <body>
-<header class="moon-header">
-    <h1>
-        <span class="title-main" data-title="付款详情">付款详情</span><br/><span class="title-sub">${payInfo.bizId}</span>
-    </h1>
-</header>
-<div class="moon-content">
-    <form id="payForm" action="<%=request.getContextPath()%>/moon/cashier/doWebPay.htm" method="post">
-        <input type="hidden" name="bizId" value="${payInfo.bizId}">
-        <input type="hidden" name="thdType" value="2">
-        <div class="moon-list">
-            <div class="moon-list-item">
-                <span class="moon-list-item-title">订单信息</span>
-                <span class="moon-list-item-text moon-ft-ellipsis moon-ft-black">${payInfo.goodName}</span>
-            </div>
-            <div class="moon-list-item">
-                <span class="moon-list-item-title">需支付</span>
-                <span class="moon-list-item-text moon-ft-ellipsis moon-ft-black">${payInfo.payAmount}</span>
-            </div>
-            <div class="moon-list-item">
-                <span class="moon-list-item-title">付款方式</span>
-                <span class="moon-list-item-text moon-ft-ellipsis moon-ft-black"><input type="radio" id="payType1" name="payType" value="1"/>微信&nbsp;<input type="radio" id="payType2" name="payType"
-                                                                                                                                                            value="2" checked/>支付宝</span>
-            </div>
+<div class="mui-content">
+    <form id="payForm" method="post" class="mui-input-group">
+        <div class="mui-input-row">
+            <label>业务单号</label>
+            <input name="bizId" type="text" class="mui-input-clear" placeholder="请输入业务单号">
         </div>
-        <div class="moon-section">
-            <button type="submit" class="moon-button moon-button-red">确认付款</button>
+        <div class="mui-input-row mui-radio mui-left">
+            <label>业务类型</label>
+            <input name="bizType" type="radio">
+        </div>
+        <div class="mui-input-row mui-radio mui-left">
+            <label>业务类型</label>
+            <input name="bizType" type="radio">
+        </div>
+        <div class="mui-button-row">
+            <button id="btnPay" type="button" class="mui-btn mui-btn-primary">支付</button>
         </div>
     </form>
 </div>
-<footer>
-    <div class="moon-logo"></div>
-</footer>
 </body>
 </html>
-<script type="text/javascript" src="<%=request.getContextPath()%>/static/js/cashier.js"></script>
+<script src="<%=context%>/static/js/mui.min.js"></script>
+<script src="<%=context%>/static/js/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
 
-//    $(function () {
-//        $("input[name='payType']").change(function () {
-//            $("#payForm").attr("action", context + "/payCenter/doWebPay.htm");
-//        });
-//    });
+    var context = "<%=context%>";
 
-$(function () {
-    $("input[name='payType']").change(function () {
-        var payType = $("input[name='payType']:checked").val();
-        if (payType == 1) {
-            $("#payForm").attr("action", context + "/moon/cashier/doScanPay.htm");
-        }
-        else {
-            $("#payForm").attr("action", context + "/moon/cashier/doWebPay.htm");
-        }
+    $(function () {
+        $("#btnPay").click(function () {
+            var url = context + "/moon/cashier/toWebPay.htm";
+            $("#payForm").attr("action", url);
+            $("#payForm").submit();
+        });
     });
-});
-
 </script>

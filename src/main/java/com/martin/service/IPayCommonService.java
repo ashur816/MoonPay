@@ -1,6 +1,7 @@
 package com.martin.service;
 
 import com.martin.bean.PayFlowBean;
+import com.martin.dto.RefundResult;
 import com.martin.dto.TransferResult;
 
 import java.util.List;
@@ -28,5 +29,23 @@ public interface IPayCommonService {
      * @throws
      */
     List<TransferResult> transferReturn(Map<String, String> paraMap) throws Exception;
+
+    /**
+     * 批量退款，兼容单个
+     * @param flowBeanList
+     * @param extMap
+     * @return
+     */
+    Object refund(String clientSource, List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception;
+
+    /**
+     * @Description: 退款返回信息
+     * @param
+     * @return
+     * @throws
+     */
+    List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception;
+
+
 
 }

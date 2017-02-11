@@ -120,6 +120,22 @@
             and flow_id=#{flowId}
         </if>
     </select>
+    <select id="getCanRefundList" resultType="com.martin.bean.PayFlowBean">
+        SELECT
+        <include refid="baseSql"/>
+        FROM m_pay_flow WHERE pay_state=#{payState} AND client_source like #{clientSource}
+        <if test="flowId!=null and flowId!=0">
+            and flow_id=#{flowId}
+        </if>
+        <if test="payType!=null and payType!=0">
+            and pay_type=#{payType}
+        </if>
+    </select>
+    <select id="getPayFlowByThdFlowId" resultType="com.martin.bean.PayFlowBean">
+        SELECT
+        <include refid="baseSql"/>
+        FROM m_pay_flow WHERE thd_flow_id=#{thdFlowId}
+    </select>
     <update id="updateThdFlowId">
         UPDATE m_pay_flow SET thd_flow_id=#{thdFlowId} WHERE flow_id=#{flowId}
     </update>

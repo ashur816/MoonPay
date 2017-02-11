@@ -5,7 +5,6 @@ import com.martin.constant.PayConstant;
 import com.martin.constant.PayParam;
 import com.martin.dto.PayInfo;
 import com.martin.dto.PayResult;
-import com.martin.dto.RefundResult;
 import com.martin.dto.ToPayInfo;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayCommonCenter;
@@ -13,7 +12,6 @@ import com.martin.service.IPayFlow;
 import com.martin.service.IPayWebCenter;
 import com.martin.service.IPayWebService;
 import com.martin.utils.PayUtils;
-import com.martin.utils.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +24,9 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -156,62 +156,6 @@ public class PayWebCenter implements IPayWebCenter {
     }
 
     /**
-     * @param flowBeanList
-     * @return void
-     * @throws
-     * @Description: 退款
-     */
-    @Override
-    public Object doRefund(List<PayFlowBean> flowBeanList, String refundReason) throws Exception {
-        Map<String, String> extMap = new HashMap<>();
-        int payType = flowBeanList.get(0).getPayType();
-        //同一批必须是同一个支付渠道的
-        IPayWebService payWebService = PayUtils.getWebPayInstance(payType);
-        Object retObj = "";
-        //微信是同步返回  单笔退
-        if (PayConstant.PAY_TYPE_TEN == payType) {
-            //更新退款流水
-            RefundResult refundResult;
-            String thdRefundId;
-            for (PayFlowBean flowBean : flowBeanList) {
-                //已经退款成功的
-                if (flowBean.getPayState() == PayConstant.REFUND_SUCCESS) {
-                    continue;
-                }
-                extMap.put("refundId", RandomUtils.getPaymentNo());
-                List<PayFlowBean> tmpList = new ArrayList<>();
-                tmpList.add(flowBean);
-                //发送退款
-                refundResult = (RefundResult) payWebService.refund(tmpList, extMap);
-                if (refundResult != null) {
-                    if (PayConstant.REFUND_SUCCESS == refundResult.getPayState()) {
-                        thdRefundId = refundResult.getThdFlowId();
-
-                        //更新支付流水
-                        flowBean.setPayState(PayConstant.REFUND_SUCCESS);
-                        flowBean.setThdRefundId(thdRefundId);
-                        flowBean.setRefundTime(new Date());
-                        payFlow.updPayFlow(flowBean);
-                    } else {
-                        //退款失败
-                        flowBean.setPayState(PayConstant.REFUND_FAIL);
-                        flowBean.setRefundTime(new Date());
-                        payFlow.updPayFlow(flowBean);
-                    }
-                }
-            }
-            retObj = "操作成功";
-        } else {
-            //支付宝是异步返回 多笔退
-            String batchNo = RandomUtils.getPaymentNo();
-            extMap.put("batchNo", batchNo);
-            extMap.put("refundReason", refundReason);
-            retObj = payWebService.refund(flowBeanList, extMap);
-        }
-        return retObj;
-    }
-
-    /**
      * @param payType
      * @param ipAddress
      * @param reqParam
@@ -300,65 +244,6 @@ public class PayWebCenter implements IPayWebCenter {
 //        } else {
 //            //忽略，不处理
 //        }
-    }
-
-    /**
-     * @param payType
-     * @param ipAddress
-     * @param reqParam
-     * @return void
-     * @throws
-     * @Description: 第三方回调--退款
-     */
-    @Override
-    public void doRefundNotify(int payType, String ipAddress, Map<String, String> reqParam) throws Exception {
-        //解析返回
-        logger.info("WEB解析退款回调");
-        IPayWebService payWebService = PayUtils.getWebPayInstance(payType);
-        List<RefundResult> refundResults = payWebService.refundReturn(reqParam);
-        RefundResult refundResult;
-        int payState;
-        int callbackState;
-        long flowId;
-        for (int i = 0; i < refundResults.size(); i++) {
-            refundResult = refundResults.get(i);
-            callbackState = refundResult.getPayState();
-            if (callbackState == PayConstant.REFUND_FAIL) {//失败的 签名失败 参数格式校验错误等
-                //不处理
-                continue;
-            } else {
-                flowId = refundResult.getFlowId();
-                PayFlowBean flowBean = payFlow.getPayFlowById(flowId, -1);
-                if (flowBean != null) {
-                    payState = flowBean.getPayState();
-                    callbackState = refundResult.getPayState();
-                    logger.info("退款回调参数 flowId-{},payState-{},callbackState-{}", flowId, payState, callbackState);
-                    if (PayConstant.PAY_SUCCESS == payState || PayConstant.REFUND_ING == payState || PayConstant.REFUND_FAIL == payState) {//支付成功、退款中、退款失败的 才能继续退款
-                        //支付状态
-                        flowBean.setPayState(callbackState);
-                        if (PayConstant.REFUND_SUCCESS == callbackState) {
-                            Date now = new Date();
-                            //退款单号
-                            flowBean.setThdRefundId(refundResult.getThdRefundId());
-                            //退款时间
-                            flowBean.setRefundTime(now);
-                            flowBean.setPayState(callbackState);
-
-                            //业务处理
-                        } else {
-                            flowBean.setFailCode(refundResult.getFailCode());
-                            flowBean.setFailDesc(refundResult.getFailDesc());
-                        }
-                        //更新交易流水
-                        payFlow.updPayFlow(flowBean);
-                    } else {
-                        //跳过不管
-                    }
-                } else {
-                    throw new BusinessException("未查询到支付流水信息");
-                }
-            }
-        }
     }
 
     /**

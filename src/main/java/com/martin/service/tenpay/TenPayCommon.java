@@ -1,27 +1,27 @@
 package com.martin.service.tenpay;
 
 import com.martin.bean.PayFlowBean;
+import com.martin.constant.PayConstant;
 import com.martin.constant.PayParam;
 import com.martin.constant.PayReturnCodeEnum;
 import com.martin.dto.PayResult;
+import com.martin.dto.RefundResult;
 import com.martin.dto.TransferResult;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayCommonService;
 import com.martin.utils.JsonUtils;
+import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
+ * @author ZXY
  * @ClassName: WeiXinPay
  * @Description: 微信公众号支付类
- * @author ZXY
  * @date 2016/5/24 10:31
  */
 @Service("tenPayCommonService")
@@ -31,6 +31,7 @@ public class TenPayCommon implements IPayCommonService {
 
     /**
      * 批量付款，兼容单个
+     *
      * @param flowBeanList
      * @param extMap
      * @return
@@ -90,10 +91,10 @@ public class TenPayCommon implements IPayCommonService {
     }
 
     /**
-     * @Description: 企业付款返回信息
      * @param paraMap
      * @return
      * @throws
+     * @Description: 企业付款返回信息
      */
     @Override
     public List<TransferResult> transferReturn(Map<String, String> paraMap) throws Exception {
@@ -101,7 +102,98 @@ public class TenPayCommon implements IPayCommonService {
     }
 
     /**
+     * 批量退款，兼容单个
+     *
+     * @param flowBeanList
+     * @param extMap
+     * @return
+     */
+    @Override
+    public Object refund(String clientSource, List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
+        Map<String, String> paySourceMap = PayUtils.getPaySource(PayConstant.PAY_TYPE_ALI, clientSource);
+        String appId = paySourceMap.get("appId");
+        String privateKey = paySourceMap.get("privateKey");
+        String mchId = paySourceMap.get("mchId");
+
+        logger.info("开始微信退款-{}", extMap);
+        PayFlowBean flowBean = flowBeanList.get(0);
+        SortedMap<String, String> paraMap = new TreeMap<>();
+        paraMap.put("appid", appId);
+        paraMap.put("mch_id", mchId);
+        paraMap.put("op_user_id", mchId);
+        paraMap.put("refund_account", PayParam.refundAccount);
+        //微信订单号
+        paraMap.put("transaction_id", flowBean.getThdFlowId());
+        //商户退款单号
+        paraMap.put("out_refund_no", extMap.get("refundId"));
+
+        String payAmount = String.valueOf(flowBean.getPayAmount());
+        paraMap.put("total_fee", payAmount);
+        paraMap.put("refund_fee", payAmount);
+
+        //生成信息
+        String xml = TenPayUtils.createRequestXml(privateKey, paraMap);
+        logger.info("退款发送xml为:\n" + xml);
+
+        //发送给微信支付
+        String returnXml = TenPayUtils.sendPostWithCert(PayParam.tenRefundUrl, xml, "UTF-8");
+        logger.info("退款返回结果:" + returnXml);
+
+        Map tmpMap = new HashMap();
+        tmpMap.put("content", returnXml);
+        List<RefundResult> refundResults = refundReturn(tmpMap);
+
+        return refundResults.size() > 0 ? refundResults.get(0) : null;
+    }
+
+    /**
+     * @param paraMap
+     * @return
+     * @throws
+     * @Description: 退款返回信息
+     */
+    @Override
+    public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
+        logger.info("WEB微信退款回调处理");
+        SortedMap<String, String> sortedMap = returnValidate(paraMap);
+
+        String resultCode = sortedMap.get("result_code");
+        String returnCode = sortedMap.get("return_code");
+        String tradeState = sortedMap.get("trade_state");
+
+        List<RefundResult> refundResults = new ArrayList<>();
+        RefundResult refundResult = new RefundResult();
+        if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
+            //支付结果
+            refundResult.setTradeState(tradeState);
+            // 支付流水ID
+            String tradeNo = sortedMap.get("out_trade_no");
+            refundResult.setFlowId(Long.valueOf(tradeNo));
+            // 原第三方支付流水
+            refundResult.setThdFlowId(sortedMap.get("transaction_id"));
+            // 微信退款流水号
+            refundResult.setThdRefundId(sortedMap.get("refund_id"));
+            //错误代码
+            refundResult.setFailCode(sortedMap.get("err_code"));
+            //错误代码描述
+            refundResult.setFailDesc(sortedMap.get("err_code_des"));
+
+            refundResult.setPayState(PayConstant.REFUND_SUCCESS);
+        } else {
+            //支付结果
+            refundResult.setPayState(PayConstant.REFUND_FAIL);
+            //错误代码
+            refundResult.setFailCode(sortedMap.get("err_code"));
+            //错误代码描述
+            refundResult.setFailDesc(sortedMap.get("err_code_des"));
+        }
+        refundResults.add(refundResult);
+        return refundResults;
+    }
+
+    /**
      * 微信获得openid
+     *
      * @param code 微信用户token
      * @return
      */
@@ -118,6 +210,7 @@ public class TenPayCommon implements IPayCommonService {
 
     /**
      * 转换支付状态
+     *
      * @return
      */
     private int transPayState(String tradeState) {

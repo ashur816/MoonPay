@@ -2,10 +2,7 @@ package com.martin.service.impl;
 
 import com.martin.bean.PayFlowBean;
 import com.martin.constant.PayConstant;
-import com.martin.dto.PayInfo;
-import com.martin.dto.PayResult;
-import com.martin.dto.ToPayInfo;
-import com.martin.dto.TransferResult;
+import com.martin.dto.*;
 import com.martin.exception.BusinessException;
 import com.martin.service.*;
 import com.martin.utils.PayUtils;
@@ -70,10 +67,8 @@ public class PayCommonCenter implements IPayCommonCenter {
             payWebCenter.doPayNotify(payType, ipAddress, reqParam);
         } else if (PayConstant.NOTICE_APP_PAY.equals(notifyType)) {//APP支付
             payAppCenter.doPayNotify(payType, ipAddress, reqParam);
-        } else if (PayConstant.NOTICE_WEB_REFUND.equals(notifyType)) {//WEB退款
-            payWebCenter.doRefundNotify(payType, ipAddress, reqParam);
-        } else if (PayConstant.NOTICE_APP_REFUND.equals(notifyType)) {//APP退款
-            payAppCenter.doRefundNotify(payType, ipAddress, reqParam);
+        } else if (PayConstant.NOTICE_REFUND.equals(notifyType)) {//WEB退款
+            refundNotify(payType, ipAddress, reqParam);
         } else if (PayConstant.NOTICE_TRANSFER.equals(notifyType)) {//企业付款
             transferNotify(payCommonService, reqParam);
         } else {
@@ -94,6 +89,7 @@ public class PayCommonCenter implements IPayCommonCenter {
     public void doNotifyBusiness(String bizId, int bizType, int payAmount) throws Exception {
         String errorFlag = "订单侧";
         if (PayConstant.BIZ_TYPE_EXPRESS == bizType) {
+
         } else {
             throw new BusinessException(errorFlag + "报错：暂不支持此业务支付类型");
         }
@@ -110,11 +106,11 @@ public class PayCommonCenter implements IPayCommonCenter {
      */
     @Override
     public List<PayInfo> getRefundInfo(String appId, int payType, String tmpFlowId) throws Exception {
-        if(StringUtils.isBlank(tmpFlowId)){
+        if (StringUtils.isBlank(tmpFlowId)) {
             tmpFlowId = "0";
         }
         //根据流水号查询
-        List<PayFlowBean> flowBeanList = payFlow.getPayFlowList(Long.parseLong(tmpFlowId), PayConstant.PAY_SUCCESS);
+        List<PayFlowBean> flowBeanList = payFlow.getCanRefundList(Long.parseLong(tmpFlowId), PayConstant.PAY_SUCCESS, payType, appId);
         List<PayInfo> payInfoList = new ArrayList<>();
         for (PayFlowBean tmpBean : flowBeanList) {
             PayInfo payInfo = new PayInfo();
@@ -131,24 +127,67 @@ public class PayCommonCenter implements IPayCommonCenter {
      * @param refundReason
      * @return void
      * @throws
-     * @Description:
+     * @Description: 执行退款操作
      */
     @Override
-    public PayInfo doRefund(List<String> flowIdList, String refundReason) throws Exception {
+    public Object doRefund(List<String> flowIdList, String refundReason) throws Exception {
         //查询支付流水信息
         List<PayFlowBean> flowBeanList = payFlow.getPayFlowListByIdList(flowIdList, PayConstant.PAY_SUCCESS);
+        Object retObj;
         if (flowBeanList != null && flowBeanList.size() > 0) {
-            String clientSource = flowBeanList.get(0).getClientSource();
-            if (clientSource.equals(PayConstant.APP_ID_APP)) {
-                payWebCenter.doRefund(flowBeanList, refundReason);
-            } else if (clientSource.equals(PayConstant.APP_ID_WEB)) {
-                payAppCenter.doRefund(flowBeanList, refundReason);
+            //同一批必须是同一个支付渠道的
+            PayFlowBean bean0 = flowBeanList.get(0);
+            String clientSource = bean0.getClientSource();
+            int payType = bean0.getPayType();
+
+            IPayCommonService payCommonService = PayUtils.getCommonPayInstance(payType);
+            Map<String, String> extMap = new HashMap<>();
+            //微信是同步返回  单笔退
+            if (PayConstant.PAY_TYPE_TEN == payType) {
+                //更新退款流水
+                RefundResult refundResult;
+                String thdRefundId;
+                for (PayFlowBean flowBean : flowBeanList) {
+                    //已经退款成功的
+                    if (flowBean.getPayState() == PayConstant.REFUND_SUCCESS) {
+                        continue;
+                    }
+                    extMap.put("refundId", RandomUtils.getPaymentNo());
+                    List<PayFlowBean> tmpList = new ArrayList<>();
+                    tmpList.add(flowBean);
+                    //发送退款
+                    refundResult = (RefundResult) payCommonService.refund(clientSource, tmpList, extMap);
+                    if (refundResult != null) {
+                        if (PayConstant.REFUND_SUCCESS == refundResult.getPayState()) {
+                            thdRefundId = refundResult.getThdFlowId();
+
+                            //更新支付流水
+                            flowBean.setPayState(PayConstant.REFUND_SUCCESS);
+                            flowBean.setThdRefundId(thdRefundId);
+                            flowBean.setRefundTime(new Date());
+                            payFlow.updPayFlow(flowBean);
+                        } else {
+                            //退款失败
+                            flowBean.setPayState(PayConstant.REFUND_FAIL);
+                            flowBean.setRefundTime(new Date());
+                            payFlow.updPayFlow(flowBean);
+                        }
+                    }
+                }
+                retObj = "操作成功";
             } else {
-                //数据异常
-                throw new BusinessException("数据异常");
+                //支付宝是异步返回 多笔退
+                String batchNo = RandomUtils.getPaymentNo();
+                extMap.put("batchNo", batchNo);
+                extMap.put("refundReason", refundReason);
+                retObj = payCommonService.refund(clientSource, flowBeanList, extMap);
             }
+
+        } else {
+            //未查询到可退款流水信息
+            throw new BusinessException("未查询到可退款流水信息");
         }
-        return null;
+        return retObj;
     }
 
 
@@ -321,6 +360,64 @@ public class PayCommonCenter implements IPayCommonCenter {
         tmpBean.setFailCode(flowBean.getFailCode());
         tmpBean.setFailDesc(flowBean.getFailDesc());
         payFlow.updPayFlow(tmpBean);
+    }
+
+    /**
+     * @return void
+     * @throws
+     * @Description: 退款回调
+     */
+    private void refundNotify(int payType, String ipAddress, Map<String, String> reqParam) throws Exception {
+        //解析返回
+        logger.info("解析退款回调");
+        IPayCommonService payCommonService = PayUtils.getCommonPayInstance(payType);
+        List<RefundResult> refundResults = payCommonService.refundReturn(reqParam);
+        RefundResult refundResult;
+        int payState;
+        int callbackState;
+        String thdFlowId;
+        long flowId;
+        for (int i = 0; i < refundResults.size(); i++) {
+            refundResult = refundResults.get(i);
+            callbackState = refundResult.getPayState();
+            if (callbackState == PayConstant.REFUND_FAIL) {//失败的 签名失败 参数格式校验错误等
+                //不处理
+                continue;
+            } else {
+                thdFlowId = refundResult.getThdFlowId();
+                //根据thdFlowId查询出支付流水
+                PayFlowBean flowBean = payFlow.getPayFlowByThdFlowId(thdFlowId);
+                if (flowBean != null) {
+                    flowId = flowBean.getFlowId();
+                    payState = flowBean.getPayState();
+                    callbackState = refundResult.getPayState();
+                    logger.info("退款回调参数 flowId-{},payState-{},callbackState-{}", flowId, payState, callbackState);
+                    if (PayConstant.PAY_SUCCESS == payState || PayConstant.REFUND_ING == payState || PayConstant.REFUND_FAIL == payState) {//支付成功、退款中、退款失败的 才能继续退款
+                        //支付状态
+                        flowBean.setPayState(callbackState);
+                        if (PayConstant.REFUND_SUCCESS == callbackState) {
+                            Date now = new Date();
+                            //退款单号
+                            flowBean.setThdRefundId(refundResult.getThdRefundId());
+                            //退款时间
+                            flowBean.setRefundTime(now);
+                            flowBean.setPayState(callbackState);
+
+                            //业务处理
+                        } else {
+                            flowBean.setFailCode(refundResult.getFailCode());
+                            flowBean.setFailDesc(refundResult.getFailDesc());
+                        }
+                        //更新交易流水
+                        payFlow.updPayFlow(flowBean);
+                    } else {
+                        //跳过不管
+                    }
+                } else {
+                    throw new BusinessException("未查询到支付流水信息");
+                }
+            }
+        }
     }
 
 }

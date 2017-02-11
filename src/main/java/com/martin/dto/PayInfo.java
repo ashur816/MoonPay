@@ -1,11 +1,15 @@
 package com.martin.dto;
 
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import java.io.Serializable;
 
 /**
+ * @author ZXY
  * @ClassName: PayInfo
  * @Description: 支付信息
- * @author ZXY
  * @date 2016/6/3 9:40
  */
 public class PayInfo implements Serializable {
@@ -15,6 +19,7 @@ public class PayInfo implements Serializable {
     /**
      * 支付流水号
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     public Long flowId;
 
     /**
@@ -54,7 +59,6 @@ public class PayInfo implements Serializable {
 
     /**
      * 返回的授权码 微信 openId, 支付宝 authorCode
-     *
      */
     public String retCode;
 

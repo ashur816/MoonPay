@@ -55,5 +55,5 @@ public interface IPayCommonCenter {
      * @return void
      * @throws
      */
-    PayInfo doRefund(List<String> flowIdList, String refundReason) throws Exception;
+    Object doRefund(List<String> flowIdList, String refundReason) throws Exception;
 }

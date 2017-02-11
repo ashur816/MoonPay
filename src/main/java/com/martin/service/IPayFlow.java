@@ -77,4 +77,20 @@ public interface IPayFlow {
      * @Description: 更新预付单号
      */
     Boolean updateThdFlowId(long flowId, String thdFlowId) throws Exception;
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 查询可以退款的支付流水
+     */
+    List<PayFlowBean> getCanRefundList(long flowId, int payState, int payType, String preClientSource);
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 根据第三方支付流水，查询支付流水
+     */
+    PayFlowBean getPayFlowByThdFlowId(String thdFlowId);
 }

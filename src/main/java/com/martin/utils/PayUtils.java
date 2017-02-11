@@ -19,6 +19,25 @@ import java.util.*;
 public class PayUtils {
 
     /**
+     * @Description: 获取支付来源
+     * @param appId 发起支付的客户端来源，就是客户端appId
+     * @return
+     * @throws
+     */
+    public static String getPayClientSource(String appId) {
+        //根据支付客户端选择不同的sdk支付参数
+        String prefixId;
+        if (appId.indexOf(".") != -1) {
+            prefixId = appId.substring(0, appId.indexOf("."));
+        } else {
+            //appId参数格式不正确
+            throw new BusinessException("appId参数格式不正确");
+        }
+
+        return prefixId;
+    }
+
+    /**
      * @Description: 动态选择收款账号来源
      * @param clientSource 发起支付的客户端来源，就是客户端appId
      * @return

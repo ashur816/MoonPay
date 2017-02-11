@@ -45,6 +45,19 @@ public class PayController {
     @Resource
     private IPayAppCenter payAppCenter;
 
+    /**
+     * 收银台界面
+     * @param request
+     * @return
+     * @throws
+     */
+    @RequestMapping(value = "/toPay")
+    public ModelAndView toCashier(HttpServletRequest request) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("pay/common_pay");
+        return modelAndView;
+    }
+
     /*********************************************** WEB支付 ******************************************************/
     /**
      * 跳转网页支付 根据请求头，判断支付途径
@@ -56,7 +69,7 @@ public class PayController {
      * @throws
      */
     @RequestMapping(value = "/toWebPay")
-    public ModelAndView toWebPay(HttpServletRequest request, String appId, String bizId, String bizType, String code) {
+    public ModelAndView toWebPay(HttpServletRequest request, String bizId, String bizType, String code) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("common/error");
         if (StringUtils.isBlank(bizId)) {
@@ -82,7 +95,7 @@ public class PayController {
                     }
                 } else {
                     payType = PayConstant.PAY_TYPE_ALI;
-                    PayInfo payInfo = payWebCenter.doPay(appId, payType, bizId, Integer.parseInt(bizType), ipAddress, "");
+                    PayInfo payInfo = payWebCenter.doPay("moon_web.ios", payType, bizId, Integer.parseInt(bizType), ipAddress, "");
                     doError(payInfo, modelAndView);
                     modelAndView.setViewName("pay/ali_pay");
                 }
@@ -141,6 +154,7 @@ public class PayController {
     /*********************************************** APP支付 ******************************************************/
     /**
      * 获取APP支付参数
+     *
      * @param request 包含 订单id
      * @return
      * @throws
@@ -157,7 +171,7 @@ public class PayController {
             String ipAddress = IpUtils.getIpAddress(request);
             try {
                 Map payMap = payAppCenter.buildPayInfo(appId, payType, bizId, bizType, ipAddress);
-                resultInfo = new ResultInfo(0, "", "", payMap);
+                resultInfo = new ResultInfo(1, "", "", payMap);
             } catch (Exception e) {
                 logger.error("PayController.toAppPay异常-{}", e);
                 if (e instanceof BusinessException) {
@@ -270,7 +284,7 @@ public class PayController {
                 List<PayInfo> payInfoList = payCommonCenter.getRefundInfo(appId, Integer.parseInt(payType), flowId);
                 if (payInfoList != null) {
                     logger.info("退款返回信息成功");
-                    resultInfo = new ResultInfo(0, "", "", JsonUtils.translateToJson(payInfoList));
+                    resultInfo = new ResultInfo(1, "", "", JsonUtils.translateToJson(payInfoList));
                 } else {
                     resultInfo = new ResultInfo(-1, "", "未获取到付款信息");
                 }
@@ -335,7 +349,7 @@ public class PayController {
 
                 String[] str = flowIds.split(",");
                 List<String> flowIdList = Arrays.asList(str);
-                PayInfo payInfo = payCommonCenter.doRefund(flowIdList, tmpStr);
+                PayInfo payInfo = (PayInfo) payCommonCenter.doRefund(flowIdList, tmpStr);
 
                 int payType = payInfo.getPayType();
                 if (PayConstant.PAY_TYPE_ALI == payType) {

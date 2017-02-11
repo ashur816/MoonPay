@@ -1,9 +1,7 @@
 package com.martin.service;
 
-import com.martin.bean.PayFlowBean;
 import com.martin.dto.PayInfo;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,21 +32,7 @@ public interface IPayWebCenter {
     /**
      * @return void
      * @throws
-     * @Description: 退款
-     */
-    Object doRefund(List<PayFlowBean> flowBeanList,String refundReason) throws Exception;
-
-    /**
-     * @return void
-     * @throws
      * @Description: 第三方回调--支付
      */
     void doPayNotify(int payType, String ipAddress, Map<String, String> reqParam) throws Exception;
-
-    /**
-     * @return void
-     * @throws
-     * @Description: 第三方回调--退款
-     */
-    void doRefundNotify(int payType, String ipAddress, Map<String, String> reqParam) throws Exception;
 }

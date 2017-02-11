@@ -6,7 +6,6 @@ import com.martin.constant.PayParam;
 import com.martin.constant.PayReturnCodeEnum;
 import com.martin.dto.PayInfo;
 import com.martin.dto.PayResult;
-import com.martin.dto.RefundResult;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayAppService;
 import com.martin.utils.DateUtils;
@@ -17,7 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName: AliPay
@@ -251,46 +253,6 @@ public class AliPayApp implements IPayAppService {
         payInfo.setPayType(PayConstant.PAY_TYPE_ALI);
         payInfo.setRetHtml(sendString);
         return payInfo;
-    }
-
-    /**
-     * @param paraMap
-     * @return
-     * @throws
-     * @Description: 退款回调参数校验
-     */
-    private List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
-        logger.info("支付宝退款回调处理");
-        //验签
-        returnValidate(paraMap);
-
-        String batchNo = paraMap.get("batch_no");
-        //返回格式 2016072021001004610238752098^0.00^REFUND_TRADE_FEE_ERROR#2016072021001004610238752098^0.00^REFUND_TRADE_FEE_ERROR
-        String resultDetails = paraMap.get("result_details");
-        List<String> detailList = Arrays.asList(resultDetails.split("#"));
-        List<String> resultList;
-        String resultMsg;
-        RefundResult refundResult;
-        List<RefundResult> refundList = new ArrayList<>();
-        for (int i = 0; i < detailList.size(); i++) {
-            resultList = Arrays.asList(detailList.get(i).split("\\^"));
-
-            refundResult = new RefundResult();
-            refundResult.setThdFlowId(resultList.get(0));
-            refundResult.setThdRefundId(batchNo);
-            resultMsg = resultList.get(2);
-            if ("SUCCESS".equals(resultMsg)) {
-                //退款成功
-                refundResult.setPayState(PayConstant.REFUND_SUCCESS);
-            } else {
-                //退款失败
-                refundResult.setPayState(PayConstant.REFUND_FAIL);
-                refundResult.setFailCode(resultList.get(2));
-                refundResult.setFailDesc("退款失败");
-            }
-            refundList.add(refundResult);
-        }
-        return refundList;
     }
 
     /**
