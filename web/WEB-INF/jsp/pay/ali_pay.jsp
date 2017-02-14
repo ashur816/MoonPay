@@ -5,7 +5,7 @@
     <title>支付宝支付</title>
 </head>
 <body>
-<div style="display: none">${payInfo.retHtml}</div>
+<div id="aa" style="display: none">${payInfo.retHtml}</div>
 
 </body>
 </html>

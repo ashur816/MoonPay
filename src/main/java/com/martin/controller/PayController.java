@@ -79,7 +79,7 @@ public class PayController {
      * 在微信里面打开的，肯定是微信支付
      * 在其他浏览器中打开的，肯定是支付宝支付
      *
-     * @param request 包含 订单id
+     * @param request
      * @return
      * @throws
      */

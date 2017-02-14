@@ -36,8 +36,8 @@
 <div id="payHtml" style="display: none"></div>
 </body>
 </html>
-<script src="<%=context%>/static/js/mui.min.js"></script>
 <script src="<%=context%>/static/js/jquery-1.12.4.min.js"></script>
+<script src="<%=context%>/static/js/mui.min.js"></script>
 <script type="text/javascript">
     $(function () {
         var list = document.querySelector('.mui-table-view.mui-table-view-radio');
