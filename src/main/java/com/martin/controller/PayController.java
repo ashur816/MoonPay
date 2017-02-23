@@ -55,7 +55,7 @@ public class PayController {
     @RequestMapping(value = "/toPay")
     public ModelAndView toCashier(HttpServletRequest request) {
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("pay/common_pay");
+        modelAndView.setViewName("pay/cashier");
         return modelAndView;
     }
 

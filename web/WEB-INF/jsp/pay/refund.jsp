@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%String context = request.getContextPath(); %>
 <html>
@@ -7,58 +7,61 @@
     <title>退款</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
     <link rel="stylesheet" href="<%=context%>/static/css/mui.min.css"/>
-    <link rel="stylesheet" href="<%=context%>/static/css/mui.moon.css"/>
 </head>
 <body>
+<header class="mui-bar mui-bar-nav">
+    <h1 class="mui-title">退款</h1>
+</header>
 <div class="mui-content">
-    <ul class="mui-table-view">
-        <li class="mui-table-view-cell">
-            <label>支付终端</label>
-            <input type="radio" name="appId" value="moon_web" checked/>WEB
-            <input type="radio" name="appId" value="moon_app"/>APP
-            <br/>
-            <label>支付方式</label>
-            <input type="radio" name="payType" value="1" checked/>微信
-            <input type="radio" name="payType" value="2"/>支付宝
-            <br/>
-            <label>流水号</label>
-            <input id="flowId" type="text" class="mui-input-clear mui-input">
+    <h5 class="mui-content-padded">支付终端</h5>
+    <ul id="appId" class="mui-table-view mui-table-view-radio">
+        <li class="mui-table-view-cell mui-selected">
+            <a class="mui-navigate-right" v="moon_web">WEB</a>
         </li>
-        <li class="mui-table-view-cell" style="padding-top: 40px">
-            <button id="btnQry" type="button" style="width: 100px" class="mui-btn mui-btn-success">查询</button>
+        <li class="mui-table-view-cell">
+            <a class="mui-navigate-right" v="moon_app">APP</a>
         </li>
     </ul>
+    <h5 class="mui-content-padded">支付方式</h5>
+    <ul id="payType" class="mui-table-view mui-table-view-radio">
+        <li class="mui-table-view-cell mui-selected">
+            <a class="mui-navigate-right" v="1">微信</a>
+        </li>
+        <li class="mui-table-view-cell">
+            <a class="mui-navigate-right" v="2">支付宝</a>
+        </li>
+    </ul>
+    <h5 class="mui-content-padded">支付流水号</h5>
+    <input id="flowId" type="text" class="mui-input-clear" placeholder="请输入支付流水号">
+    <h5 class="mui-content-padded">退款原因</h5>
+    <input id="refundReason" type="text" class="mui-input-clear" placeholder="请输入退款原因">
+    <div class="mui-button-row">
+        <button id="btnQry" type="button" class="mui-btn mui-btn-primary">查询</button>
+    </div>
 
-    <input type="hidden" readonly size="30" id="payType" value=""/>
     <div id="payList"></div>
-
-    <p></p>
-    <ul id="showNoResult" style="display: none" class="mui-table-view mui-table-view-striped mui-table-view-condensed">
-        <li class="mui-table-view-cell">
-            <label class="web-font">未查询到支付信息</label>
-        </li>
-    </ul>
-    <ul id="btnReason" style="display: none" class="mui-table-view mui-table-view-striped mui-table-view-condensed">
-        <li class="mui-table-view-cell">
-            <label class="web-font">退款原因</label>
-            <div class="div-center-tip">
-                <input id="refundReason" type="text" class="mui-input-clear mui-input " placeholder="" value="测试退款"/>
-            </div>
-        </li>
-        <button id="btnPay" type="button" class="mui-btn mui-btn-success mui-col-xs-12">退款</button>
-    </ul>
+    <div class="mui-button-row">
+        <button id="btnRefund" type="button" class="mui-btn mui-btn-primary">退款</button>
+    </div>
 </div>
+
 </body>
 </html>
-<script src="<%=context%>/static/js/mui.min.js"></script>
 <script src="<%=context%>/static/js/jquery-1.12.4.min.js"></script>
+<script src="<%=context%>/static/js/mui.min.js"></script>
 <script type="text/javascript">
-
-    var context = "<%=context%>";
-
     $(function () {
-        $("#btnPay").click(function () {
-            var payType = $("#payType").val();
+        var appId = "moon_web";
+        document.getElementById("appId").addEventListener('selected', function (e) {
+            appId = e.detail.el.children[0].attributes["v"].value;
+        });
+
+        var payType = 1;
+        document.getElementById("payType").addEventListener('selected', function (e) {
+            payType = e.detail.el.children[0].attributes["v"].value;
+        });
+
+        $("#btnRefund").click(function () {
             var flowIds = "";
             $("input[name='selFlag']:checked").each(function (index, obj) {
                 flowIds += obj.getAttribute("flowId") + ",";
@@ -68,12 +71,12 @@
                 return false;
             }
             if (payType == 2) {
-                window.open(context + "/moon/cashier/doRefundPwd.htm?flowIds=" + flowIds.substring(0, flowIds.length - 1) + "&refundReason=" + $("#refundReason").val());
+                window.open("/moon/cashier/doRefundPwd.htm?flowIds=" + flowIds.substring(0, flowIds.length - 1) + "&refundReason=" + $("#refundReason").val());
             }
             else {
                 $.ajax({
                     type: "post",
-                    url: context + "/moon/cashier/doRefund.htm",
+                    url: "/moon/cashier/doRefund.htm",
                     dataType: "json",
                     data: {payType: payType, flowIds: $("#flowIds").val(), refundReason: $("#refundReason").val()},
                     success: function (data) {
@@ -89,9 +92,9 @@
         $("#btnQry").click(function () {
             $.ajax({
                 type: "post",
-                url: context + "/moon/cashier/getRefund.htm",
+                url: "/moon/cashier/getRefund.htm",
                 dataType: "json",
-                data: {payType: $("input[name='payType']:checked").val(), appId: $("input[name='appId']:checked").val(), flowId: $("#flowId").val()},
+                data: {payType: payType, appId: appId, flowId: $("#flowId").val()},
                 success: function (retObj) {
                     if (retObj.success == 1) {
                         var arrList = eval(retObj.data);
@@ -100,9 +103,7 @@
                         var payState;
                         var len = arrList.length;
                         if (len == 0) {
-                            $("#showNoResult").css("display", "block");
-                            $("#btnReason").css("display", "none");
-                            $("#payList").html("");
+                            mui.alert("未查询到有效数据");
                         }
                         else {
                             for (var i = 0; i < len; i++) {

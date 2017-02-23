@@ -15,6 +15,7 @@
         <property name="aliAuthUrl" value="${alipay.authUrl}"></property>
         <property name="aliAuthCode" value="${alipay.authCode}"></property>
         <property name="aliQueryService" value="${alipay.queryService}"></property>
+        <property name="aliOldPayService" value="${alipay.oldPayService}"></property>
         <property name="aliPayService" value="${alipay.payService}"></property>
         <property name="aliTransferService" value="${alipay.transferService}"></property>
         <property name="aliRefundService" value="${alipay.refundService}"></property>

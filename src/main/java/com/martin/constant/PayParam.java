@@ -26,6 +26,8 @@ public class PayParam {
     public static String aliAuthCode;
     //调用的接口名，查单
     public static String aliQueryService;
+    //调用的接口名，老支付接口
+    public static String aliOldPayService;
     //调用的接口名，支付
     public static String aliPayService;
     //调用的接口名，企业付款
@@ -146,6 +148,10 @@ public class PayParam {
 
     public void setAliQueryService(String aliQueryService) {
         this.aliQueryService = aliQueryService;
+    }
+
+    public void setAliOldPayService(String aliOldPayService) {
+        this.aliOldPayService = aliOldPayService;
     }
 
     public void setAliPayService(String aliPayService) {

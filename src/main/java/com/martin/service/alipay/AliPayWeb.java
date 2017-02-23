@@ -59,17 +59,28 @@ public class AliPayWeb implements IPayWebService {
     }
 
     /**
+     * 新版生成支付信息
+     *
+     * @param flowBean
+     * @return
+     */
+    @Override
+    public PayInfo buildPayInfo(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+        PayInfo p = build2(flowBean, extMap);
+        return p;
+    }
+
+    /**
      * 老版生成支付信息
      *
      * @param flowBean
      * @return
      */
-    /*@Override
-    public PayInfo buildPayInfo(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+    private PayInfo build1(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         logger.info("开始支付宝web支付");
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("service", PayParam.aliPayService);
+        paraMap.put("service", PayParam.aliOldPayService);
         paraMap.put("partner", PayParam.aliPartnerId);
         paraMap.put("seller_id", PayParam.aliPartnerId);
         paraMap.put("_input_charset", PayParam.aliInputCharset);
@@ -95,31 +106,16 @@ public class AliPayWeb implements IPayWebService {
 
         String html = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.aliWebSignType, paraMap);
         return new PayInfo(PayParam.webBody, needPayAmount, html);
-    }*/
-
-    /**
-     * 新版生成支付信息
-     *
-     * @param flowBean
-     * @return
-     */
-    @Override
-    public PayInfo buildPayInfo(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
-//        PayInfo p1= build1(flowBean,extMap);
-        PayInfo p2= build2(flowBean,extMap);
-//        System.err.println(p1.retHtml);
-//        System.err.println(p2.retHtml);
-        return p2;
     }
 
-    private PayInfo build1(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+    private PayInfo build2(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         logger.info("开始支付宝web支付");
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
         paraMap.put("app_id", PayParam.aliWebAppId);
         paraMap.put("method", PayParam.aliPayService);
         paraMap.put("format", "json");
-        paraMap.put("alipay_sdk", "alipay-sdk-java-dynamicVersionNo");
+//        paraMap.put("alipay_sdk", "alipay-sdk-java-dynamicVersionNo");
 
         //统一跳订单详情
         String url = extMap.get("returnUrl");
@@ -152,7 +148,7 @@ public class AliPayWeb implements IPayWebService {
         return new PayInfo(PayParam.webBody, needPayAmount, html);
     }
 
-    private PayInfo build2(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+    private PayInfo build3(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         logger.info("开始支付宝web支付");
         //获得初始化的AlipayClient
         //实例化客户端
