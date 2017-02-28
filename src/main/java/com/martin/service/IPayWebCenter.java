@@ -27,7 +27,7 @@ public interface IPayWebCenter {
      * @throws
      * @Description: 支付入口
      */
-    PayInfo doPay(String appId, int payType, String bizId, int bizType, String ipAddress, String code) throws Exception;
+    PayInfo doPay(int payType, String bizId, int bizType, String ipAddress, String code) throws Exception;
 
     /**
      * @return void

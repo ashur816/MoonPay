@@ -99,7 +99,7 @@ public class AliPayCommon implements IPayCommonService {
      */
     @Override
     public Object transferSingle(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
-        return trans1(flowBean, extMap);
+        return trans2(flowBean, extMap);
     }
 
     /**
@@ -142,7 +142,7 @@ public class AliPayCommon implements IPayCommonService {
         System.err.println(tmpString);
         //解析返回
         Map tmpMap = JsonUtils.readMap(tmpString);
-        Map returnMap = (Map) tmpMap.get("alipay_trade_query_response");
+        Map returnMap = (Map) tmpMap.get("alipay_fund_trans_toaccount_transfer_response");
         Object subCode = returnMap.get("sub_code");
         Object subMsg = returnMap.get("sub_msg");
         Object tradeStatus = returnMap.get("trade_status");
@@ -152,7 +152,7 @@ public class AliPayCommon implements IPayCommonService {
         } else if (ObjectUtils.isNotEmpty(tradeStatus)) {
             code = tradeStatus.toString();
         }
-        logger.info("WEB支付宝查单结果-{},-{}", code, subMsg);
+        logger.info("WEB支付宝转账结果-{},-{}", code, subMsg);
         PayResult payResult = new PayResult();
         payResult.setPayState(PayUtils.transPayState(code));
         if (PayConstant.PAY_SUCCESS == payResult.getPayState()) {
@@ -194,7 +194,6 @@ public class AliPayCommon implements IPayCommonService {
 
         PayResult payResult = new PayResult();
         if (response.isSuccess()) {
-            System.out.println("调用成功");
             payResult.setPayState(PayUtils.transPayState(response.getCode()));
             if (PayConstant.PAY_SUCCESS == payResult.getPayState()) {
                 //支付成功的更新第三方交易流水号
@@ -202,7 +201,8 @@ public class AliPayCommon implements IPayCommonService {
             }
         } else {
             payResult.setPayState(PayConstant.PAY_FAIL);
-            System.out.println("调用失败");
+            logger.error("调用失败：{}",response.getSubMsg());
+            payResult.setFailDesc(response.getSubMsg());
         }
         return payResult;
     }

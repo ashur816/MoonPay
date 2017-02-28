@@ -15,10 +15,10 @@
 <div class="mui-content">
     <h5 class="mui-content-padded">提现渠道</h5>
     <ul class="mui-table-view mui-table-view-radio">
-        <li class="mui-table-view-cell">
+        <li class="mui-table-view-cell mui-selected">
             <a class="mui-navigate-right" v="1">微信</a>
         </li>
-        <li class="mui-table-view-cell  mui-selected">
+        <li class="mui-table-view-cell">
             <a class="mui-navigate-right" v="2">支付宝</a>
         </li>
     </ul>
@@ -41,14 +41,16 @@
 <script type="text/javascript">
     $(function () {
         var list = document.querySelector('.mui-table-view.mui-table-view-radio');
-        var payType = 2;
+        var payType = 1;
         list.addEventListener('selected', function (e) {
             payType = e.detail.el.children[0].attributes["v"].value;
         });
 
-        $("#thdNo").val("632663267@qq.com");
+//        $("#thdNo").val("632663267@qq.com");
+        $("#thdNo").val("o6U0tuJA8ewtDsfhmR2rh4-7yDco");
         $("#thdName").val("张向阳");
         $("#drawAmount").val("0.01");
+
 
         $("#btnDraw").click(function () {
             var thdNo = $("#thdNo").val();
@@ -59,23 +61,23 @@
                 url: "/moon/cashier/doTransfer.htm",
                 dataType: "json",
                 data: {payType: payType, thdNo: thdNo, thdName: thdName, drawAmount: drawAmount},
-                success: function (data) {
-                    if (data.success == 1) {
-                        var payInfo = data.data["retHtml"];
+                success: function (retInfo) {
+                    if (retInfo.success == 1) {
+                        var payInfo = retInfo.data["retHtml"];
                         if (payType == 2) {
                             $("#payHtml").html(payInfo);
                             document.forms['payForm'].submit();
                         }
                         else {
-                            alert("付款成功");
+                            mui.alert(retInfo["message"]);
                         }
                     }
                     else {
-                        alert(data.message);
+                        mui.alert(retInfo["message"]);
                     }
                 },
                 error: function (data) {
-                    alert(data.responseText);
+                    mui.alert(data["message"]);
                 }
             });
         });

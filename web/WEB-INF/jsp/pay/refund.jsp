@@ -61,6 +61,7 @@
      * 下拉刷新具体业务实现
      */
     function pullDownRefresh() {
+        $("#payList").html("<p></p>");
         setTimeout(function () {
             getPayInfo();
             mui('#pullrefresh').pullRefresh().endPulldownToRefresh(); //refresh completed
@@ -72,6 +73,7 @@
      * 上拉加载具体业务实现
      */
     function pullUpRefresh() {
+        $("#payList").html("<p></p>");
         setTimeout(function () {
             getPayInfo();
             mui('#pullrefresh').pullRefresh().endPullupToRefresh((++count > 2)); //参数为true代表没有更多数据了。
@@ -133,7 +135,7 @@
                     mui.alert(retObj.message);
                 }
             },
-            error: function (data) {
+            error: function (retObj) {
                 mui.alert(retObj.message);
             }
         });
@@ -173,14 +175,14 @@
         else {
             $.ajax({
                 type: "post",
-                url: context + "/moon/cashier/doRefund.htm",
+                url: "/moon/cashier/doRefund.htm",
                 dataType: "json",
-                data: {payType: payType, flowIds: $("#flowIds").val(), refundReason: $("#refundReason").val()},
-                success: function (data) {
-                    alert(data);
+                data: {payType: payType, flowIds: flowIds, refundReason: refundReason},
+                success: function (retObj) {
+                    mui.alert(retObj.message);
                 },
-                error: function (data) {
-                    alert(data.responseText);
+                error: function (retObj) {
+                    mui.alert(retObj.message);
                 }
             });
         }

@@ -72,7 +72,7 @@ public class PayWebCenter implements IPayWebCenter {
      * @Description: 支付入口
      */
     @Override
-    public PayInfo doPay(String appId, int payType, String bizId, int bizType, String ipAddress, String code) throws Exception {
+    public PayInfo doPay(int payType, String bizId, int bizType, String ipAddress, String code) throws Exception {
         if (StringUtils.isEmpty(bizId) || StringUtils.isEmpty(ipAddress)) {
             throw new BusinessException("参数不能为空");
         }
@@ -133,6 +133,7 @@ public class PayWebCenter implements IPayWebCenter {
         ToPayInfo orderPayInfo = payCommonCenter.getToPayInfo(bizId, bizType);
 
         //获取支付参数
+        String appId = "moon_web.ios";
         Map<String, String> extMap = PayUtils.getPaySource(payType, appId);
         String thdAppId = extMap.get("appId");
         extMap.put("code", code);

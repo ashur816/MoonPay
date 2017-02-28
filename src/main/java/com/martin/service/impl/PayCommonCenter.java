@@ -250,6 +250,7 @@ public class PayCommonCenter implements IPayCommonCenter {
             extMap.put("thdName", thdName);
             extMap.put("batchNo", batchNo);
             retObj = payCommonService.transferSingle(flowBean, extMap);
+//            retObj = payCommonService.transferBatch(flowBean, extMap);
         } else {
             //第三方支付类型未定义
             throw new BusinessException("第三方支付类型未定义");

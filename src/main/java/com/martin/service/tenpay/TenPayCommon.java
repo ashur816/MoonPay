@@ -88,7 +88,7 @@ public class TenPayCommon implements IPayCommonService {
             payResult.setTradeState("SUCCESS");
             payResult.setThdFlowId(returnMap.get("payment_no"));
         } else {
-            String err = !StringUtils.isEmpty(returnMsg) ? returnMsg : errDes;
+            String err = !StringUtils.isEmpty(errDes) ? errDes : returnMsg;
             payResult.setFailDesc(err);
             payResult.setFailCode(errCode);
             payResult.setTradeState("FAIL");
@@ -118,7 +118,7 @@ public class TenPayCommon implements IPayCommonService {
      */
     @Override
     public Object refund(String clientSource, List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
-        Map<String, String> paySourceMap = PayUtils.getPaySource(PayConstant.PAY_TYPE_ALI, clientSource);
+        Map<String, String> paySourceMap = PayUtils.getPaySource(PayConstant.PAY_TYPE_TEN, clientSource);
         String appId = paySourceMap.get("appId");
         String privateKey = paySourceMap.get("privateKey");
         String mchId = paySourceMap.get("mchId");
@@ -163,7 +163,7 @@ public class TenPayCommon implements IPayCommonService {
     @Override
     public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
         logger.info("WEB微信退款回调处理");
-        SortedMap<String, String> sortedMap = TenPayUtils.returnValidate(PayParam.tenWebPrivateKey,paraMap);
+        SortedMap<String, String> sortedMap = TenPayUtils.returnValidate(PayParam.tenWebPrivateKey, paraMap);
 
         String resultCode = sortedMap.get("result_code");
         String returnCode = sortedMap.get("return_code");

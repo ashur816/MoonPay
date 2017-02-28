@@ -124,7 +124,7 @@ public class PayController {
                     }
                 } else {
                     payType = PayConstant.PAY_TYPE_ALI;
-                    PayInfo payInfo = payWebCenter.doPay("moon_web.ios", payType, bizId, Integer.parseInt(bizType), ipAddress, "");
+                    PayInfo payInfo = payWebCenter.doPay(payType, bizId, Integer.parseInt(bizType), ipAddress, "");
                     doError(payInfo, modelAndView);
                     modelAndView.setViewName("pay/ali_pay");
                 }
@@ -144,7 +144,7 @@ public class PayController {
      * @Description: 微信鉴权后回调地址，然后发起支付
      */
     @RequestMapping(value = "/doAuthPay")
-    public ModelAndView doAuthPay(HttpServletRequest request, String appId, String code, String state) {
+    public ModelAndView doAuthPay(HttpServletRequest request, String code, String state) {
         ModelAndView modelAndView = new ModelAndView();
         String ipAddress = IpUtils.getIpAddress(request);
         String error = "";
@@ -158,9 +158,9 @@ public class PayController {
             String bizType = str[2];
 
             logger.info("doAuthPay接收参数payType={},bizId={},bizType={}", payType, bizId, bizType);
-            if (PayConstant.PAY_TYPE_ALI == payType) {
+            if (PayConstant.PAY_TYPE_TEN == payType) {
                 modelAndView.setViewName("pay/ten_pay");
-            } else if (PayConstant.PAY_TYPE_TEN == payType) {
+            } else if (PayConstant.PAY_TYPE_ALI == payType) {
                 modelAndView.setViewName("pay/ali_pay");
             } else {
                 modelAndView.setViewName("common/error");
@@ -168,7 +168,7 @@ public class PayController {
             }
             try {
                 //组装支付信息
-                PayInfo payInfo = payWebCenter.doPay(appId, payType, bizId, Integer.parseInt(bizType), ipAddress, code);
+                PayInfo payInfo = payWebCenter.doPay(payType, bizId, Integer.parseInt(bizType), ipAddress, code);
                 doError(payInfo, modelAndView);
             } catch (Exception e) {
                 logger.error("PayController.doAuthPay 异常：{}", e);
@@ -239,7 +239,6 @@ public class PayController {
                 br.close();
                 String content = new String(sbXml.toString().getBytes("utf-8"), "utf-8");
                 reqMap.put("content", content);
-                logger.info("微信回调参数：{}-{}", notifyType, content);
             } else if (PayConstant.PAY_TYPE_ALI == payType) {//支付宝返回
                 //获取支付宝POST过来反馈信息，lockMap不能修改
                 Map<String, String[]> tmpMap = request.getParameterMap();
@@ -267,7 +266,7 @@ public class PayController {
                 returnCode = PayConstant.CALLBACK_FAIL;
                 return returnCode;
             }
-            logger.info("支付宝回调全部参数：{}", PayUtils.buildConcatStr(reqMap));
+            logger.info("回调全部参数：{}", PayUtils.buildConcatStr(reqMap));
             payCommonCenter.doNotify(notifyType, payType, ipAddress, reqMap);
         } catch (Exception e) {
             returnCode = PayConstant.CALLBACK_FAIL;
@@ -317,7 +316,7 @@ public class PayController {
      */
     @ResponseBody
     @RequestMapping(value = "/doRefund")
-    public Object doRefund(HttpServletRequest request, String flowIds, String refundReason) {
+    public ResultInfo doRefund(HttpServletRequest request, String flowIds, String refundReason) {
         String retMsg = "";
         if (StringUtils.isBlank(flowIds)) {
             retMsg = "传入信息不能为空";
@@ -340,7 +339,8 @@ public class PayController {
                 retMsg = e.getMessage();
             }
         }
-        return retMsg;
+        ResultInfo resultInfo = new ResultInfo(-1, "", retMsg);
+        return resultInfo;
     }
 
     /**
