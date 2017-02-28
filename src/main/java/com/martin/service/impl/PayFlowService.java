@@ -130,16 +130,14 @@ public class PayFlowService implements IPayFlow {
     }
 
     /**
-     * @param flowId
-     * @param payState
      * @param payType
      * @return
      * @throws
      * @Description: 查询可以退款的支付流水
      */
     @Override
-    public List<PayFlowBean> getCanRefundList(long flowId, int payState, int payType, String preClientSource) {
-        return payFlowMapper.getCanRefundList(flowId, payState, payType, preClientSource + "%");
+    public List<PayFlowBean> getCanRefundList(int payType, String preClientSource) {
+        return payFlowMapper.getCanRefundList(payType, preClientSource);
     }
 
     /**

@@ -49,7 +49,7 @@ public class TenPayWeb implements IPayWebService {
         paraMap.put("response_type", "code");
         paraMap.put("state", PayConstant.PAY_TYPE_TEN + "|" + bizId + "|" + bizType);
 
-        String param = PayUtils.buildPayParam(paraMap);
+        String param = PayUtils.buildConcatStr(paraMap);
 
         PayInfo payInfo = new PayInfo();
         payInfo.setDestUrl(PayParam.tenAuthUrl);
@@ -168,7 +168,7 @@ public class TenPayWeb implements IPayWebService {
     @Override
     public PayResult payReturn(Map<String, String> paraMap) throws Exception {
         logger.info("WEB微信支付回调处理");
-        SortedMap<String, String> sortedMap = returnValidate(paraMap);
+        SortedMap<String, String> sortedMap = TenPayUtils.returnValidate(PayParam.tenWebPrivateKey,paraMap);
         String resultCode = sortedMap.get("result_code");
         String returnCode = sortedMap.get("return_code");
         String tradeState = sortedMap.get("trade_state");
@@ -190,7 +190,7 @@ public class TenPayWeb implements IPayWebService {
             if (StringUtils.isEmpty(tradeState)) {//支付成功时，微信不回传 trade_state，查询订单时会回传 trade_state
                 tradeState = "SUCCESS";
             }
-            int callbackState = transPayState(tradeState);
+            int callbackState = PayUtils.transPayState(tradeState);
             payResult.setPayState(callbackState);
         }
         return payResult;
@@ -231,7 +231,7 @@ public class TenPayWeb implements IPayWebService {
         if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
             String tradeState = returnMap.get("trade_state");
             String thdFlowId = returnMap.get("transaction_id");
-            payResult.setPayState(transPayState(tradeState));
+            payResult.setPayState(PayUtils.transPayState(tradeState));
             payResult.setThdFlowId(thdFlowId);
         } else {
             payResult.setPayState(PayConstant.PAY_NOT);
@@ -294,42 +294,5 @@ public class TenPayWeb implements IPayWebService {
             throw new BusinessException("用户必须关注指端微信号");
         }
         return JsonUtils.readValueByName(result, "openid");
-    }
-
-    /**
-     * 转换支付状态
-     *
-     * @return
-     */
-    private int transPayState(String tradeState) {
-        int callbackState = -1;
-        for (PayReturnCodeEnum anEnum : PayReturnCodeEnum.values()) {
-            if (anEnum.getCode().equals(tradeState)) {
-                callbackState = anEnum.getPayState();
-                break;
-            }
-        }
-        return callbackState;
-    }
-
-    /**
-     * 验签
-     */
-    private SortedMap<String, String> returnValidate(Map<String, String> paraMap) throws Exception {
-        String tmpXml = paraMap.get("content");
-        SortedMap<String, String> sortedMap = TenPayUtils.getMapFromXML(tmpXml);
-
-        if (sortedMap == null || sortedMap.size() < 1) {
-            //参数不能为空
-            throw new BusinessException("参数不能为空");
-        }
-
-        String returnSign = sortedMap.get("sign");
-        String mySign = TenPayUtils.createSign(PayParam.tenWebPrivateKey, sortedMap);
-        if (!returnSign.equals(mySign)) {
-            //回调签名不匹配
-            throw new BusinessException("回调签名不匹配");
-        }
-        return sortedMap;
     }
 }

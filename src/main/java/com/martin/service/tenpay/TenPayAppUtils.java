@@ -22,7 +22,7 @@ class TenPayAppUtils {
      * 获取签名
      */
     public static String createSdkSign(String privateKey, LinkedHashMap<String, String> paraMap) {
-        String param = PayUtils.buildPayParam(paraMap);
+        String param = PayUtils.buildConcatStr(paraMap);
         param += "key=" + privateKey;// 这里必须要用商户的KEY代码,我靠..
         String appSign = MD5(param);
         return appSign;

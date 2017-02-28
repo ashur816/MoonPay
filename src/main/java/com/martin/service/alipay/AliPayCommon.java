@@ -1,15 +1,22 @@
 package com.martin.service.alipay;
 
+import com.alipay.api.AlipayClient;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipayFundTransToaccountTransferRequest;
+import com.alipay.api.response.AlipayFundTransToaccountTransferResponse;
 import com.martin.bean.PayFlowBean;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayParam;
 import com.martin.dto.PayInfo;
+import com.martin.dto.PayResult;
 import com.martin.dto.RefundResult;
 import com.martin.dto.TransferResult;
-import com.martin.exception.BusinessException;
 import com.martin.service.IPayCommonService;
 import com.martin.service.IPayFlow;
 import com.martin.utils.DateUtils;
+import com.martin.utils.JsonUtils;
+import com.martin.utils.ObjectUtils;
+import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,14 +47,14 @@ public class AliPayCommon implements IPayCommonService {
      * @return
      */
     @Override
-    public Object transfer(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+    public Object transferBatch(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         logger.info("开始支付宝企业付款-{}", extMap);
         //组装参数返回给前台
         Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("service", PayParam.aliTransferService);
+        paraMap.put("service", PayParam.aliBatchTransferService);
         paraMap.put("partner", PayParam.aliPartnerId);
-        paraMap.put("_input_charset", PayParam.aliInputCharset);
-        paraMap.put("sign_type", PayParam.aliWebSignType);
+        paraMap.put("_input_charset", PayParam.inputCharset);
+        paraMap.put("sign_type", PayParam.aliSignTypeMD5);
         paraMap.put("notify_url", PayParam.aliTransferNotifyUrl);
         //付款方的支付宝账户名
         paraMap.put("account_name", PayParam.aliAccountName);
@@ -57,7 +64,6 @@ public class AliPayCommon implements IPayCommonService {
         //单笔数据集 流水号^收款方账号^收款账号姓名^付款金额^备注说明  第一笔交易退款数据集|第二笔交易退款数据集
         StringBuilder sBuilder = new StringBuilder();
         double payAmount;
-        int transferNum = 0;
         String transferReason = extMap.get("transferReason");
         payAmount = flowBean.getPayAmount() / 100.0;
 
@@ -70,19 +76,135 @@ public class AliPayCommon implements IPayCommonService {
         //付款批次号
         paraMap.put("batch_no", extMap.get("batchNo"));
         //总笔数
-        paraMap.put("batch_num", String.valueOf(transferNum));
+        paraMap.put("batch_num", "1");
         //付款总金额
         paraMap.put("batch_fee", String.valueOf(payAmount));
         //付款时间 格式为：yyyy-MM-dd HH:mm:ss
         paraMap.put("pay_date", DateUtils.formatDate(new Date(), "yyyyMMdd"));
 
-        String sendString = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.aliWebSignType, paraMap);
+        String sendString = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.tenSignType, paraMap);
         logger.info("发送企业付款信息{}", sendString);
-
         PayInfo payInfo = new PayInfo();
         payInfo.setPayType(PayConstant.PAY_TYPE_ALI);
         payInfo.setRetHtml(sendString);
         return payInfo;
+    }
+
+    /**
+     * 单个账户转账
+     *
+     * @param flowBean
+     * @param extMap
+     * @return
+     */
+    @Override
+    public Object transferSingle(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+        return trans1(flowBean, extMap);
+    }
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 手工组装参数 RSA
+     */
+    private PayResult trans1(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+        //组装参数返回给前台
+        Map<String, String> paraMap = new HashMap<>();
+        paraMap.put("app_id", PayParam.aliWebAppId);
+        paraMap.put("method", PayParam.aliSingleTransferService);
+        paraMap.put("charset", PayParam.inputCharset);
+        paraMap.put("sign_type", PayParam.aliSignTypeRSA);
+        paraMap.put("timestamp", DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        paraMap.put("version", "1.0");
+
+        // biz_content 业务请求参数的集合
+        Map<String, String> bizMap = new HashMap<>();
+        //支付流水号
+        bizMap.put("out_trade_no", String.valueOf(flowBean.getFlowId()));
+        //收款方账户类型
+        bizMap.put("payee_type", "ALIPAY_LOGONID");
+        //收款方账户
+        String thdNo = extMap.get("thdNo");
+        bizMap.put("payee_account", thdNo);
+        //转账金额 单位：元
+        double payAmount = flowBean.getPayAmount() / 100.0;
+        bizMap.put("amount", String.valueOf(payAmount));
+        //收款方真实姓名
+        String thdName = extMap.get("thdName");
+        bizMap.put("payee_real_name", thdName);
+        //转账备注
+        bizMap.put("remark", extMap.get("transferReason"));
+
+        paraMap.put("biz_content", JsonUtils.translateToJson(bizMap));
+
+        String tmpString = AliPayAppUtils.sendPost(PayParam.aliOpenUrl, PayParam.aliWebPrivateKey, paraMap);
+        System.err.println(tmpString);
+        //解析返回
+        Map tmpMap = JsonUtils.readMap(tmpString);
+        Map returnMap = (Map) tmpMap.get("alipay_trade_query_response");
+        Object subCode = returnMap.get("sub_code");
+        Object subMsg = returnMap.get("sub_msg");
+        Object tradeStatus = returnMap.get("trade_status");
+        String code = "WAIT_BUYER_PAY";
+        if (ObjectUtils.isNotEmpty(subCode)) {
+            code = subCode.toString();
+        } else if (ObjectUtils.isNotEmpty(tradeStatus)) {
+            code = tradeStatus.toString();
+        }
+        logger.info("WEB支付宝查单结果-{},-{}", code, subMsg);
+        PayResult payResult = new PayResult();
+        payResult.setPayState(PayUtils.transPayState(code));
+        if (PayConstant.PAY_SUCCESS == payResult.getPayState()) {
+            //支付成功的更新第三方交易流水号
+            payResult.setThdFlowId(returnMap.get("trade_no").toString());
+        }
+        return payResult;
+    }
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: SDK方式 RSA
+     */
+    private PayResult trans2(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+        AlipayClient alipayClient = new DefaultAlipayClient("https://openapi.alipay.com/gateway.do", PayParam.aliWebAppId, PayParam.aliWebPrivateKey, "json", PayParam.inputCharset, PayParam.aliAliPublicKey, "RSA");
+        AlipayFundTransToaccountTransferRequest request = new AlipayFundTransToaccountTransferRequest();
+
+        // biz_content 业务请求参数的集合
+        Map<String, String> bizMap = new HashMap<>();
+        //支付流水号
+        bizMap.put("out_trade_no", String.valueOf(flowBean.getFlowId()));
+        //收款方账户类型
+        bizMap.put("payee_type", "ALIPAY_LOGONID");
+        //收款方账户
+        String thdNo = extMap.get("thdNo");
+        bizMap.put("payee_account", thdNo);
+        //转账金额 单位：元
+        double payAmount = flowBean.getPayAmount() / 100.0;
+        bizMap.put("amount", String.valueOf(payAmount));
+        //收款方真实姓名
+        String thdName = extMap.get("thdName");
+        bizMap.put("payee_real_name", thdName);
+        //转账备注
+        bizMap.put("remark", extMap.get("transferReason"));
+        request.setBizContent(JsonUtils.translateToJson(bizMap));
+        AlipayFundTransToaccountTransferResponse response = alipayClient.execute(request);
+
+        PayResult payResult = new PayResult();
+        if (response.isSuccess()) {
+            System.out.println("调用成功");
+            payResult.setPayState(PayUtils.transPayState(response.getCode()));
+            if (PayConstant.PAY_SUCCESS == payResult.getPayState()) {
+                //支付成功的更新第三方交易流水号
+                payResult.setThdFlowId(response.getOrderId());
+            }
+        } else {
+            payResult.setPayState(PayConstant.PAY_FAIL);
+            System.out.println("调用失败");
+        }
+        return payResult;
     }
 
     /**
@@ -95,7 +217,7 @@ public class AliPayCommon implements IPayCommonService {
     public List<TransferResult> transferReturn(Map<String, String> paraMap) throws Exception {
         logger.info("支付宝企业付款回调处理");
         //验签
-        returnValidate(paraMap);
+        AliPayUtils.returnValidate(PayParam.aliWebPrivateKey, paraMap);
 
         String batchNo = paraMap.get("batch_no");
         //返回格式 0315001^gonglei1@handsome.com.cn^龚本林^20.00^S^null^200810248427067^20081024143652|
@@ -141,7 +263,7 @@ public class AliPayCommon implements IPayCommonService {
     }
 
     /**
-     * 批量退款，兼容单个
+     * 批量退款，兼容单个  MD5签名
      *
      * @param flowBeanList
      * @param extMap
@@ -155,8 +277,8 @@ public class AliPayCommon implements IPayCommonService {
         paraMap.put("service", PayParam.aliRefundService);
         paraMap.put("partner", PayParam.aliPartnerId);
         paraMap.put("seller_user_id", PayParam.aliPartnerId);
-        paraMap.put("_input_charset", PayParam.aliInputCharset);
-        paraMap.put("sign_type", PayParam.aliWebSignType);
+        paraMap.put("_input_charset", PayParam.inputCharset);
+        paraMap.put("sign_type", PayParam.aliSignTypeMD5);
         paraMap.put("notify_url", PayParam.aliRefundNotifyUrl);
         //退款时间 格式为：yyyy-MM-dd HH:mm:ss
         paraMap.put("refund_date", DateUtils.formatDateTime(new Date()));
@@ -177,7 +299,7 @@ public class AliPayCommon implements IPayCommonService {
         }
         paraMap.put("detail_data", sBuilder.deleteCharAt(sBuilder.length() - 1).toString());
 
-        String sendString = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.aliWebSignType, paraMap);
+        String sendString = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.tenSignType, paraMap);
         logger.info("发送退款信息{}", sendString);
 
         PayInfo payInfo = new PayInfo();
@@ -196,7 +318,7 @@ public class AliPayCommon implements IPayCommonService {
     public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
         logger.info("支付宝退款回调处理");
         //验签
-        returnValidate(paraMap);
+        AliPayUtils.returnValidate(PayParam.aliMD5Key, paraMap);
 
         String batchNo = paraMap.get("batch_no");
         //返回格式 支付宝支付时交易流水 2016072021001004610238752098^0.00^REFUND_TRADE_FEE_ERROR#2016072021001004610238752098^0.00^REFUND_TRADE_FEE_ERROR
@@ -225,40 +347,5 @@ public class AliPayCommon implements IPayCommonService {
             refundList.add(refundResult);
         }
         return refundList;
-    }
-
-    /**
-     * @param
-     * @return
-     * @throws
-     * @Description: 回调验签
-     */
-    private void returnValidate(Map<String, String> paraMap) throws Exception {
-        if (paraMap == null || paraMap.size() < 1) {
-            //参数不能为空
-            throw new BusinessException("参数不能为空");
-        }
-
-        //判断responseTxt是否为true，isSign是否为true
-        //responseTxt的结果不是true，与服务器设置问题、合作身份者ID、notify_id一分钟失效有关
-        //isSign不是true，与安全校验码、请求时的参数格式（如：带自定义参数等）、编码格式有关
-        String responseTxt = "false";
-        if (paraMap.get("notify_id") != null) {
-            String notify_id = paraMap.get("notify_id");
-            String verify_url = PayParam.aliVerifyUrl + "&partner=" + PayParam.aliPartnerId + "&notify_id=" + notify_id;
-            responseTxt = AliPayUtils.checkUrl(verify_url);
-        }
-        if ("false".equalsIgnoreCase(responseTxt)) {
-            //支付宝回调异常
-            throw new BusinessException("支付宝回调异常");
-        }
-
-        String returnSign = paraMap.get("sign");
-        Map<String, String> tmpMap = AliPayUtils.paraFilter(paraMap);
-        String mySign = AliPayUtils.buildRequestMySign(PayParam.aliMD5Key, PayParam.aliWebSignType, tmpMap);
-        if (!returnSign.equals(mySign)) {
-            //支付宝回调签名不匹配
-            throw new BusinessException("支付宝回调签名不匹配");
-        }
     }
 }

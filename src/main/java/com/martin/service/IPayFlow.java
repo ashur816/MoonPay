@@ -84,7 +84,7 @@ public interface IPayFlow {
      * @throws
      * @Description: 查询可以退款的支付流水
      */
-    List<PayFlowBean> getCanRefundList(long flowId, int payState, int payType, String preClientSource);
+    List<PayFlowBean> getCanRefundList(int payType, String preClientSource);
 
     /**
      * @param

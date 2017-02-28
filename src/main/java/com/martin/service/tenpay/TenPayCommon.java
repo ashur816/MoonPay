@@ -3,7 +3,6 @@ package com.martin.service.tenpay;
 import com.martin.bean.PayFlowBean;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayParam;
-import com.martin.constant.PayReturnCodeEnum;
 import com.martin.dto.PayResult;
 import com.martin.dto.RefundResult;
 import com.martin.dto.TransferResult;
@@ -37,7 +36,19 @@ public class TenPayCommon implements IPayCommonService {
      * @return
      */
     @Override
-    public Object transfer(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+    public Object transferBatch(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
+        return transferSingle(flowBean, extMap);
+    }
+
+    /**
+     * 单个账户转账
+     *
+     * @param flowBean
+     * @param extMap
+     * @return
+     */
+    @Override
+    public Object transferSingle(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         SortedMap<String, String> paraMap = new TreeMap<>();
         paraMap.put("mch_appid", PayParam.tenWebAppId);
         paraMap.put("mchid", PayParam.tenWebMchId);
@@ -59,7 +70,7 @@ public class TenPayCommon implements IPayCommonService {
         logger.info("发送xml为:\n" + xml);
 
         //发送给微信支付
-        String returnXml = TenPayUtils.sendPostWithCert(PayParam.tenTransferUrl, xml, "UTF-8");
+        String returnXml = TenPayUtils.sendPostWithCert(PayParam.tenTransferUrl, xml, PayParam.inputCharset);
         logger.info("返回结果:" + returnXml);
 
         //转换返回xml结果
@@ -133,7 +144,7 @@ public class TenPayCommon implements IPayCommonService {
         logger.info("退款发送xml为:\n" + xml);
 
         //发送给微信支付
-        String returnXml = TenPayUtils.sendPostWithCert(PayParam.tenRefundUrl, xml, "UTF-8");
+        String returnXml = TenPayUtils.sendPostWithCert(PayParam.tenRefundUrl, xml, PayParam.inputCharset);
         logger.info("退款返回结果:" + returnXml);
 
         Map tmpMap = new HashMap();
@@ -152,7 +163,7 @@ public class TenPayCommon implements IPayCommonService {
     @Override
     public List<RefundResult> refundReturn(Map<String, String> paraMap) throws Exception {
         logger.info("WEB微信退款回调处理");
-        SortedMap<String, String> sortedMap = returnValidate(paraMap);
+        SortedMap<String, String> sortedMap = TenPayUtils.returnValidate(PayParam.tenWebPrivateKey,paraMap);
 
         String resultCode = sortedMap.get("result_code");
         String returnCode = sortedMap.get("return_code");
@@ -203,42 +214,5 @@ public class TenPayCommon implements IPayCommonService {
             throw new BusinessException("未关注微信公众号");
         }
         return JsonUtils.readValueByName(result, "openid");
-    }
-
-    /**
-     * 转换支付状态
-     *
-     * @return
-     */
-    private int transPayState(String tradeState) {
-        int callbackState = -1;
-        for (PayReturnCodeEnum anEnum : PayReturnCodeEnum.values()) {
-            if (anEnum.getCode().equals(tradeState)) {
-                callbackState = anEnum.getPayState();
-                break;
-            }
-        }
-        return callbackState;
-    }
-
-    /**
-     * 验签
-     */
-    private SortedMap<String, String> returnValidate(Map<String, String> paraMap) throws Exception {
-        String tmpXml = paraMap.get("content");
-        SortedMap<String, String> sortedMap = TenPayUtils.getMapFromXML(tmpXml);
-
-        if (sortedMap == null || sortedMap.size() < 1) {
-            //参数不能为空
-            throw new BusinessException("参数不能为空");
-        }
-
-        String returnSign = sortedMap.get("sign");
-        String mySign = TenPayUtils.createSign(PayParam.tenWebPrivateKey, sortedMap);
-        if (!returnSign.equals(mySign)) {
-            //回调签名不匹配
-            throw new BusinessException("回调签名不匹配");
-        }
-        return sortedMap;
     }
 }

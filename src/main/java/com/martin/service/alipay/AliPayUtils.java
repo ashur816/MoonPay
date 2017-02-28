@@ -1,13 +1,16 @@
 package com.martin.service.alipay;
 
+import com.martin.constant.PayParam;
+import com.martin.exception.BusinessException;
 import com.martin.utils.PayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author ZXY
@@ -27,89 +30,19 @@ public class AliPayUtils {
     private static int connectTimeout = 30000;
 
     /**
-     * 除去数组中的空值和签名参数
-     *
-     * @param sArray 签名参数组
-     * @return 去掉空值与签名参数后的新签名参数组
-     */
-    public static Map<String, String> paraFilter(Map<String, String> sArray) {
-
-        Map<String, String> result = new HashMap<>();
-
-        if (sArray == null || sArray.size() <= 0) {
-            return result;
-        }
-
-        String key = "";
-        String value = "";
-        for (Map.Entry<String, String> entry : sArray.entrySet()) {
-            key = entry.getKey();
-            value = entry.getValue();
-            if (StringUtils.isEmpty(value) || key.equalsIgnoreCase("sign") /*|| key.equalsIgnoreCase("sign_type")*/) {
-                continue;
-            }
-            result.put(key, value);
-        }
-
-        return result;
-    }
-
-    /**
-     * 把数组所有元素排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
-     *
-     * @param params 需要排序并参与字符拼接的参数组
-     * @return 拼接后字符串
-     */
-    public static String createLinkString(Map<String, String> params) {
-
-        List<String> keys = new ArrayList<>(params.keySet());
-        Collections.sort(keys);
-
-        StringBuilder preStr = new StringBuilder();
-
-        for (int i = 0; i < keys.size(); i++) {
-            String key = keys.get(i);
-            String value = params.get(key);
-
-            if (i == keys.size() - 1) {//拼接时，不包括最后一个&字符
-                preStr.append(key).append("=").append(value);
-            } else {
-                preStr.append(key).append("=").append(value).append("&");
-            }
-        }
-
-        return preStr.toString();
-    }
-
-    /**
-     * 生成签名结果
-     *
-     * @return 签名结果字符串
-     */
-    public static String buildRequestMySign(String privateKey, String signType, Map<String, String> sPara) throws Exception {
-        String preStr = createLinkString(sPara); //把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
-        String mySign = "";
-        if (("MD5").equalsIgnoreCase(signType)) {
-            mySign = MD5.sign(preStr, privateKey, charset);
-        } else if (("RSA").equalsIgnoreCase(signType)) {
-            mySign = RSA.sign(preStr, privateKey, charset);
-        }
-        return mySign;
-    }
-
-    /**
      * 建立请求，以表单HTML形式构造（默认）
      */
     public static String buildReqForm(String payUrl, String privateKey, String signType, Map<String, String> sParaTemp) throws Exception {
         //除去数组中的空值和签名参数
-        Map<String, String> paraMap = paraFilter(sParaTemp);
-
+        Map<String, String> paraMap = PayUtils.paramFilter(sParaTemp);
+        //排序，组成待签名字符串，sign_type不参与加密
+        paraMap.remove("sign_type");
+        String needSignStr = PayUtils.buildConcatStr(paraMap);
         //生成签名结果
-        String mySign = buildRequestMySign(privateKey, signType, paraMap);
+        String mySign = PayUtils.buildSign(signType, privateKey, needSignStr);
 
         //签名结果与签名方式加入请求提交参数组中
         paraMap.put("sign", mySign);
-
         List<String> keys = new ArrayList<>(paraMap.keySet());
 
         StringBuffer sbHtml = new StringBuffer();
@@ -159,10 +92,10 @@ public class AliPayUtils {
      */
     public static String buildReqUrl(String payUrl, String privateKey, Map<String, String> paraMap) throws Exception {
         //拼装请求参数
-        String bizParam = PayUtils.buildPayParam(paraMap);
+        String bizParam = PayUtils.buildConcatStr(paraMap);
 
         //生成签名结果
-        String sign = RSA.sign(bizParam, privateKey, charset);
+        String sign = PayUtils.buildSign("RSA", privateKey, bizParam);
 
         String tmpString = bizParam + "&sign=" + sign;
 
@@ -173,5 +106,47 @@ public class AliPayUtils {
         sbHtml.append("</form>");
 
         return sbHtml.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 回调验签
+     */
+    public static void returnValidate(String privateKey, Map<String, String> paraMap) throws Exception {
+        if (paraMap == null || paraMap.size() < 1) {
+            //参数不能为空
+            throw new BusinessException("参数不能为空");
+        }
+
+        //判断responseTxt是否为true，isSign是否为true
+        //responseTxt的结果不是true，与服务器设置问题、合作身份者ID、notify_id一分钟失效有关
+        //isSign不是true，与安全校验码、请求时的参数格式（如：带自定义参数等）、编码格式有关
+        String responseTxt = "false";
+        if (paraMap.get("notify_id") != null) {
+            String notify_id = paraMap.get("notify_id");
+            String verify_url = PayParam.aliVerifyUrl + "&partner=" + PayParam.aliPartnerId + "&notify_id=" + notify_id;
+            responseTxt = AliPayUtils.checkUrl(verify_url);
+        }
+        if ("false".equalsIgnoreCase(responseTxt)) {
+            //支付宝回调异常
+            throw new BusinessException("支付宝回调异常");
+        }
+
+        String returnSign = paraMap.get("sign");
+        Map<String, String> tmpMap = PayUtils.paramFilter(paraMap);
+
+        String signType = paraMap.get("sign_type");
+        //签名不带sign_type
+        tmpMap.remove("sign_type");
+        String needSignStr = PayUtils.buildConcatStr(tmpMap);
+
+        String mySign = PayUtils.buildSign(signType, privateKey, needSignStr);
+        if (!returnSign.equals(mySign)) {
+            System.out.println("回调验签失败");
+            //支付宝回调签名不匹配
+//            throw new BusinessException("支付宝回调签名不匹配");
+        }
     }
 }

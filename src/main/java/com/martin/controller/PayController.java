@@ -9,6 +9,7 @@ import com.martin.service.IPayCommonCenter;
 import com.martin.service.IPayWebCenter;
 import com.martin.utils.IpUtils;
 import com.martin.utils.JsonUtils;
+import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,19 @@ public class PayController {
     public ModelAndView toCashier(HttpServletRequest request) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("pay/cashier");
+        return modelAndView;
+    }
+
+    /**
+     * @param request 包含 订单id
+     * @return
+     * @throws
+     * @Description: 跳转退款
+     */
+    @RequestMapping(value = "/toRefund")
+    public ModelAndView toRefund(HttpServletRequest request) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("pay/refund");
         return modelAndView;
     }
 
@@ -246,7 +260,6 @@ public class PayController {
                     //乱码解决，这段代码在出现乱码时使用。如果mysign和sign不相等也可以使用这段代码转化
                     //valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
                     reqMap.put(name, valueStr.toString());
-                    logger.info("支付宝回调参数：{}:{}", name, valueStr);
                 }
             } else {
                 //非法通知类型
@@ -254,9 +267,7 @@ public class PayController {
                 returnCode = PayConstant.CALLBACK_FAIL;
                 return returnCode;
             }
-            if (notifyType.equals(PayConstant.NOTICE_WEB_PAY) || notifyType.equals(PayConstant.NOTICE_WEB_PAY)) {
-
-            }
+            logger.info("支付宝回调全部参数：{}", PayUtils.buildConcatStr(reqMap));
             payCommonCenter.doNotify(notifyType, payType, ipAddress, reqMap);
         } catch (Exception e) {
             returnCode = PayConstant.CALLBACK_FAIL;
@@ -268,19 +279,6 @@ public class PayController {
 
     /*********************************************** 退款 ******************************************************/
     /**
-     * @param request 包含 订单id
-     * @return
-     * @throws
-     * @Description: 跳转退款
-     */
-    @RequestMapping(value = "/toRefund")
-    public ModelAndView toRefund(HttpServletRequest request) {
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("pay/refund");
-        return modelAndView;
-    }
-
-    /**
      * @param request
      * @return
      * @throws
@@ -288,25 +286,25 @@ public class PayController {
      */
     @ResponseBody
     @RequestMapping(value = "/getRefund")
-    public ResultInfo getRefundInfo(HttpServletRequest request, String flowId, String appId, String payType) {
+    public ResultInfo getRefundInfo(HttpServletRequest request, String payType, String appId) {
         ResultInfo resultInfo;
-        if (StringUtils.isBlank(appId)) {
-            resultInfo = new ResultInfo(-1, "", "appId信息不能为空");
-        } else if (StringUtils.isBlank(payType)) {
-            resultInfo = new ResultInfo(-1, "", "payType信息不能为空");
-        } else {
-            try {
-                List<PayInfo> payInfoList = payCommonCenter.getRefundInfo(appId, Integer.parseInt(payType), flowId);
-                if (payInfoList != null) {
-                    logger.info("退款返回信息成功");
-                    resultInfo = new ResultInfo(1, "", "", JsonUtils.translateToJson(payInfoList));
-                } else {
-                    resultInfo = new ResultInfo(-1, "", "未获取到付款信息");
-                }
-            } catch (Exception e) {
-                logger.error("getRefundInfo异常-{}", e);
-                resultInfo = new ResultInfo(-1, "", e.getMessage());
+        if (StringUtils.isBlank(payType)) {
+            payType = "0";
+        }
+        if (StringUtils.isNotBlank(appId)) {
+            appId += "%";
+        }
+        try {
+            List<PayInfo> payInfoList = payCommonCenter.getRefundInfo(Integer.parseInt(payType), appId);
+            if (payInfoList != null) {
+                logger.info("退款返回信息成功");
+                resultInfo = new ResultInfo(1, "", "", JsonUtils.translateToJson(payInfoList));
+            } else {
+                resultInfo = new ResultInfo(-1, "", "未获取到付款流水");
             }
+        } catch (Exception e) {
+            logger.error("getRefundInfo异常-{}", e);
+            resultInfo = new ResultInfo(-1, "", e.getMessage());
         }
         return resultInfo;
     }
@@ -315,7 +313,7 @@ public class PayController {
      * @param request
      * @return
      * @throws
-     * @Description: 订单后台无密退款 微信
+     * @Description: 无密退款 微信
      */
     @ResponseBody
     @RequestMapping(value = "/doRefund")
@@ -349,7 +347,7 @@ public class PayController {
      * @param request
      * @return
      * @throws
-     * @Description: 订单有密退款，支付宝
+     * @Description: 有密退款，支付宝
      */
     @RequestMapping(value = "/doRefundPwd")
     public ModelAndView doRefundPwd(HttpServletRequest request, String flowIds, String refundReason) {

@@ -190,8 +190,6 @@ public class PayWebCenter implements IPayWebCenter {
 
         if (PayConstant.PAY_UN_BACK == payState || PayConstant.PAY_NOT == payState || PayConstant.PAY_ERROR_BIZ == payState) {//已发支付，待回调 或者 未支付 或者 支付成功，业务处理失败的
             //防并发，保证回调业务不会并发
-//            String existKey = getAndSet(RedisKeyEnum.PAY_KEY_NOTIFYING.getKey() + flowId, String.valueOf(flowId), 2L);
-//            if (StringUtils.isEmpty(existKey)) {
             logger.info("进入WEB支付回调处理");
 
             if (PayConstant.PAY_SUCCESS == callbackState || PayConstant.PAY_UN_BACK == callbackState) {//第三方交易成功的
@@ -239,11 +237,8 @@ public class PayWebCenter implements IPayWebCenter {
             //更新交易流水
             payFlow.updPayFlow(flowBean);
         } else {
-            logger.error("WEB支付重复回调被拦截 flowId-{}", flowId);
+            //忽略，不处理
         }
-//        } else {
-//            //忽略，不处理
-//        }
     }
 
     /**

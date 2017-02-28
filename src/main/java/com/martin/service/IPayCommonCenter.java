@@ -40,7 +40,7 @@ public interface IPayCommonCenter {
      * @throws
      * @Description: 获取退款信息
      */
-    List<PayInfo> getRefundInfo(String appId, int payType, String tmpFlowId) throws Exception;
+    List<PayInfo> getRefundInfo(int payType, String appId) throws Exception;
 
     /**
      * @param

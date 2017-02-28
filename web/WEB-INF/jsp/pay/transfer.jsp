@@ -15,10 +15,10 @@
 <div class="mui-content">
     <h5 class="mui-content-padded">提现渠道</h5>
     <ul class="mui-table-view mui-table-view-radio">
-        <li class="mui-table-view-cell mui-selected">
+        <li class="mui-table-view-cell">
             <a class="mui-navigate-right" v="1">微信</a>
         </li>
-        <li class="mui-table-view-cell">
+        <li class="mui-table-view-cell  mui-selected">
             <a class="mui-navigate-right" v="2">支付宝</a>
         </li>
     </ul>
@@ -41,7 +41,7 @@
 <script type="text/javascript">
     $(function () {
         var list = document.querySelector('.mui-table-view.mui-table-view-radio');
-        var payType = 1;
+        var payType = 2;
         list.addEventListener('selected', function (e) {
             payType = e.detail.el.children[0].attributes["v"].value;
         });

@@ -1,12 +1,64 @@
 package com.martin.constant;
 
 /**
+ * @author ZXY
  * @ClassName: PayParam
  * @Description: 支付参数
- * @author ZXY
  * @date 2016/7/29 17:06
  */
 public class PayParam {
+    /* 静态参数 */
+    // 字符编码格式 目前支持 gbk 或 utf-8
+    public static final String inputCharset = "UTF-8";
+
+    /*支付宝固定参数*/
+    public static final String aliMapiUrl = "https://mapi.alipay.com/gateway.do";
+    public static final String aliOpenUrl = "https://openapi.alipay.com/gateway.do";
+    public static final String aliVerifyUrl = "https://mapi.alipay.com/gateway.do?service=notify_verify";
+    //授权地址
+    public static final String aliAuthUrl = "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm";
+    //授权模式
+    public static final String aliAuthCode = "auth_base";
+    //调用的接口名，查单
+    public static final String aliQueryService = "alipay.trade.query";
+    //调用的接口名，老支付接口
+    public static final String aliOldPayService = "alipay.wap.create.direct.pay.by.user";
+    //调用的接口名，支付接口
+    public static final String aliPayService = "alipay.trade.wap.pay";
+    //调用的接口名，企业付款接口-批量
+    public static final String aliBatchTransferService = "batch_trans_notify";
+    //调用的接口名，企业付款接口-单个
+    public static final String aliSingleTransferService = "alipay.fund.trans.toaccount.transfer";
+    //调用的接口名，退款接口
+    public static final String aliRefundService = "refund_fastpay_by_platform_pwd";
+    //调用的接口名，关单接口
+    public static final String aliCloseService = "alipay.trade.close";
+    // 支付类型 ，无需修改
+    public static final String aliPaymentType = "1";
+    //签名方式
+    public static final String aliSignTypeMD5 = "MD5";
+    public static final String aliSignTypeRSA = "RSA";
+
+    /*微信固定参数*/
+    public static final String tenOrderUrl = "https://api.mch.weixin.qq.com/pay/unifiedorder";
+    public static final String tenQueryUrl = "https://api.mch.weixin.qq.com/pay/orderquery";
+    public static final String tenRefundUrl = "https://api.mch.weixin.qq.com/secapi/pay/refund";
+    public static final String tenTransferUrl = "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers";
+    public static final String tenCloseUrl = "https://api.mch.weixin.qq.com/pay/closeorder";
+    //授权地址
+    public static final String tenAuthUrl = "https://open.weixin.qq.com/connect/oauth2/authorize";
+    //授权模式
+    public static final String tenAuthCode = "snsapi_base";
+    //退款方式
+    public static final String refundAccount = "REFUND_SOURCE_RECHARGE_FUNDS";
+    //加密方式
+    public static final String tenSignType = "MD5";
+    //是否支持信用卡
+    public static final String tenLimitPay = "no_credit";
+    public static final String tenWebTradeType = "JSAPI";
+    public static final String tenAppTradeType = "APP";
+
+
     //商品在第三方显示信息
     public static String webBody;
     public static String appBody;
@@ -16,34 +68,7 @@ public class PayParam {
     //主页地址
     public static String homeUrl;
 
-    public static String aliMapiUrl;
-    public static String aliOpenUrl;
-    public static String aliVerifyUrl;
-
-    //授权地址
-    public static String aliAuthUrl;
-    //授权模式
-    public static String aliAuthCode;
-    //调用的接口名，查单
-    public static String aliQueryService;
-    //调用的接口名，老支付接口
-    public static String aliOldPayService;
-    //调用的接口名，支付
-    public static String aliPayService;
-    //调用的接口名，企业付款
-    public static String aliTransferService;
-    //调用的接口名，退款
-    public static String aliRefundService;
-    //调用的接口名，关单
-    public static String aliCloseService;
-    // WEB签名方式
-    public static String aliWebSignType;
-    // APP签名方式
-    public static String aliAppSignType;
-    // 字符编码格式 目前支持 gbk 或 utf-8
-    public static String aliInputCharset;
-    // 支付类型 ，无需修改
-    public static String aliPaymentType;
+    /*支付宝动态参数*/
     //授权回调地址
     public static String aliAuthRetUrl;
     // 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
@@ -71,26 +96,7 @@ public class PayParam {
     public static String aliAppAppId;
     public static String aliAppPrivateKey;
 
-
-    public static String tenOrderUrl;
-    public static String tenQueryUrl;
-    public static String tenPayUrl;
-    public static String tenRefundUrl;
-    public static String tenTransferUrl;
-    public static String tenCloseUrl;
-    //授权地址
-    public static String tenAuthUrl;
-    //授权模式
-    public static String tenAuthCode;
-    //退款方式
-    public static String refundAccount;
-    //加密方式
-    public static String tenSignType;
-    //是否支持信用卡
-    public static String tenLimitPay;
-    public static String tenWebTradeType;
-    public static String tenAppTradeType;
-
+    /*微信动态参数*/
     public static String tenWebNotifyUrl;
     public static String tenAppNotifyUrl;
 
@@ -124,66 +130,6 @@ public class PayParam {
 
     public void setHomeUrl(String homeUrl) {
         this.homeUrl = homeUrl;
-    }
-
-    public void setAliMapiUrl(String aliMapiUrl) {
-        this.aliMapiUrl = aliMapiUrl;
-    }
-
-    public void setAliOpenUrl(String aliOpenUrl) {
-        this.aliOpenUrl = aliOpenUrl;
-    }
-
-    public void setAliVerifyUrl(String aliVerifyUrl) {
-        this.aliVerifyUrl = aliVerifyUrl;
-    }
-
-    public void setAliAuthUrl(String aliAuthUrl) {
-        this.aliAuthUrl = aliAuthUrl;
-    }
-
-    public void setAliAuthCode(String aliAuthCode) {
-        this.aliAuthCode = aliAuthCode;
-    }
-
-    public void setAliQueryService(String aliQueryService) {
-        this.aliQueryService = aliQueryService;
-    }
-
-    public void setAliOldPayService(String aliOldPayService) {
-        this.aliOldPayService = aliOldPayService;
-    }
-
-    public void setAliPayService(String aliPayService) {
-        this.aliPayService = aliPayService;
-    }
-
-    public void setAliTransferService(String aliTransferService) {
-        this.aliTransferService = aliTransferService;
-    }
-
-    public void setAliRefundService(String aliRefundService) {
-        this.aliRefundService = aliRefundService;
-    }
-
-    public void setAliCloseService(String aliCloseService) {
-        this.aliCloseService = aliCloseService;
-    }
-
-    public void setAliWebSignType(String aliWebSignType) {
-        this.aliWebSignType = aliWebSignType;
-    }
-
-    public void setAliAppSignType(String aliAppSignType) {
-        this.aliAppSignType = aliAppSignType;
-    }
-
-    public void setAliInputCharset(String aliInputCharset) {
-        this.aliInputCharset = aliInputCharset;
-    }
-
-    public void setAliPaymentType(String aliPaymentType) {
-        this.aliPaymentType = aliPaymentType;
     }
 
     public void setAliAuthRetUrl(String aliAuthRetUrl) {
@@ -244,58 +190,6 @@ public class PayParam {
 
     public void setAliAppPrivateKey(String aliAppPrivateKey) {
         this.aliAppPrivateKey = aliAppPrivateKey;
-    }
-
-    public void setTenOrderUrl(String tenOrderUrl) {
-        this.tenOrderUrl = tenOrderUrl;
-    }
-
-    public void setTenQueryUrl(String tenQueryUrl) {
-        this.tenQueryUrl = tenQueryUrl;
-    }
-
-    public void setTenPayUrl(String tenPayUrl) {
-        this.tenPayUrl = tenPayUrl;
-    }
-
-    public void setTenRefundUrl(String tenRefundUrl) {
-        this.tenRefundUrl = tenRefundUrl;
-    }
-
-    public void setTenTransferUrl(String tenTransferUrl) {
-        this.tenTransferUrl = tenTransferUrl;
-    }
-
-    public void setTenCloseUrl(String tenCloseUrl) {
-        this.tenCloseUrl = tenCloseUrl;
-    }
-
-    public void setTenAuthUrl(String tenAuthUrl) {
-        this.tenAuthUrl = tenAuthUrl;
-    }
-
-    public void setTenAuthCode(String tenAuthCode) {
-        this.tenAuthCode = tenAuthCode;
-    }
-
-    public void setRefundAccount(String refundAccount) {
-        this.refundAccount = refundAccount;
-    }
-
-    public void setTenSignType(String tenSignType) {
-        this.tenSignType = tenSignType;
-    }
-
-    public void setTenLimitPay(String tenLimitPay) {
-        this.tenLimitPay = tenLimitPay;
-    }
-
-    public void setTenWebTradeType(String tenWebTradeType) {
-        this.tenWebTradeType = tenWebTradeType;
-    }
-
-    public void setTenAppTradeType(String tenAppTradeType) {
-        this.tenAppTradeType = tenAppTradeType;
     }
 
     public void setTenWebNotifyUrl(String tenWebNotifyUrl) {

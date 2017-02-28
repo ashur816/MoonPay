@@ -99,24 +99,22 @@ public class PayCommonCenter implements IPayCommonCenter {
     /**
      * @param appId
      * @param payType
-     * @param tmpFlowId
      * @return void
      * @throws
      * @Description: 获取退款信息
      */
     @Override
-    public List<PayInfo> getRefundInfo(String appId, int payType, String tmpFlowId) throws Exception {
-        if (StringUtils.isBlank(tmpFlowId)) {
-            tmpFlowId = "0";
-        }
+    public List<PayInfo> getRefundInfo(int payType, String appId) throws Exception {
         //根据流水号查询
-        List<PayFlowBean> flowBeanList = payFlow.getCanRefundList(Long.parseLong(tmpFlowId), PayConstant.PAY_SUCCESS, payType, appId);
+        List<PayFlowBean> flowBeanList = payFlow.getCanRefundList(payType, appId);
         List<PayInfo> payInfoList = new ArrayList<>();
         for (PayFlowBean tmpBean : flowBeanList) {
             PayInfo payInfo = new PayInfo();
+            payInfo.setBizId(tmpBean.getBizId());
             payInfo.setFlowId(tmpBean.getFlowId());
             payInfo.setPayType(tmpBean.getPayType());
-            payInfo.setPayAmount(Double.parseDouble(tmpBean.getPayAmount().toString()));
+            payInfo.setPayAmount(Double.parseDouble(tmpBean.getPayAmount().toString()) / 100);
+            payInfo.setPayState(tmpBean.getPayState());
             payInfoList.add(payInfo);
         }
         return payInfoList;
@@ -211,7 +209,7 @@ public class PayCommonCenter implements IPayCommonCenter {
         payFlow.addPayFlow(flowBean);
 
         Map<String, String> extMap = new HashMap<>();
-        extMap.put("transferReason", "moon提现");
+        extMap.put("transferReason", "zxy测试提现");
         extMap.put("ipAddress", ipAddress);
         //同一批必须是同一个支付渠道的
         IPayCommonService payCommonService = PayUtils.getCommonPayInstance(payType);
@@ -225,7 +223,7 @@ public class PayCommonCenter implements IPayCommonCenter {
             extMap.put("payeeName", "张向阳");
 
             //发起单笔支付
-            PayResult payResult = (PayResult) payCommonService.transfer(flowBean, extMap);
+            PayResult payResult = (PayResult) payCommonService.transferSingle(flowBean, extMap);
             if (payResult != null && "SUCCESS".equalsIgnoreCase(payResult.getTradeState())) {
                 //状态改成支付成功
                 flowBean.setPayState(PayConstant.PAY_SUCCESS);
@@ -251,7 +249,7 @@ public class PayCommonCenter implements IPayCommonCenter {
             extMap.put("thdNo", thdNo);
             extMap.put("thdName", thdName);
             extMap.put("batchNo", batchNo);
-            retObj = payCommonService.transfer(flowBean, extMap);
+            retObj = payCommonService.transferSingle(flowBean, extMap);
         } else {
             //第三方支付类型未定义
             throw new BusinessException("第三方支付类型未定义");

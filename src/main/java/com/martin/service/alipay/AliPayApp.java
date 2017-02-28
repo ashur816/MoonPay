@@ -3,14 +3,13 @@ package com.martin.service.alipay;
 import com.martin.bean.PayFlowBean;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayParam;
-import com.martin.constant.PayReturnCodeEnum;
-import com.martin.dto.PayInfo;
 import com.martin.dto.PayResult;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayAppService;
 import com.martin.utils.DateUtils;
 import com.martin.utils.JsonUtils;
 import com.martin.utils.ObjectUtils;
+import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +45,7 @@ public class AliPayApp implements IPayAppService {
         paraMap.put("app_id", appId);
         paraMap.put("method", "alipay.trade.app.pay");
         paraMap.put("charset", "utf-8");
-        paraMap.put("sign_type", PayParam.aliAppSignType);
+        paraMap.put("sign_type", PayParam.aliSignTypeRSA);
         paraMap.put("timestamp", DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
         paraMap.put("version", "1.0");
         paraMap.put("notify_url", PayParam.aliAppNotifyUrl);
@@ -112,7 +110,7 @@ public class AliPayApp implements IPayAppService {
         String tradeState = paraMap.get("trade_status");
         payResult.setTradeState(tradeState);
 
-        int callbackState = transPayState(tradeState);
+        int callbackState = PayUtils.transPayState(tradeState);
         payResult.setPayState(callbackState);
         logger.info("APP支付宝回调处理成功");
 
@@ -135,7 +133,7 @@ public class AliPayApp implements IPayAppService {
         paraMap.put("app_id", appId);
         paraMap.put("method", PayParam.aliQueryService);
         paraMap.put("charset", "utf-8");
-        paraMap.put("sign_type", PayParam.aliAppSignType);//只支持RSA
+        paraMap.put("sign_type", PayParam.aliSignTypeRSA);//只支持RSA
         paraMap.put("timestamp", DateUtils.format(new Date(), "yyyyMMddHHmmss"));
         paraMap.put("version", "1.0");
 
@@ -160,7 +158,7 @@ public class AliPayApp implements IPayAppService {
         }
         logger.info("WEB支付宝查单结果-{}", code);
         PayResult payResult = new PayResult();
-        payResult.setPayState(transPayState(code));
+        payResult.setPayState(PayUtils.transPayState(code));
         if(PayConstant.PAY_SUCCESS == payResult.getPayState()){
             //支付成功的更新第三方交易流水号
             payResult.setThdFlowId(returnMap.get("trade_no").toString());
@@ -182,7 +180,7 @@ public class AliPayApp implements IPayAppService {
         paraMap.put("app_id", PayParam.aliAppAppId);
         paraMap.put("method", PayParam.aliCloseService);
         paraMap.put("charset", "utf-8");
-        paraMap.put("sign_type", PayParam.aliAppSignType);//只支持RSA
+        paraMap.put("sign_type", PayParam.aliSignTypeRSA);//只支持RSA
         paraMap.put("timestamp", DateUtils.format(new Date(), "yyyyMMddHHmmss"));
         paraMap.put("version", "1.0");
 
@@ -207,52 +205,6 @@ public class AliPayApp implements IPayAppService {
             //关闭失败
             logger.info("APP支付宝关单失败-{}", subCode);
         }
-    }
-
-    /**
-     * 批量退款，兼容单个
-     *
-     * @param flowBeanList
-     * @param extMap
-     * @return
-     */
-    @Override
-    public Object refund(List<PayFlowBean> flowBeanList, Map<String, String> extMap) throws Exception {
-        logger.info("开始支付宝退款-{}", extMap);
-        //组装参数返回给前台
-        Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("service", PayParam.aliRefundService);
-        paraMap.put("partner", PayParam.aliPartnerId);
-        paraMap.put("seller_user_id", PayParam.aliPartnerId);
-        paraMap.put("_input_charset", PayParam.aliInputCharset);
-        paraMap.put("sign_type", PayParam.aliWebSignType);
-        paraMap.put("notify_url", PayParam.aliRefundNotifyUrl);
-        //退款时间 格式为：yyyy-MM-dd HH:mm:ss
-        paraMap.put("refund_date", DateUtils.formatDateTime(new Date()));
-        //退款批次号
-        paraMap.put("batch_no", extMap.get("batchNo"));
-
-        int refundNum = flowBeanList.size();
-        //总笔数
-        paraMap.put("batch_num", String.valueOf(refundNum));
-        //单笔数据集 原付款支付宝交易号^退款总金额^退款理由  第一笔交易退款数据集#第二笔交易退款数据集
-        StringBuilder sBuilder = new StringBuilder();
-        PayFlowBean flowBean;
-        double payAmount;
-        for (int i = 0; i < refundNum; i++) {
-            flowBean = flowBeanList.get(i);
-            payAmount = flowBean.getPayAmount() / 100.0;
-            sBuilder.append(flowBean.getThdFlowId()).append("^").append(payAmount).append("^").append(extMap.get("refundReason")).append("#");
-        }
-        paraMap.put("detail_data", sBuilder.deleteCharAt(sBuilder.length() - 1).toString());
-
-        String sendString = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.aliWebSignType, paraMap);
-        logger.info("发送退款信息{}", sendString);
-
-        PayInfo payInfo = new PayInfo();
-        payInfo.setPayType(PayConstant.PAY_TYPE_ALI);
-        payInfo.setRetHtml(sendString);
-        return payInfo;
     }
 
     /**
@@ -282,42 +234,15 @@ public class AliPayApp implements IPayAppService {
             throw new BusinessException("支付宝回调异常");
         }
 
-        String aliSign = paraMap.get("sign");
+        String returnSign = paraMap.get("sign");
         paraMap.remove("sign");
         paraMap.remove("sign_type");
-        paraMap.remove("content");
 
-//        //验签字符串
-//        String content = paraMap.get("content");
-//        //去除 sign 和 sign_type
-//        replaceParamReg(content, "sign");
-//        replaceParamReg(content, "sign_type");
-
-//        content = URLDecoder.decode(content,"UTF-8");
-        Map<String, String> tmpMap = new HashMap<>();
-
-
-        boolean signResult = AliPayAppUtils.checkBackSign(paraMap, PayParam.aliAliPublicKey, aliSign);
+        boolean signResult = AliPayAppUtils.checkBackSign(paraMap, PayParam.aliAliPublicKey, returnSign);
         if (!signResult) {
             //支付宝回调签名不匹配
             throw new BusinessException("支付宝回调签名不匹配");
         }
-        logger.info("APP支付宝验签处理完成");
-    }
-
-    /**
-     * 转换支付状态
-     * @return
-     */
-    private int transPayState(String tradeState) {
-        int callbackState = -1;
-        for (PayReturnCodeEnum anEnum : PayReturnCodeEnum.values()) {
-            if (anEnum.getCode().equals(tradeState)) {
-                callbackState = anEnum.getPayState();
-                break;
-            }
-        }
-        return callbackState;
     }
 
     /**

@@ -28,7 +28,7 @@ public interface PayFlowMapper extends Mapper<PayFlowBean> {
 
     int updateThdFlowId(@Param("flowId") long flowId, @Param("thdFlowId") String thdFlowId);
 
-    List<PayFlowBean> getCanRefundList(@Param("flowId") long flowId, @Param("payState") int payState, @Param("payType") int payType, @Param("clientSource") String clientSource);
+    List<PayFlowBean> getCanRefundList(@Param("payType") int payType, @Param("clientSource") String clientSource);
 
     PayFlowBean getPayFlowByThdFlowId(@Param("thdFlowId") String thdFlowId);
 }

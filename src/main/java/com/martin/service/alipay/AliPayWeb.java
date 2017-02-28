@@ -6,14 +6,13 @@ import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.martin.bean.PayFlowBean;
 import com.martin.constant.PayConstant;
 import com.martin.constant.PayParam;
-import com.martin.constant.PayReturnCodeEnum;
 import com.martin.dto.PayInfo;
 import com.martin.dto.PayResult;
-import com.martin.exception.BusinessException;
 import com.martin.service.IPayWebService;
 import com.martin.utils.DateUtils;
 import com.martin.utils.JsonUtils;
 import com.martin.utils.ObjectUtils;
+import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +48,7 @@ public class AliPayWeb implements IPayWebService {
         paraMap.put("redirect_uri", PayParam.aliAuthRetUrl);
         paraMap.put("state", PayConstant.PAY_TYPE_ALI + "|" + bizId + "|" + bizType);
 
-        String param = AliPayUtils.createLinkString(paraMap);
+        String param = PayUtils.buildConcatStr(paraMap);
 
         PayInfo payInfo = new PayInfo();
         payInfo.setDestUrl(PayParam.aliAuthUrl);
@@ -66,12 +65,12 @@ public class AliPayWeb implements IPayWebService {
      */
     @Override
     public PayInfo buildPayInfo(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
-        PayInfo p = build2(flowBean, extMap);
+        PayInfo p = build1(flowBean, extMap);
         return p;
     }
 
     /**
-     * 老版生成支付信息
+     * 老版生成支付信息 MD5加密
      *
      * @param flowBean
      * @return
@@ -83,7 +82,7 @@ public class AliPayWeb implements IPayWebService {
         paraMap.put("service", PayParam.aliOldPayService);
         paraMap.put("partner", PayParam.aliPartnerId);
         paraMap.put("seller_id", PayParam.aliPartnerId);
-        paraMap.put("_input_charset", PayParam.aliInputCharset);
+        paraMap.put("_input_charset", PayParam.inputCharset);
         paraMap.put("payment_type", PayParam.aliPaymentType);
         paraMap.put("notify_url", PayParam.aliWebNotifyUrl);
 
@@ -104,10 +103,16 @@ public class AliPayWeb implements IPayWebService {
         paraMap.put("total_fee", String.valueOf(needPayAmount));
         paraMap.put("body", PayParam.webBody);
 
-        String html = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.aliWebSignType, paraMap);
+        String html = AliPayUtils.buildReqForm(PayParam.aliMapiUrl, PayParam.aliMD5Key, PayParam.aliSignTypeMD5, paraMap);
         return new PayInfo(PayParam.webBody, needPayAmount, html);
     }
 
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 新版web支付，自己组装参数 RSA加密
+     */
     private PayInfo build2(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         logger.info("开始支付宝web支付");
         //组装参数返回给前台
@@ -136,7 +141,7 @@ public class AliPayWeb implements IPayWebService {
         //商品名称
         bizMap.put("subject", PayParam.webBody);
         //支付流水号
-        bizMap.put("out_trade_no", "2017021212044779888");
+        bizMap.put("out_trade_no", String.valueOf(flowBean.getFlowId()));
         //支付总金额
         double needPayAmount = flowBean.getTotalAmount() / 100.0;
         bizMap.put("total_amount", String.valueOf(needPayAmount));
@@ -148,6 +153,12 @@ public class AliPayWeb implements IPayWebService {
         return new PayInfo(PayParam.webBody, needPayAmount, html);
     }
 
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 新版web支付，SDK方式 RSA加密
+     */
     private PayInfo build3(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
         logger.info("开始支付宝web支付");
         //获得初始化的AlipayClient
@@ -167,7 +178,7 @@ public class AliPayWeb implements IPayWebService {
         //商品名称
         bizMap.put("subject", PayParam.webBody);
         //支付流水号
-        bizMap.put("out_trade_no", "2017021212044779888");
+        bizMap.put("out_trade_no", String.valueOf(flowBean.getFlowId()));
         //支付总金额
         double needPayAmount = flowBean.getTotalAmount() / 100.0;
         bizMap.put("total_amount", String.valueOf(needPayAmount));
@@ -189,7 +200,13 @@ public class AliPayWeb implements IPayWebService {
     public PayResult payReturn(Map<String, String> paraMap) throws Exception {
         logger.info("web支付回调处理");
         //验签
-        returnValidate(paraMap);
+        String singType = paraMap.get("sign_type");
+        if(PayParam.aliSignTypeMD5.equalsIgnoreCase(singType)){
+            AliPayUtils.returnValidate(PayParam.aliMD5Key, paraMap);
+        }
+        else {
+            AliPayUtils.returnValidate(PayParam.aliWebPrivateKey, paraMap);
+        }
 
         PayResult payResult = new PayResult();
         // 支付流水ID
@@ -200,7 +217,7 @@ public class AliPayWeb implements IPayWebService {
         String tradeState = paraMap.get("trade_status");
         payResult.setTradeState(tradeState);
 
-        int callbackState = transPayState(tradeState);
+        int callbackState = PayUtils.transPayState(tradeState);
         payResult.setPayState(callbackState);
         return payResult;
     }
@@ -245,7 +262,7 @@ public class AliPayWeb implements IPayWebService {
         }
         logger.info("WEB支付宝查单结果-{},-{}", code, subMsg);
         PayResult payResult = new PayResult();
-        payResult.setPayState(transPayState(code));
+        payResult.setPayState(PayUtils.transPayState(code));
         if (PayConstant.PAY_SUCCESS == payResult.getPayState()) {
             //支付成功的更新第三方交易流水号
             payResult.setThdFlowId(returnMap.get("trade_no").toString());
@@ -267,7 +284,7 @@ public class AliPayWeb implements IPayWebService {
         paraMap.put("app_id", PayParam.aliWebAppId);
         paraMap.put("method", PayParam.aliCloseService);
         paraMap.put("charset", "utf-8");
-        paraMap.put("sign_type", PayParam.aliAppSignType);//只支持RSA
+        paraMap.put("sign_type", PayParam.aliSignTypeRSA);//只支持RSA
         paraMap.put("timestamp", DateUtils.format(new Date(), "yyyyMMddHHmmss"));
         paraMap.put("version", "1.0");
 
@@ -291,89 +308,5 @@ public class AliPayWeb implements IPayWebService {
             //关闭失败
             logger.info("WEB支付宝关单失败-{}", subCode);
         }
-    }
-
-    /**
-     * @param
-     * @return
-     * @throws
-     * @Description: 回调验签
-     */
-    private void returnValidate(Map<String, String> paraMap) throws Exception {
-        if (paraMap == null || paraMap.size() < 1) {
-            //参数不能为空
-            throw new BusinessException("参数不能为空");
-        }
-
-        //判断responseTxt是否为true，isSign是否为true
-        //responseTxt的结果不是true，与服务器设置问题、合作身份者ID、notify_id一分钟失效有关
-        //isSign不是true，与安全校验码、请求时的参数格式（如：带自定义参数等）、编码格式有关
-        String responseTxt = "false";
-        if (paraMap.get("notify_id") != null) {
-            String notify_id = paraMap.get("notify_id");
-            String verify_url = PayParam.aliVerifyUrl + "&partner=" + PayParam.aliPartnerId + "&notify_id=" + notify_id;
-            responseTxt = AliPayUtils.checkUrl(verify_url);
-        }
-        if ("false".equalsIgnoreCase(responseTxt)) {
-            //支付宝回调异常
-            throw new BusinessException("支付宝回调异常");
-        }
-
-        String returnSign = paraMap.get("sign");
-        Map<String, String> tmpMap = AliPayUtils.paraFilter(paraMap);
-        String mySign = AliPayUtils.buildRequestMySign(PayParam.aliMD5Key, PayParam.aliWebSignType, tmpMap);
-        if (!returnSign.equals(mySign)) {
-            //支付宝回调签名不匹配
-            throw new BusinessException("支付宝回调签名不匹配");
-        }
-    }
-
-    /**
-     * 转换支付状态
-     *
-     * @return
-     */
-    private int transPayState(String tradeState) {
-        int callbackState = -1;
-        for (PayReturnCodeEnum anEnum : PayReturnCodeEnum.values()) {
-            if (anEnum.getCode().equals(tradeState)) {
-                callbackState = anEnum.getPayState();
-                break;
-            }
-        }
-        return callbackState;
-    }
-
-
-    public static void main(String[] args) throws Exception {
-        //组装参数返回给前台
-        Map<String, String> paraMap = new HashMap<>();
-        paraMap.put("app_id", "2016120804019527");
-        paraMap.put("method", "alipay.trade.wap.pay");
-        paraMap.put("format", "json");
-        paraMap.put("alipay_sdk", "alipay-sdk-java-dynamicVersionNo");
-
-        paraMap.put("return_url", "http://local.axpapp.com");
-
-        paraMap.put("charset", "utf-8");
-        paraMap.put("sign_type", "RSA");
-        paraMap.put("timestamp", "2017-02-12 14:54:37");
-        paraMap.put("version", "1.0");
-        paraMap.put("notify_url", "http://local.axpapp.com/moon/cashier/webpay/2.htm");
-
-        // biz_content 业务请求参数的集合
-        Map<String, String> bizMap = new HashMap<>();
-        //商品名称
-        bizMap.put("subject", "服务费");
-        //支付流水号
-        bizMap.put("out_trade_no", "2017021212044779888");
-        //支付总金额
-        bizMap.put("total_amount", "0.01");
-        //销售产品码
-        bizMap.put("product_code", "QUICK_WAP_PAY");
-
-        paraMap.put("biz_content", JsonUtils.translateToJson(bizMap).replace("\"", "\\\""));
-        String html = AliPayUtils.buildReqUrl("https://openapi.alipay.com/gateway.do", "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBANWsWoldNrCLOd3S24OlfUsaC4LeZrlxT3jEu7M5L9TpNo3rPxaribDTaDZeNDQP1ZudSHdOaSo3x4KcYdi5qg4jH1r5ETV0GY1l3YUoO/NviewUxhMgzNVwZoqSUGtveL9y18M/Jny1aG/ucRKRus9IwJ1UFzQlHuldsx29JZ6HAgMBAAECgYEAvNyt3bKFb4BwMnB41KDG4UXxHMiFla3g58dEfQK0E4XbUY+4YMpYVvJVr5COpeHFFdnsvn+RFt7cusaM+eoJsvyAR4Z93QUq7puaxHP2s44gYtuw4tgT6hvioa41RIcChiPe7AkgK/cL7AIIaZp9q5pWg6iIK/1DUaF8WHzXVUkCQQD8+jmbY8hy0KA5TP7xRaqO96eCgz3ABHyzbC/0KWanfByBZUezhOkT9jYHO3OeskAXfSNATYeWh4gM/mk++yjzAkEA2Dno95WN+koLqSzqiifeF9XtoiibT/NJ5z7tNoKKT5BJV+jgprdqrzH/3AtXsAsrt5W/YsaS4zCPVJhS9hTZHQJBAOnR5bjoK3djuRP9RI6Ak7p80MjiwQpfm1rDHjeQpJ8dKcO3duRIbp3SrfFVU/JUUsTjFtfyUOYi8u7/nwtlXV0CQBWPmLpvcEvf7E+/Sdfi59OKonqEABC12s2zSaYg2Dfc1GNutlAJhBraKoA/pUvJoV9aEE6CLI14/yHZWpRtOcUCQB1/v5z7JPNrNc7ezuHCm4ejHmki101nEAayBEsEirx3ifbsupXmXegPu+vd0tFnLH0AZnnacjtQqtGPIn2gAp8=", paraMap);
-        System.out.println(html);
     }
 }

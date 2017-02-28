@@ -45,7 +45,7 @@ public class PayConstant {
     public static String NOTICE_WEB_PAY = "webpay";//web支付异步通知
     public static String NOTICE_APP_PAY = "apppay";//app支付异步通知
     public static String NOTICE_REFUND = "refund";//退款异步通知
-    public static String NOTICE_TRANSFER = "transfer";//企业付款异步通知
+    public static String NOTICE_TRANSFER = "transferBatch";//企业付款异步通知
 
     /* 回调执行结果 */
     public final static String CALLBACK_SUCCESS = "success";

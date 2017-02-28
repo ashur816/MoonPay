@@ -3,8 +3,8 @@ package com.martin.service.tenpay;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.martin.constant.PayParam;
+import com.martin.exception.BusinessException;
 import com.martin.utils.PayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -75,12 +75,12 @@ class TenPayUtils {
     @SuppressWarnings("rawtypes")
     static String createSign(String key, SortedMap<String, String> parameters) {
         //过滤空值和sign
-        SortedMap filterMap = paraFilter(parameters);
+        Map filterMap = PayUtils.paramFilter(parameters);
 
         //拼装请求参数
-        String bizParam = PayUtils.buildPayParam(filterMap);
+        String bizParam = PayUtils.buildConcatStr(filterMap);
         bizParam += "&key=" + key;
-        System.out.println("支付参数-" + bizParam);
+        System.out.println("签名参数-" + bizParam);
         return MD5Encode(bizParam);
     }
 
@@ -101,34 +101,6 @@ class TenPayUtils {
             sbHtml.append("<input type=\"\" id=\"").append(id).append("\" value=\"").append(value).append("\"/>");
         }
         return sbHtml.toString();
-    }
-
-    /**
-     * 除去数组中的空值和签名参数
-     *
-     * @param sArray 签名参数组
-     * @return 去掉空值与签名参数后的新签名参数组
-     */
-    public static SortedMap<String, String> paraFilter(Map<String, String> sArray) {
-
-        SortedMap<String, String> result = new TreeMap<>();
-
-        if (sArray == null || sArray.size() <= 0) {
-            return result;
-        }
-
-        String value = "";
-        String key = "";
-        Iterator iterator = sArray.keySet().iterator();
-        while (iterator.hasNext()) {
-            key = iterator.next().toString();
-            value = sArray.get(key);
-            if (StringUtils.isBlank(value) || "sign".equalsIgnoreCase(key)) {
-                continue;
-            }
-            result.put(key, value);
-        }
-        return result;
     }
 
     /**
@@ -241,6 +213,27 @@ class TenPayUtils {
         }
         return map;
 
+    }
+
+    /**
+     * 验签
+     */
+    public static SortedMap<String, String> returnValidate(String privateKey, Map<String, String> paraMap) throws Exception {
+        String tmpXml = paraMap.get("content");
+        SortedMap<String, String> sortedMap = TenPayUtils.getMapFromXML(tmpXml);
+
+        if (sortedMap == null || sortedMap.size() < 1) {
+            //参数不能为空
+            throw new BusinessException("参数不能为空");
+        }
+
+        String returnSign = sortedMap.get("sign");
+        String mySign = createSign(privateKey, sortedMap);
+        if (!returnSign.equals(mySign)) {
+            //回调签名不匹配
+            throw new BusinessException("回调签名不匹配");
+        }
+        return sortedMap;
     }
 
     private static String MD5Encode(String text) {

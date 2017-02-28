@@ -123,13 +123,14 @@
     <select id="getCanRefundList" resultType="com.martin.bean.PayFlowBean">
         SELECT
         <include refid="baseSql"/>
-        FROM m_pay_flow WHERE pay_state=#{payState} AND client_source like #{clientSource}
-        <if test="flowId!=null and flowId!=0">
-            and flow_id=#{flowId}
-        </if>
+        FROM m_pay_flow WHERE pay_state=1
         <if test="payType!=null and payType!=0">
-            and pay_type=#{payType}
+            AND pay_type=#{payType}
         </if>
+        <if test="clientSource!=null and clientSource!=0">
+            AND client_source=#{clientSource}
+        </if>
+        ORDER BY pay_time
     </select>
     <select id="getPayFlowByThdFlowId" resultType="com.martin.bean.PayFlowBean">
         SELECT
