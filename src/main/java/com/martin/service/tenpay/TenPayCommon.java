@@ -8,6 +8,7 @@ import com.martin.dto.RefundResult;
 import com.martin.dto.TransferResult;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayCommonService;
+import com.martin.utils.HttpUtils;
 import com.martin.utils.JsonUtils;
 import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -70,11 +71,11 @@ public class TenPayCommon implements IPayCommonService {
         logger.info("发送xml为:\n" + xml);
 
         //发送给微信支付
-        String returnXml = TenPayUtils.sendPostWithCert(PayParam.tenTransferUrl, xml, PayParam.inputCharset);
+        String returnXml = HttpUtils.sendPostWithCert(PayParam.tenTransferUrl, xml, PayParam.inputCharset);
         logger.info("返回结果:" + returnXml);
 
         //转换返回xml结果
-        SortedMap<String, String> returnMap = TenPayUtils.getMapFromXML(returnXml);
+        SortedMap<String, String> returnMap = PayUtils.getMapFromXML(returnXml, PayParam.inputCharset);
 
         String returnCode = returnMap.get("return_code");
         String resultCode = returnMap.get("result_code");
@@ -144,7 +145,7 @@ public class TenPayCommon implements IPayCommonService {
         logger.info("退款发送xml为:\n" + xml);
 
         //发送给微信支付
-        String returnXml = TenPayUtils.sendPostWithCert(PayParam.tenRefundUrl, xml, PayParam.inputCharset);
+        String returnXml = HttpUtils.sendPostWithCert(PayParam.tenRefundUrl, xml, PayParam.inputCharset);
         logger.info("退款返回结果:" + returnXml);
 
         Map tmpMap = new HashMap();
@@ -209,7 +210,7 @@ public class TenPayCommon implements IPayCommonService {
         StringBuilder sb = new StringBuilder();
         // 获取微信 access_token/openid
         sb.append("&appid=" + PayParam.tenWebAppId + "&secret=" + PayParam.tenAppSecret + "&code=" + code + "&grant_type=" + "authorization_code");
-        String result = TenPayUtils.sendPostXml("https://api.weixin.qq.com/sns/oauth2/access_token", sb.toString());
+        String result = HttpUtils.sendPostXml("https://api.weixin.qq.com/sns/oauth2/access_token", sb.toString(),PayParam.inputCharset);
         if (StringUtils.isEmpty(result)) {
             throw new BusinessException("未关注微信公众号");
         }

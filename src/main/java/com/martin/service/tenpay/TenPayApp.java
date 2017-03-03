@@ -8,6 +8,7 @@ import com.martin.dto.PayResult;
 import com.martin.exception.BusinessException;
 import com.martin.service.IPayAppService;
 import com.martin.service.IPayFlow;
+import com.martin.utils.HttpUtils;
 import com.martin.utils.PayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -67,11 +68,11 @@ public class TenPayApp implements IPayAppService {
         logger.info("APP支付统一下单xml为:\n" + xml);
 
         //发送给微信支付生成预订单
-        String returnXml = TenPayUtils.sendPostXml(PayParam.tenOrderUrl, xml);
+        String returnXml = HttpUtils.sendPostXml(PayParam.tenOrderUrl, xml,PayParam.inputCharset);
         logger.info("APP支付返回结果:" + returnXml);
 
         //转换返回xml结果
-        SortedMap<String, String> returnMap = TenPayUtils.getMapFromXML(returnXml);
+        SortedMap<String, String> returnMap = PayUtils.getMapFromXML(returnXml, PayParam.inputCharset);
 
         String returnCode = returnMap.get("return_code");
         String resultCode = returnMap.get("result_code");
@@ -133,7 +134,7 @@ public class TenPayApp implements IPayAppService {
     @Override
     public long getReturnFlowId(Map<String, String> paraMap) throws Exception {
         String tmpXml = paraMap.get("content");
-        SortedMap<String, String> sortedMap = TenPayUtils.getMapFromXML(tmpXml);
+        SortedMap<String, String> sortedMap = PayUtils.getMapFromXML(tmpXml, PayParam.inputCharset);
         if (sortedMap == null || sortedMap.size() < 1) {
             //参数不能为空
             throw new BusinessException("参数不能为空");
@@ -158,7 +159,7 @@ public class TenPayApp implements IPayAppService {
     @Override
     public PayResult payReturn(String privateKey, Map<String, String> paraMap) throws Exception {
         logger.info("开始APP微信回调处理");
-        SortedMap<String, String> sortedMap = TenPayUtils.returnValidate(PayParam.tenAppPrivateKey,paraMap);
+        SortedMap<String, String> sortedMap = TenPayUtils.returnValidate(PayParam.tenAppPrivateKey, paraMap);
         String resultCode = sortedMap.get("result_code");
         String returnCode = sortedMap.get("return_code");
         String tradeState = sortedMap.get("trade_state");
@@ -213,10 +214,10 @@ public class TenPayApp implements IPayAppService {
         logger.info("APP微信查单xml为:\n" + xml);
 
         //发送给微信支付
-        String returnXml = TenPayUtils.sendPostXml(PayParam.tenQueryUrl, xml);
+        String returnXml = HttpUtils.sendPostXml(PayParam.tenQueryUrl, xml, PayParam.inputCharset);
         logger.info("APP微信查单返回结果:" + returnXml);
         //转换返回xml结果
-        SortedMap<String, String> returnMap = TenPayUtils.getMapFromXML(returnXml);
+        SortedMap<String, String> returnMap = PayUtils.getMapFromXML(returnXml, PayParam.inputCharset);
 
         String returnCode = returnMap.get("return_code");
         String resultCode = returnMap.get("result_code");
@@ -256,10 +257,10 @@ public class TenPayApp implements IPayAppService {
         logger.info("APP微信关单xml为:\n" + xml);
 
         //发送给微信支付
-        String returnXml = TenPayUtils.sendPostXml(PayParam.tenQueryUrl, xml);
+        String returnXml = HttpUtils.sendPostXml(PayParam.tenQueryUrl, xml, PayParam.inputCharset);
         logger.info("APP微信关单返回结果:" + returnXml);
         //转换返回xml结果
-        SortedMap<String, String> returnMap = TenPayUtils.getMapFromXML(returnXml);
+        SortedMap<String, String> returnMap = PayUtils.getMapFromXML(returnXml, PayParam.inputCharset);
 
         String returnCode = returnMap.get("return_code");
         String resultCode = returnMap.get("result_code");

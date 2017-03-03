@@ -3,6 +3,13 @@
        xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
 
+    <bean id="tenPublicParam" class="com.martin.constant.TenPublicParam">
+        <property name="appId" value="${ten.appId}"></property>
+        <property name="appSecret" value="${ten.appSecret}"></property>
+        <property name="token" value="${ten.token}"></property>
+        <property name="aesKey" value="${ten.aesKey}"></property>
+    </bean>
+
     <bean id="payParam" class="com.martin.constant.PayParam">
         <property name="webBody" value="${pay.webBody}"></property>
         <property name="appBody" value="${pay.appBody}"></property>

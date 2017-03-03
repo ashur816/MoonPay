@@ -19,9 +19,9 @@ import java.net.URLConnection;
 import java.security.KeyStore;
 
 /**
+ * @author ZXY
  * @ClassName: HttpUtils
  * @Description: http工具类
- * @author ZXY
  * @date 2016/6/17 13:17
  */
 public class HttpUtils {
@@ -34,16 +34,13 @@ public class HttpUtils {
 
     /**
      * 通过Https往API post XML数据
+     *
      * @param url    API地址
      * @param params 要提交数据对象
      * @return API回包的实际数据
      * @throws Exception
      */
     public static String sendPostXml(String url, String params, String charset) throws Exception {
-
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-
-        String result = null;
         HttpPost httpPost = new HttpPost(url);
 
         //得指明使用UTF-8编码，否则到API服务器XML的中文不能被成功识别
@@ -55,24 +52,14 @@ public class HttpUtils {
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout).build();
         httpPost.setConfig(requestConfig);
 
-        try {
-            HttpResponse response = httpClient.execute(httpPost);
-
-            HttpEntity entity = response.getEntity();
-
-            result = EntityUtils.toString(entity, charset);
-        } finally {
-            httpPost.abort();
-        }
-
-        return result;
+        return getResponse(httpPost, charset);
     }
 
     /**
-     * @Description: 通过Https往API post &name=value数据
      * @param
      * @return
      * @throws
+     * @Description: 通过Https往API post &name=value数据
      */
     public static String sendPost(String url, String params, String charset) throws Exception {
         PrintWriter out = null;
@@ -121,14 +108,14 @@ public class HttpUtils {
     }
 
     /**
-     * @Description: 使用安全证书，发送请求
      * @param
      * @return
      * @throws
+     * @Description: 使用安全证书，发送请求
      */
     public static String sendPostWithCert(String url, String params, String charset) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        FileInputStream inStream = new FileInputStream(new File("D:/ZD_cert.p12"));
+        FileInputStream inStream = new FileInputStream(new File(PayParam.certPath));
         try {
             keyStore.load(inStream, PayParam.tenWebMchId.toCharArray());
         } finally {
@@ -138,10 +125,8 @@ public class HttpUtils {
         SSLContext sslcontext = SSLContexts.custom().loadKeyMaterial(keyStore, PayParam.tenWebMchId.toCharArray()).build();
         // Allow TLSv1 protocol only
         SSLConnectionSocketFactory sslSf = new SSLConnectionSocketFactory(sslcontext, new String[]{"TLSv1"}, null, SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
-        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSf).build();
         HttpPost httpPost = new HttpPost(url);
 
-        String result = null;
         //得指明使用UTF-8编码，否则到API服务器XML的中文不能被成功识别
         StringEntity postEntity = new StringEntity(params, charset);
         httpPost.addHeader("Content-Type", "application/xml");
@@ -151,6 +136,19 @@ public class HttpUtils {
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout).build();
         httpPost.setConfig(requestConfig);
 
+
+        return getResponse(httpPost, charset);
+    }
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 获取返回信息
+     */
+    private static String getResponse(HttpPost httpPost, String charset) throws Exception {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        String result = "";
         try {
             HttpResponse response = httpClient.execute(httpPost);
 
@@ -160,7 +158,6 @@ public class HttpUtils {
         } finally {
             httpPost.abort();
         }
-
         return result;
     }
 }

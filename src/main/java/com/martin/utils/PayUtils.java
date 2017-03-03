@@ -11,7 +11,15 @@ import com.martin.service.IPayWebService;
 import com.martin.service.alipay.MD5;
 import com.martin.service.alipay.RSA;
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -264,5 +272,38 @@ public class PayUtils {
         sb.append("&sign=").append(sign);
 
         return sb.toString();
+    }
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: xml转map
+     */
+    public static SortedMap<String, String> getMapFromXML(String xmlString, String charset) throws Exception {
+
+        //这里用Dom的方式解析回包的最主要目的是防止API新增回包字段
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+
+        InputStream is = null;
+        if (xmlString != null && !xmlString.trim().equals("")) {
+            is = new ByteArrayInputStream(xmlString.getBytes(charset));
+        }
+        Document document = builder.parse(is);
+
+        //获取到document里面的全部结点
+        NodeList allNodes = document.getFirstChild().getChildNodes();
+        Node node;
+        SortedMap<String, String> map = new TreeMap<>();
+        int i = 0;
+        while (i < allNodes.getLength()) {
+            node = allNodes.item(i);
+            if (node instanceof Element) {
+                map.put(node.getNodeName(), node.getTextContent());
+            }
+            i++;
+        }
+        return map;
     }
 }

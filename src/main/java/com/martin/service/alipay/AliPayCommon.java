@@ -99,7 +99,7 @@ public class AliPayCommon implements IPayCommonService {
      */
     @Override
     public Object transferSingle(PayFlowBean flowBean, Map<String, String> extMap) throws Exception {
-        return trans2(flowBean, extMap);
+        return trans1(flowBean, extMap);
     }
 
     /**
