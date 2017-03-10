@@ -11,6 +11,7 @@
 <body>
 <header class="mui-bar mui-bar-nav">
     <h1 class="mui-title">企业付款</h1>
+    <a class="mui-pull-right mui-icon mui-icon-home" href="/index.jsp"></a>
 </header>
 <div class="mui-content">
     <h5 class="mui-content-padded">提现渠道</h5>

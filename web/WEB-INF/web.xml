@@ -57,6 +57,16 @@
         <servlet-name>dispatcher</servlet-name>
         <url-pattern>*.htm</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>tokenServer</servlet-name>
+        <load-on-startup>1</load-on-startup>
+        <servlet-class>com.martin.servlet.TokenServer</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>tokenServer</servlet-name>
+        <url-pattern></url-pattern>
+    </servlet-mapping>
 
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

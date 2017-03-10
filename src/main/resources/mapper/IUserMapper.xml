@@ -17,10 +17,15 @@
         <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
             #{userName},
             #{userChannel},
-            now(),
+            #{createTime},
             <if test="thdId!=null and thdId!=0">
                 #{thdId},
             </if>
         </trim>
     </insert>
+    <select id="getUserByThdId" resultType="com.martin.bean.UserBean">
+        SELECT
+        <include refid="baseSql"></include>
+        FROM m_user WHERE thd_id=#{thdId}
+    </select>
 </mapper>

@@ -10,7 +10,11 @@ public class TenPublicParam {
 
     public static final String getUserInfoUrl = "https://api.weixin.qq.com/cgi-bin/user/info?";
 
+    public static final String getTokenUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential";
+
     public static final String lang = "zh_CN";
+
+    public static final String charset = "UTF-8";
 
     public static String appId;
 

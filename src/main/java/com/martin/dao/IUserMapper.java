@@ -13,5 +13,7 @@ import tk.mybatis.mapper.common.Mapper;
 @Repository
 public interface IUserMapper extends Mapper<UserBean> {
 
-    UserBean addUser(UserBean userBean);
+    int addUser(UserBean userBean);
+
+    UserBean getUserByThdId(String thdId);
 }

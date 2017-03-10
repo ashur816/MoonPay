@@ -16,5 +16,21 @@ public interface IUserService {
      * @throws
      * @Description: 新增用户
      */
-    UserBean addUser(UserBean userBean) throws Exception;
+    void addUser(UserBean userBean) throws Exception;
+
+    /**
+     * @param 
+     * @return 
+     * @throws 
+     * @Description: 更新用户信息
+     */
+    void updateUser(UserBean userBean) throws Exception;
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 根据第三方信息获取用户信息
+     */
+    UserBean getUserByThdId(String thdId) throws Exception;
 }

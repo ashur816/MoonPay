@@ -12,6 +12,7 @@
 
 <header class="mui-bar mui-bar-nav">
     <h1 class="mui-title">退款</h1>
+    <a class="mui-pull-right mui-icon mui-icon-home" href="/index.jsp"></a>
 </header>
 
 <nav class="mui-bar mui-bar-tab">

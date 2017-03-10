@@ -32,9 +32,31 @@ public class UserServiceImpl implements IUserService {
      * @Description: 新增用户
      */
     @Override
-    public UserBean addUser(UserBean userBean) throws Exception {
+    public void addUser(UserBean userBean) throws Exception {
         logger.info("新增用户-{}", JsonUtils.translateToJson(userBean));
-        UserBean bean = userMapper.addUser(userBean);
-        return bean;
+        userMapper.addUser(userBean);
+    }
+
+    /**
+     * @param userBean@return
+     * @throws
+     * @Description: 更新用户信息
+     */
+    @Override
+    public void updateUser(UserBean userBean) throws Exception {
+        logger.info("更新用户-{}", JsonUtils.translateToJson(userBean));
+        userMapper.updateByPrimaryKey(userBean);
+    }
+
+    /**
+     * @param thdId
+     * @return
+     * @throws
+     * @Description: 根据第三方信息获取用户信息
+     */
+    @Override
+    public UserBean getUserByThdId(String thdId) throws Exception {
+        logger.info("获取用户信息-{}", thdId);
+        return userMapper.getUserByThdId(thdId);
     }
 }
