@@ -1,13 +1,19 @@
 package com.martin.utils;
 
+import com.martin.constant.TenPublicParam;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author ZXY
@@ -89,4 +95,52 @@ public class BeanUtils {
         }
         return obj;
     }
+
+    /**
+     * @param
+     * @return
+     * @throws
+     * @Description: 将bean转成xml
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static String convertXml(Map<String, Object> beanMap) throws Exception {
+        String retMsg = TenPublicParam.retMsg;
+        if (!CollectionUtils.isEmpty(beanMap)) {
+            StringBuilder builder = new StringBuilder("<xml>");
+            Set<Map.Entry<String, Object>> entrySet = beanMap.entrySet();
+            for (Map.Entry<String, Object> entry : entrySet) {
+                String key = entry.getKey();
+                Object bean = entry.getValue();
+                Field[] fields = bean.getClass().getDeclaredFields();
+                if (fields.length > 0) {
+                    if (!"root".equals(key)) {//非根节点需要加入子节点名称
+                        builder.append("<").append(key).append(">");
+                    }
+                    if("Articles".equals(key)){
+                        builder.append("<item>");
+                    }
+                    for (Field field : fields) {
+                        String name = field.getName();
+                        if (!"serialVersionUID".equalsIgnoreCase(name)) {
+                            Method m = bean.getClass().getMethod("get" + name);
+                            String value = (String) m.invoke(bean);
+                            if (StringUtils.isNotBlank(value)) {
+                                builder.append("<").append(name).append(">").append(value).append("</").append(name).append(">");
+                            }
+                        }
+                    }
+                    if("Articles".equals(key)){
+                        builder.append("</item>");
+                    }
+                    if (!"root".equals(key)) {//非根节点需要加入子节点名称
+                        builder.append("</").append(key).append(">");
+                    }
+                }
+            }
+            builder.append("</xml>");
+            retMsg = builder.toString();
+        }
+        return retMsg;
+    }
+
 }

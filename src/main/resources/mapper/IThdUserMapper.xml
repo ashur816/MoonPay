@@ -1,50 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.martin.dao.IUserMapper">
+<mapper namespace="com.martin.dao.IThdUserMapper">
     <sql id="baseSql">
-        user_id, user_name, user_channel, thd_id, create_time, update_time
+        thd_id, thd_user_id, user_id, sex, country, province, city, head_img, state, create_time, update_time
     </sql>
-    <insert id="addUser" parameterType="com.martin.bean.UserBean">
-        INSERT INTO m_user
+    <insert id="addThdUser" parameterType="com.martin.bean.UserBean">
+        INSERT INTO m_thd_user
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            user_name,
-            user_channel,
-            realte_state,
+            state,
             create_time,
             <if test="thdId!=null and thdId!=''">
                 thd_id,
             </if>
         </trim>
         <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
-            #{userName},
-            #{userChannel},
-            #{relateState},
+            #{state},
             #{createTime},
             <if test="thdId!=null and thdId!=''">
                 #{thdId},
             </if>
         </trim>
     </insert>
-    <update id="updateUser">
-        UPDATE m_user
+    <update id="updateThdUser">
+        UPDATE m_thd_user
         <set>
             <trim suffixOverrides=",">
                 <if test="state != null">
                     state = #{state},
-                </if>
-                <if test="relateState != null">
-                    relate_state = #{relateState},
                 </if>
                 <if test="updateTime != null">
                     update_time = #{updateTime},
                 </if>
             </trim>
         </set>
-        WHERE user_id = #{userId}
+        WHERE thd_user_id = #{thdUserId}
     </update>
-    <select id="getThdUserByThdId" resultType="com.martin.bean.UserBean">
+    <select id="getThdUserByThdId" resultType="com.martin.bean.ThdUserBean">
         SELECT
         <include refid="baseSql"></include>
-        FROM m_user WHERE thd_id=#{thdId} AND state=1
+        FROM m_thd_user WHERE thd_id=#{thdId} AND state=1
     </select>
 </mapper>

@@ -8,6 +8,8 @@ public enum MsgTypeEnum {
     TEXT("text", "文本消息", "tenMsgTextService"),
     IMAGE("image", "图片消息", "tenMsgImageService"),
     VOICE("voice", "语音消息", "tenMsgVoiceService"),
+    MUSIC("music", "音乐消息，发给用户的", ""),
+    NEWS("news", "图文消息，发给用户的", ""),
     SHORTVIDEO("shortvideo", "小视频消息", "tenMsgShortVideoService"),
     LOCATION("location", "地理位置消息", "tenMsgLocationService"),
     LINK("link", "链接消息", "tenMsgLinkService"),

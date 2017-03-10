@@ -2,6 +2,7 @@ package com.martin.service.impl;
 
 import com.martin.constant.MsgTypeEnum;
 import com.martin.constant.PayParam;
+import com.martin.constant.TenPublicParam;
 import com.martin.dto.TenMsgInfo;
 import com.martin.exception.BusinessException;
 import com.martin.service.ITenPublicCenter;
@@ -54,8 +55,9 @@ public class TenPublicCenter implements ITenPublicCenter {
      * @Description: 微信消息推送
      */
     @Override
-    public void eventPush(String signature, String timestamp, String nonce, String contentXml) throws Exception {
+    public String eventPush(String signature, String timestamp, String nonce, String contentXml) throws Exception {
         boolean flag = checkSign(signature, timestamp, nonce);
+        String retMsg = TenPublicParam.retMsg;
         if (!flag) {
             throw new BusinessException("微信消息验签失败");
         } else {
@@ -68,8 +70,10 @@ public class TenPublicCenter implements ITenPublicCenter {
                 MsgTypeEnum msgTypeEnum = MsgTypeEnum.valueOf(msgType.toUpperCase());
                 String serviceName = msgTypeEnum.getService();
                 ITenPublicService tenPublicService = new ServiceContainer<ITenPublicService>().get(serviceName);
-                tenPublicService.doMsgDeal(tenMsgInfo);
+                retMsg = tenPublicService.doMsgDeal(tenMsgInfo);
             }
         }
+        logger.info("返回结果：{}",retMsg);
+        return retMsg;
     }
 }

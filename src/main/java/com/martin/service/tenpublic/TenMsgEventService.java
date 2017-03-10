@@ -1,12 +1,12 @@
 package com.martin.service.tenpublic;
 
-import com.martin.bean.UserBean;
+import com.martin.bean.ThdUserBean;
 import com.martin.constant.EventTypeEnum;
 import com.martin.constant.UserConstant;
 import com.martin.dto.TenMsgInfo;
 import com.martin.exception.BusinessException;
 import com.martin.service.ITenPublicService;
-import com.martin.service.IUserService;
+import com.martin.service.IThdUserService;
 import com.martin.utils.ServiceContainer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class TenMsgEventService implements ITenPublicService {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Resource
-    private IUserService userService;
+    private IThdUserService thdUserService;
 
     /**
      * @param tenMsgInfo
@@ -38,7 +38,7 @@ public class TenMsgEventService implements ITenPublicService {
      * @Description: 微信消息处理
      */
     @Override
-    public void doMsgDeal(TenMsgInfo tenMsgInfo) throws Exception {
+    public String doMsgDeal(TenMsgInfo tenMsgInfo) throws Exception {
         logger.info("事件处理");
         String enumName = tenMsgInfo.getEvent();
         String methodName = EventTypeEnum.valueOf(enumName.toUpperCase()).getMethod();
@@ -51,6 +51,8 @@ public class TenMsgEventService implements ITenPublicService {
         } else {
             throw new BusinessException("未配置事件[" + enumName + "]相关枚举类");
         }
+
+        return null;
     }
 
     /**
@@ -63,10 +65,10 @@ public class TenMsgEventService implements ITenPublicService {
         logger.info("订阅事件");
         String userOpenId = tenMsgInfo.getFromUserName();
         logger.info("关注人openId-{}", userOpenId);
-        //根据openId查询是否已经注册用户
-        UserBean userBean = userService.getUserByThdId(userOpenId);
-        if (userBean == null) {
-            userBean = new UserBean();
+        //根据openId查询是否已经存在系统中
+        ThdUserBean thdUserBean = thdUserService.getThdUserByThdId(userOpenId);
+        if (thdUserBean == null) {
+            thdUserBean = new ThdUserBean();
             //根据openId获取用户信息 认证号才可以
 //        String result = TenPublicUtils.getUserInfo(TokenServer.accessToken, userOpenId);
 //        logger.info("获取用户信息-{}", result);
@@ -79,12 +81,11 @@ public class TenMsgEventService implements ITenPublicService {
 //            userBean.setCity(JsonUtils.readValueByName(result, "city"));
 //            userBean.setHeadImg(JsonUtils.readValueByName(result, "headimgurl"));
 //        }
-            userBean.setThdId(userOpenId);
-            userBean.setUserName(userOpenId);
-            userBean.setCreateTime(new Date());
-            userBean.setRelateState(UserConstant.RELATE_STATE_1);
+            thdUserBean.setThdId(userOpenId);
+            thdUserBean.setCreateTime(new Date());
+            thdUserBean.setState(UserConstant.RELATE_STATE_1);
+            thdUserService.addThdUser(thdUserBean);
         }
-        userService.addUser(userBean);
     }
 
     /**
@@ -97,11 +98,15 @@ public class TenMsgEventService implements ITenPublicService {
         logger.info("取消订阅事件");
         String userOpenId = tenMsgInfo.getFromUserName();
         //根据openId查询用户信息
-        UserBean userBean = userService.getUserByThdId(userOpenId);
-        if (userBean == null) {
-            userBean.setRelateState(UserConstant.RELATE_STATE_0);
-            userBean.setUpdateTime(new Date());
-            userService.updateUser(userBean);
+        ThdUserBean thdUserBean = thdUserService.getThdUserByThdId(userOpenId);
+        if (thdUserBean != null) {
+            thdUserBean.setState(UserConstant.STATE_0);
+            thdUserBean.setState(UserConstant.RELATE_STATE_0);
+            thdUserBean.setUpdateTime(new Date());
+            thdUserService.updateThdUser(thdUserBean);
+        }
+        else {
+            logger.info("未查询到用户信息");
         }
     }
 

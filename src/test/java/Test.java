@@ -1,8 +1,3 @@
-import com.martin.utils.HttpUtils;
-import com.martin.utils.JsonUtils;
-
-import java.util.Map;
-
 /**
  * @author ZXY
  * @ClassName: Test
@@ -15,24 +10,13 @@ public class Test {
 //        PayFlowService math = ctx.getBean("payFlowService", PayFlowService.class);
 //        int n1 = 100, n2 = 5;
 //        math.addPayFlow(null);
-        for (int i = 0; i < 1000; i++) {
-            String userName ="";
-            if(i<10){
-                userName += "00" + i;
-            }
-            else if(i<100){
-                userName += "0" + i;
-            }
-            System.out.println(userName);
-            String url = "http://www.jlwater.com/api.do?act=checkusername&username=" + userName;
-            String s = HttpUtils.sendPost(url,"","utf-8");
-            Map map = JsonUtils.readMap(s);
-            if(map.get("result").equals("0")){
-                System.out.println(userName);
-                break;
-            }
 
-        }
+        Integer a = 0;
+        Integer b = 0;
+        int c = 0;
+
+        System.out.println(a==b);
+        System.out.println(a==c);
     }
 
 

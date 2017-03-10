@@ -22,5 +22,5 @@ public interface ITenPublicCenter {
      * @throws
      * @Description: 微信消息推送
      */
-    void eventPush(String signature, String timestamp, String nonce, String contentXml) throws Exception;
+    String eventPush(String signature, String timestamp, String nonce, String contentXml) throws Exception;
 }

@@ -15,5 +15,5 @@ public interface ITenPublicService {
      * @throws
      * @Description: 微信消息处理
      */
-    void doMsgDeal(TenMsgInfo tenMsgInfo) throws Exception;
+    String doMsgDeal(TenMsgInfo tenMsgInfo) throws Exception;
 }

@@ -53,10 +53,13 @@ public class TenPublicController {
             br.close();
             String contentXml = new String(sbXml.toString().getBytes("utf-8"), "utf-8");
 
-            tenPublicCenter.eventPush(signature, timestamp, nonce, contentXml);
+            String retMsg = tenPublicCenter.eventPush(signature, timestamp, nonce, contentXml);
             //返回给微信成功
             if(StringUtils.isNotBlank(echoStr)) {
                 response.getWriter().write(echoStr);
+            }
+            else {
+                response.getWriter().write(retMsg);
             }
         } catch (Exception e) {
             logger.error("微信消息接收异常，{}", e);

@@ -15,5 +15,7 @@ public interface IUserMapper extends Mapper<UserBean> {
 
     int addUser(UserBean userBean);
 
-    UserBean getUserByThdId(String thdId);
+    int updateUser(UserBean userBean);
+
+    UserBean getThdUserByThdId(String thdId);
 }

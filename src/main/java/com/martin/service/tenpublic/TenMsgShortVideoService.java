@@ -24,7 +24,8 @@ public class TenMsgShortVideoService implements ITenPublicService {
      * @Description: 微信消息处理
      */
     @Override
-    public void doMsgDeal(TenMsgInfo tenMsgInfo) throws Exception {
+    public String doMsgDeal(TenMsgInfo tenMsgInfo) throws Exception {
         logger.info("短视频消息处理");
+        return null;
     }
 }

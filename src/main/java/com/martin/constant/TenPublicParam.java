@@ -8,6 +8,8 @@ package com.martin.constant;
  */
 public class TenPublicParam {
 
+    public static final String retMsg = "success";
+
     public static final String getUserInfoUrl = "https://api.weixin.qq.com/cgi-bin/user/info?";
 
     public static final String getTokenUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential";
@@ -16,6 +18,8 @@ public class TenPublicParam {
 
     public static final String charset = "UTF-8";
 
+    public static String originalId;
+
     public static String appId;
 
     public static String appSecret;
@@ -23,6 +27,10 @@ public class TenPublicParam {
     public static String token;
 
     public static String aesKey;
+
+    public void setOriginalId(String originalId) {
+        this.originalId = originalId;
+    }
 
     public void setAppId(String appId) {
         this.appId = appId;
