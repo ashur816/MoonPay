@@ -37,7 +37,7 @@ public class TenMsgTextService implements ITenPublicService {
         logger.info("文本消息处理");
         String content = tenMsgInfo.getContent();
         Map map = new HashMap();
-        if ("新闻".equals(content)) {
+        if ("段子".equals(content)) {
             SendMsgInfo rootMsg = new SendMsgInfo();
             rootMsg.setFromUserName(TenPublicParam.originalId);
             rootMsg.setToUserName(tenMsgInfo.getFromUserName());
@@ -47,10 +47,10 @@ public class TenMsgTextService implements ITenPublicService {
             map.put("root", rootMsg);
 
             ArticleMsgInfo articleMsgInfo = new ArticleMsgInfo();
-            articleMsgInfo.setTitle("AAA");
-            articleMsgInfo.setDescription("BBB");
-            articleMsgInfo.setPicUrl("http://n.sinaimg.cn/news/1_img/upload/8437149d/20170310/301T-fychhvn8081341.jpg");
-            articleMsgInfo.setUrl("http://slide.news.sina.com.cn/c/slide_1_2841_108561.html#p=1");
+            articleMsgInfo.setTitle("给我一个套路，我能吃垮一生幸福");
+            articleMsgInfo.setDescription("不要为了吃饭，而放弃你的人生");
+            articleMsgInfo.setPicUrl("http://i.snssdk.com/neihan/video/playback/?video_id=ead9f4e6ff224048af9a70f19e12bb24&quality=480p&line=0&is_gif=0.mp4");
+            articleMsgInfo.setUrl("http://neihanshequ.com/p56848615331/");
             map.put("Articles", articleMsgInfo);
 
         } else if ("网址".equals(content)) {
@@ -66,7 +66,8 @@ public class TenMsgTextService implements ITenPublicService {
             retMsgInfo.setToUserName(tenMsgInfo.getFromUserName());
             retMsgInfo.setCreateTime(DateUtils.getTime());
             retMsgInfo.setMsgType(MsgTypeEnum.TEXT.getCode());
-            retMsgInfo.setContent("你好！");
+            retMsgInfo.setContent("你好！很高兴在这里遇见你，你可以回复段子，为你揭开一个逗比世界！");
+            map.put("root", retMsgInfo);
         }
         String retXml = BeanUtils.convertXml(map);
         return retXml;
