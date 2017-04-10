@@ -45,13 +45,17 @@
         var payType = 1;
         list.addEventListener('selected', function (e) {
             payType = e.detail.el.children[0].attributes["v"].value;
+            if(payType == 1){
+                $("#thdNo").val("o6U0tuJA8ewtDsfhmR2rh4-7yDco");
+            }
+            else {
+                $("#thdNo").val("632663267@qq.com");
+            }
         });
 
-//        $("#thdNo").val("632663267@qq.com");
         $("#thdNo").val("o6U0tuJA8ewtDsfhmR2rh4-7yDco");
         $("#thdName").val("张向阳");
         $("#drawAmount").val("0.01");
-
 
         $("#btnDraw").click(function () {
             var thdNo = $("#thdNo").val();
